@@ -16,6 +16,10 @@ export interface RenderGridOptions {
   surface: 'dark' | 'light';
   heavyLineEvery?: number;
   background?: string;
+  /** Interlocked physical boards this pattern spans — draws a seam line at each interior boundary. */
+  boardsWide?: number;
+  boardsHigh?: number;
+  seamLines?: boolean;
 }
 
 const SYMBOL_LUMINANCE_THRESHOLD = 0.55;
@@ -104,6 +108,27 @@ export function renderGrid(ctx: CanvasRenderingContext2D, options: RenderGridOpt
       const y = row * cellSize;
       ctx.strokeStyle = row % heavyEvery === 0 ? heavy : normal;
       ctx.lineWidth = row % heavyEvery === 0 ? 1.5 : 1;
+      ctx.beginPath();
+      ctx.moveTo(0, y);
+      ctx.lineTo(width, y);
+      ctx.stroke();
+    }
+  }
+
+  const boardsWide = options.boardsWide ?? 1;
+  const boardsHigh = options.boardsHigh ?? 1;
+  if (options.seamLines && (boardsWide > 1 || boardsHigh > 1)) {
+    ctx.strokeStyle = surface === 'dark' ? '#ffffff' : '#191713';
+    ctx.lineWidth = 3;
+    for (let b = 1; b < boardsWide; b++) {
+      const x = Math.round((cols / boardsWide) * b * cellSize);
+      ctx.beginPath();
+      ctx.moveTo(x, 0);
+      ctx.lineTo(x, height);
+      ctx.stroke();
+    }
+    for (let b = 1; b < boardsHigh; b++) {
+      const y = Math.round((rows / boardsHigh) * b * cellSize);
       ctx.beginPath();
       ctx.moveTo(0, y);
       ctx.lineTo(width, y);

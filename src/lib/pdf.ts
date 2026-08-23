@@ -2,6 +2,7 @@ import { jsPDF } from 'jspdf';
 import type { Pattern } from '../db/schema';
 import { catalogBeadById } from './catalog';
 import { beadUsage, gridStats } from './grid';
+import type { GridData } from './grid';
 import { renderGrid } from './renderGrid';
 import { shareOrDownloadBlob } from './save';
 
@@ -9,10 +10,14 @@ const PAGE_W_MM = 210; // A4
 const PAGE_H_MM = 297;
 const MARGIN_MM = 15;
 const PRINT_CELL_PX = 24; // render resolution before scaling into the page
+const CONTENT_W = PAGE_W_MM - MARGIN_MM * 2;
 
-function renderGridPng(pattern: Pattern): { dataUrl: string; widthPx: number; heightPx: number } {
-  const cols = pattern.boardConfig.widthPegs;
-  const rows = pattern.boardConfig.heightPegs;
+function renderGridPng(
+  grid: GridData,
+  opts: { gridlines: boolean; symbolOverlay: boolean },
+): { dataUrl: string; widthPx: number; heightPx: number } {
+  const cols = grid[0]?.length ?? 0;
+  const rows = grid.length;
   const widthPx = cols * PRINT_CELL_PX;
   const heightPx = rows * PRINT_CELL_PX;
 
@@ -22,11 +27,11 @@ function renderGridPng(pattern: Pattern): { dataUrl: string; widthPx: number; he
   const ctx = canvas.getContext('2d')!;
 
   renderGrid(ctx, {
-    grid: pattern.gridData,
+    grid,
     cellSize: PRINT_CELL_PX,
     getBead: catalogBeadById,
-    gridlines: pattern.gridlines,
-    symbolOverlay: pattern.symbolOverlay,
+    gridlines: opts.gridlines,
+    symbolOverlay: opts.symbolOverlay,
     surface: 'light',
     background: '#ffffff',
   });
@@ -34,40 +39,56 @@ function renderGridPng(pattern: Pattern): { dataUrl: string; widthPx: number; he
   return { dataUrl: canvas.toDataURL('image/png'), widthPx, heightPx };
 }
 
-export function buildPatternPdf(pattern: Pattern): Blob {
-  const stats = gridStats(pattern.gridData);
-  const usage = beadUsage(pattern.gridData);
-  const maxCount = usage[0]?.count ?? 1;
+function hexToRgbTuple(hex: string): [number, number, number] {
+  const n = parseInt(hex.replace('#', ''), 16);
+  return [(n >> 16) & 255, (n >> 8) & 255, n & 255];
+}
 
-  const doc = new jsPDF({ unit: 'mm', format: 'a4' });
-  const contentW = PAGE_W_MM - MARGIN_MM * 2;
+/** Draws the grid image + a self-paginating bead legend for `grid`, starting a fresh page first. */
+function drawBoardPage(
+  doc: jsPDF,
+  grid: GridData,
+  pattern: Pattern,
+  title: string,
+  metaLine: string,
+): void {
+  doc.addPage();
 
   doc.setFont('helvetica', 'bold');
   doc.setFontSize(16);
-  doc.text(pattern.name || 'Untitled pattern', MARGIN_MM, MARGIN_MM);
+  doc.setTextColor(20);
+  doc.text(title, MARGIN_MM, MARGIN_MM);
 
   doc.setFont('helvetica', 'normal');
   doc.setFontSize(9);
   doc.setTextColor(90);
-  const meta = `${pattern.boardConfig.widthPegs} x ${pattern.boardConfig.heightPegs} pegs · ${
-    pattern.boardConfig.beadType === 'regular' ? 'Midi' : 'Mini'
-  } · ${stats.beadCount} beads · ${stats.colorCount} colors`;
-  doc.text(meta, MARGIN_MM, MARGIN_MM + 6);
+  doc.text(metaLine, MARGIN_MM, MARGIN_MM + 6);
 
-  const { dataUrl, widthPx, heightPx } = renderGridPng(pattern);
+  const { dataUrl, widthPx, heightPx } = renderGridPng(grid, {
+    gridlines: pattern.gridlines,
+    symbolOverlay: pattern.symbolOverlay,
+  });
   const aspect = heightPx / widthPx;
-  let imgW = contentW;
+  let imgW = CONTENT_W;
   let imgH = imgW * aspect;
-  const maxImgH = 150; // leave room for the legend beneath on page 1
+  const maxImgH = 150;
   if (imgH > maxImgH) {
     imgH = maxImgH;
     imgW = imgH / aspect;
   }
-  const imgX = MARGIN_MM + (contentW - imgW) / 2;
+  const imgX = MARGIN_MM + (CONTENT_W - imgW) / 2;
   const imgY = MARGIN_MM + 12;
   doc.addImage(dataUrl, 'PNG', imgX, imgY, imgW, imgH);
 
-  let y = imgY + imgH + 10;
+  drawLegend(doc, grid, imgY + imgH + 10);
+}
+
+/** Self-paginating bead legend (swatch, symbol, name, proportion bar, count) for `grid`. */
+function drawLegend(doc: jsPDF, grid: GridData, startY: number): void {
+  const stats = gridStats(grid);
+  const usage = beadUsage(grid);
+  const maxCount = usage[0]?.count ?? 1;
+  let y = startY;
 
   const addLegendHeader = () => {
     doc.setFont('helvetica', 'bold');
@@ -129,13 +150,78 @@ export function buildPatternPdf(pattern: Pattern): Blob {
 
     y += rowH;
   }
-
-  return doc.output('blob');
 }
 
-function hexToRgbTuple(hex: string): [number, number, number] {
-  const n = parseInt(hex.replace('#', ''), 16);
-  return [(n >> 16) & 255, (n >> 8) & 255, n & 255];
+/** Slices `grid` to just the region covered by board (bx, by) in a boardsWide x boardsHigh layout. */
+function boardSlice(grid: GridData, boardsWide: number, boardsHigh: number, bx: number, by: number): GridData {
+  const rows = grid.length;
+  const cols = grid[0]?.length ?? 0;
+  const rowStart = Math.round((rows / boardsHigh) * by);
+  const rowEnd = Math.round((rows / boardsHigh) * (by + 1));
+  const colStart = Math.round((cols / boardsWide) * bx);
+  const colEnd = Math.round((cols / boardsWide) * (bx + 1));
+  return grid.slice(rowStart, rowEnd).map((row) => row.slice(colStart, colEnd));
+}
+
+export function buildPatternPdf(pattern: Pattern): Blob {
+  const { boardsWide, boardsHigh } = pattern.boardConfig;
+  const multiBoard = boardsWide * boardsHigh > 1;
+  const stats = gridStats(pattern.gridData);
+
+  const doc = new jsPDF({ unit: 'mm', format: 'a4' });
+
+  const metaLine = `${pattern.boardConfig.widthPegs} x ${pattern.boardConfig.heightPegs} pegs · ${
+    pattern.boardConfig.beadType === 'regular' ? 'Midi' : 'Mini'
+  } · ${stats.beadCount} beads · ${stats.colorCount} colors${multiBoard ? ` · ${boardsWide * boardsHigh} boards` : ''}`;
+
+  // Overview page: full grid + combined legend.
+  doc.setFont('helvetica', 'bold');
+  doc.setFontSize(16);
+  doc.setTextColor(20);
+  doc.text(pattern.name || 'Untitled pattern', MARGIN_MM, MARGIN_MM);
+  doc.setFont('helvetica', 'normal');
+  doc.setFontSize(9);
+  doc.setTextColor(90);
+  doc.text(metaLine, MARGIN_MM, MARGIN_MM + 6);
+
+  const { dataUrl, widthPx, heightPx } = renderGridPng(pattern.gridData, {
+    gridlines: pattern.gridlines,
+    symbolOverlay: pattern.symbolOverlay,
+  });
+  const aspect = heightPx / widthPx;
+  let imgW = CONTENT_W;
+  let imgH = imgW * aspect;
+  const maxImgH = 150;
+  if (imgH > maxImgH) {
+    imgH = maxImgH;
+    imgW = imgH / aspect;
+  }
+  const imgX = MARGIN_MM + (CONTENT_W - imgW) / 2;
+  const imgY = MARGIN_MM + 12;
+  doc.addImage(dataUrl, 'PNG', imgX, imgY, imgW, imgH);
+  drawLegend(doc, pattern.gridData, imgY + imgH + 10);
+
+  // One page per physical board, each with its own legend, per the handoff's
+  // "beads per board are counted separately" / "split PDF per board".
+  if (multiBoard) {
+    let boardNum = 1;
+    for (let by = 0; by < boardsHigh; by++) {
+      for (let bx = 0; bx < boardsWide; bx++) {
+        const slice = boardSlice(pattern.gridData, boardsWide, boardsHigh, bx, by);
+        const sliceStats = gridStats(slice);
+        drawBoardPage(
+          doc,
+          slice,
+          pattern,
+          `Board ${boardNum} of ${boardsWide * boardsHigh}`,
+          `${slice[0]?.length ?? 0} x ${slice.length} pegs · ${sliceStats.beadCount} beads`,
+        );
+        boardNum++;
+      }
+    }
+  }
+
+  return doc.output('blob');
 }
 
 export async function exportPatternPdf(pattern: Pattern): Promise<void> {

@@ -1,0 +1,34 @@
+.editor-layout--tablet {
+  display: flex;
+  flex: 1;
+  min-height: 0;
+}
+
+.editor-layout__stage-region {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--stage);
+}
+
+.editor-layout__panel {
+  width: 332px;
+  flex-shrink: 0;
+  background: var(--panel);
+  border-left: 1px solid rgba(255, 255, 255, 0.08);
+  padding: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  overflow-y: auto;
+}
+
+.editor-layout__stage-region-phone {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 0;
+  flex: 1;
+}

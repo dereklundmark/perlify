@@ -19,14 +19,6 @@
   color: var(--on-dark-45);
 }
 
-.adjust__body {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  min-height: 0;
-  flex: 1;
-}
-
 .adjust__grid-block {
   padding: 16px 0 14px;
   display: flex;
@@ -97,4 +89,65 @@
   color: var(--on-dark-45);
   padding: 20px 0 8px;
   text-align: center;
+}
+
+.adjust__color-list {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  max-height: 260px;
+  overflow-y: auto;
+}
+
+.adjust__color-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.adjust__color-swatch {
+  width: 20px;
+  height: 20px;
+  border-radius: var(--radius-legend-swatch);
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  flex-shrink: 0;
+}
+
+.adjust__color-symbol {
+  width: 18px;
+  color: var(--on-dark-45);
+  font-size: 10px;
+  flex-shrink: 0;
+}
+
+.adjust__color-name {
+  flex: 1;
+  font: 500 12.5px var(--font-ui);
+  color: var(--on-dark-85);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.adjust__color-bar {
+  width: 60px;
+  height: 4px;
+  border-radius: 2px;
+  background: var(--fill-dark);
+  overflow: hidden;
+  flex-shrink: 0;
+}
+
+.adjust__color-bar-fill {
+  display: block;
+  height: 100%;
+  background: var(--on-dark-60);
+}
+
+.adjust__color-count {
+  width: 30px;
+  text-align: right;
+  font-size: 10.5px;
+  color: var(--on-dark-60);
+  flex-shrink: 0;
 }

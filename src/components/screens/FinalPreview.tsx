@@ -34,6 +34,9 @@ export function FinalPreview() {
       symbolOverlay: draft.symbolOverlay,
       surface: draft.previewBackground === 'white' ? 'light' : 'dark',
       background: draft.previewBackground === 'white' ? '#ffffff' : '#000000',
+      boardsWide: draft.boardConfig.boardsWide,
+      boardsHigh: draft.boardConfig.boardsHigh,
+      seamLines: draft.seamLines,
     });
   }, [draft]);
 
@@ -98,6 +101,16 @@ export function FinalPreview() {
             </div>
             <Toggle variant="dark" checked={draft.gridlines} onChange={(v) => persist({ gridlines: v })} />
           </div>
+
+          {draft.boardConfig.boardsWide * draft.boardConfig.boardsHigh > 1 && (
+            <div className="preview__row">
+              <div>
+                <div className="type-row-label">Board seam lines</div>
+                <div className="type-caption preview__caption">Marks where each physical board meets the next</div>
+              </div>
+              <Toggle variant="dark" checked={draft.seamLines} onChange={(v) => persist({ seamLines: v })} />
+            </div>
+          )}
 
           <p className="type-caption preview__footnote">Display only — toggling these never changes a bead.</p>
         </div>

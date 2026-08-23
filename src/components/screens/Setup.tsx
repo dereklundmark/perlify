@@ -19,7 +19,6 @@ export function Setup() {
   const draft = state.draft;
   const [unit, setUnit] = useState<BoardUnit>('pegs');
   const [calibrateOpen, setCalibrateOpen] = useState(false);
-  const [boardCount, setBoardCount] = useState(1);
 
   if (!draft) return null;
 
@@ -133,11 +132,19 @@ export function Setup() {
           <div className="setup__stepper-row">
             <span className="type-row-label">Interlocked boards</span>
             <div className="setup__stepper">
-              <button type="button" onClick={() => setBoardCount((n) => Math.max(1, n - 1))}>
+              <button
+                type="button"
+                onClick={() => updateBoard({ boardsWide: Math.max(1, boardConfig.boardsWide - 1) })}
+              >
                 −
               </button>
-              <span className="type-mono">{boardCount} × 1</span>
-              <button type="button" onClick={() => setBoardCount((n) => Math.min(4, n + 1))}>
+              <span className="type-mono">
+                {boardConfig.boardsWide} × {boardConfig.boardsHigh}
+              </span>
+              <button
+                type="button"
+                onClick={() => updateBoard({ boardsWide: Math.min(4, boardConfig.boardsWide + 1) })}
+              >
                 +
               </button>
             </div>
@@ -197,16 +204,25 @@ export function Setup() {
           </div>
 
           <div className={`radio-card${isCollectionMode ? ' radio-card--selected' : ''}`}>
-            <button
-              type="button"
-              className="radio-card__head"
-              onClick={() =>
-                dispatch({ type: 'draft/update', patch: { paletteMode: 'collection', collectionId: collection?.id ?? null } })
-              }
-            >
-              <span className={`radio-dot${isCollectionMode ? ' radio-dot--selected radio-dot--filled' : ''}`} />
-              <span className="type-row-label">{collection?.name ?? 'My Colors'}</span>
-            </button>
+            <div className="radio-card__head radio-card__head--row">
+              <button
+                type="button"
+                className="radio-card__head-select"
+                onClick={() =>
+                  dispatch({ type: 'draft/update', patch: { paletteMode: 'collection', collectionId: collection?.id ?? null } })
+                }
+              >
+                <span className={`radio-dot${isCollectionMode ? ' radio-dot--selected radio-dot--filled' : ''}`} />
+                <span className="type-row-label">{collection?.name ?? 'My Colors'}</span>
+              </button>
+              <button
+                type="button"
+                className="setup__edit-collection-link"
+                onClick={() => dispatch({ type: 'nav', screen: 'collection' })}
+              >
+                Edit ›
+              </button>
+            </div>
             {isCollectionMode && (
               <div className="setup__collection-body">
                 <div className="setup__swatch-row">

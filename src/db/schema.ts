@@ -23,6 +23,9 @@ export interface BoardConfig {
   widthPegs: number;
   heightPegs: number;
   pegsPerInchOverride?: number;
+  /** Interlocked physical boards this pattern spans (default 1x1 — a single board). */
+  boardsWide: number;
+  boardsHigh: number;
 }
 
 export interface PreprocessSettings {
@@ -62,6 +65,7 @@ export interface Pattern {
   gridlines: boolean;
   symbolOverlay: boolean;
   previewBackground: 'white' | 'black';
+  seamLines: boolean;
 }
 
 export const DB_VERSION = 1;

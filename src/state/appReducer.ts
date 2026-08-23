@@ -1,6 +1,6 @@
 import type { BeadCollection, Pattern } from '../db/schema';
 
-export type Screen = 'library' | 'setup' | 'photo' | 'adjust' | 'preview' | 'export';
+export type Screen = 'library' | 'setup' | 'photo' | 'adjust' | 'preview' | 'export' | 'edit' | 'collection';
 
 export const WIZARD_STEPS: Partial<Record<Screen, number>> = {
   setup: 1,
@@ -35,7 +35,7 @@ export function createBlankPattern(collectionId: string | null): Pattern {
     updatedAt: now,
     sourceImage: '',
     cropRect: { x: 0, y: 0, width: 1, height: 1 },
-    boardConfig: { beadType: 'regular', widthPegs: 29, heightPegs: 29 },
+    boardConfig: { beadType: 'regular', widthPegs: 29, heightPegs: 29, boardsWide: 1, boardsHigh: 1 },
     collectionId,
     paletteMode: 'auto',
     colorCount: 12,
@@ -45,6 +45,7 @@ export function createBlankPattern(collectionId: string | null): Pattern {
     gridlines: true,
     symbolOverlay: true,
     previewBackground: 'black',
+    seamLines: true,
   };
 }
 
@@ -56,6 +57,7 @@ export type Action =
   | { type: 'draft/open'; pattern: Pattern }
   | { type: 'draft/update'; patch: Partial<Pattern> }
   | { type: 'draft/discard' }
+  | { type: 'collection/update'; collection: BeadCollection }
   | { type: 'nav'; screen: Screen };
 
 export function appReducer(state: AppState, action: Action): AppState {
@@ -95,6 +97,9 @@ export function appReducer(state: AppState, action: Action): AppState {
 
     case 'draft/discard':
       return { ...state, draft: null, screen: 'library' };
+
+    case 'collection/update':
+      return { ...state, collection: action.collection };
 
     case 'nav':
       return { ...state, screen: action.screen };

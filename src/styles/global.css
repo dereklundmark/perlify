@@ -91,6 +91,13 @@ p {
   padding-bottom: env(safe-area-inset-bottom, 0px);
 }
 
+/* The Adjust/Edit screens use EditorLayout's dual-region iPad treatment,
+   which needs the full viewport width rather than the phone-width card. */
+.app-shell--wide {
+  max-width: none;
+  height: 100dvh;
+}
+
 .screen {
   min-height: 100dvh;
   display: flex;

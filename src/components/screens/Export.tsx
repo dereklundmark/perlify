@@ -36,6 +36,9 @@ export function Export() {
       symbolOverlay: draft.symbolOverlay,
       surface: 'dark',
       background: '#000000',
+      boardsWide: draft.boardConfig.boardsWide,
+      boardsHigh: draft.boardConfig.boardsHigh,
+      seamLines: draft.seamLines,
     });
   }, [draft]);
 
@@ -85,13 +88,21 @@ export function Export() {
       <div className="export__sheet">
         <div className="bottom-sheet__handle" />
         <h2 className="type-card-title">Export blueprint</h2>
-        <div className="type-mono export__meta">1 PAGE · A4 · 1:1 SCALE</div>
+        <div className="type-mono export__meta">
+          {draft.boardConfig.boardsWide * draft.boardConfig.boardsHigh > 1
+            ? `${1 + draft.boardConfig.boardsWide * draft.boardConfig.boardsHigh} PAGES`
+            : '1 PAGE'}{' '}
+          · A4 · 1:1 SCALE
+        </div>
 
         <GroupedList>
           <GroupedListRow label="Include symbol overlay" value={draft.symbolOverlay ? 'ON' : 'OFF'} />
           <GroupedListRow label="Gridlines" value="EVERY CELL" />
           <GroupedListRow label="Heavier line every 10 pegs" value="ON" />
-          <GroupedListRow label="Split across pages" value="AUTO" />
+          <GroupedListRow
+            label="Split across pages"
+            value={draft.boardConfig.boardsWide * draft.boardConfig.boardsHigh > 1 ? 'PER BOARD' : 'AUTO'}
+          />
         </GroupedList>
 
         <div className="export__legend-header">

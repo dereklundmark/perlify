@@ -133,6 +133,38 @@
   min-height: var(--touch-target-min);
 }
 
+.radio-card__head--row {
+  cursor: default;
+  padding: 6px 14px 6px 6px;
+  justify-content: space-between;
+}
+
+.radio-card__head-select {
+  appearance: none;
+  border: none;
+  background: transparent;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 7px 8px;
+  cursor: pointer;
+  text-align: left;
+  min-height: var(--touch-target-min);
+  flex: 1;
+  min-width: 0;
+}
+
+.setup__edit-collection-link {
+  appearance: none;
+  border: none;
+  background: none;
+  color: var(--accent);
+  font: 600 12.5px var(--font-ui);
+  cursor: pointer;
+  padding: 8px;
+  flex-shrink: 0;
+}
+
 .radio-dot {
   width: 18px;
   height: 18px;

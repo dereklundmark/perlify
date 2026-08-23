@@ -4,11 +4,11 @@ import { WizardBar } from '../ui/WizardBar';
 import { SegmentedControl } from '../ui/SegmentedControl';
 import { Slider } from '../ui/Slider';
 import { Toggle } from '../ui/Toggle';
-import { BottomSheet } from '../ui/BottomSheet';
+import { EditorLayout } from '../ui/EditorLayout';
 import { matchImageToGrid } from '../../lib/match';
 import { catalogBeadById } from '../../lib/catalog';
 import { renderGrid } from '../../lib/renderGrid';
-import { gridStats } from '../../lib/grid';
+import { beadUsage, gridStats } from '../../lib/grid';
 import { savePattern } from '../../db/db';
 import type { Pattern } from '../../db/schema';
 import './ResultAdjust.css';
@@ -20,7 +20,7 @@ const DEBOUNCE_MS = 80;
 export function ResultAdjust() {
   const { state, dispatch } = useApp();
   const draft = state.draft;
-  const [tab, setTab] = useState<'adjust' | 'colors' | 'edit'>('adjust');
+  const [tab, setTab] = useState<'adjust' | 'colors'>('adjust');
   const [imgEl, setImgEl] = useState<HTMLImageElement | null>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const debounceRef = useRef<number | undefined>(undefined);
@@ -83,12 +83,17 @@ export function ResultAdjust() {
       symbolOverlay: false,
       surface: 'dark',
       background: '#08080a',
+      boardsWide: draft.boardConfig.boardsWide,
+      boardsHigh: draft.boardConfig.boardsHigh,
+      seamLines: draft.seamLines,
     });
   }, [draft]);
 
   if (!draft) return null;
 
   const stats = gridStats(draft.gridData);
+  const usage = beadUsage(draft.gridData);
+  const maxCount = usage[0]?.count ?? 1;
 
   function updatePreprocess(patch: Partial<Pattern['preprocessSettings']>) {
     if (!draft) return;
@@ -101,6 +106,132 @@ export function ResultAdjust() {
     dispatch({ type: 'library/upsert', pattern: draft });
     dispatch({ type: 'nav', screen: 'preview' });
   }
+
+  const stage = (
+    <div className="adjust__grid-block">
+      <canvas ref={canvasRef} className="adjust__canvas" />
+      <div className="adjust__chips">
+        <span className="type-mono adjust__chip">{stats.beadCount} BEADS</span>
+        <span className="type-mono adjust__chip">{stats.colorCount} COLORS</span>
+        <span className="type-mono adjust__chip">{stats.emptyCount} EMPTY</span>
+      </div>
+    </div>
+  );
+
+  const panelContent = (
+    <>
+      <SegmentedControl
+        variant="dark"
+        options={[
+          { value: 'adjust', label: 'Adjust' },
+          { value: 'colors', label: 'Colors' },
+          { value: 'edit', label: 'Edit' },
+        ]}
+        value={tab}
+        onChange={(v) => {
+          if (v === 'edit') {
+            dispatch({ type: 'nav', screen: 'edit' });
+          } else {
+            setTab(v);
+          }
+        }}
+      />
+
+      {tab === 'adjust' && (
+        <div className="adjust__sliders">
+          <Slider
+            label="Contrast"
+            value={draft.preprocessSettings.contrast}
+            min={-100}
+            max={100}
+            formatValue={(v) => `${v > 0 ? '+' : ''}${v}`}
+            onChange={(v) => updatePreprocess({ contrast: v })}
+          />
+          <Slider
+            label="Saturation"
+            value={draft.preprocessSettings.saturation}
+            min={-100}
+            max={100}
+            formatValue={(v) => `${v > 0 ? '+' : ''}${v}`}
+            onChange={(v) => updatePreprocess({ saturation: v })}
+          />
+          <Slider
+            label="Brightness"
+            value={draft.preprocessSettings.brightness}
+            min={-100}
+            max={100}
+            formatValue={(v) => `${v > 0 ? '+' : ''}${v}`}
+            onChange={(v) => updatePreprocess({ brightness: v })}
+          />
+
+          {draft.paletteMode === 'auto' ? (
+            <>
+              <Slider
+                label="Colors used"
+                value={draft.colorCount}
+                min={2}
+                max={60}
+                onChange={(v) => dispatch({ type: 'draft/update', patch: { colorCount: v } })}
+              />
+              <div className="adjust__presets">
+                {PRESETS.map((p) => (
+                  <button
+                    key={p}
+                    type="button"
+                    className={`preset-chip${draft.colorCount === p ? ' preset-chip--active' : ''}`}
+                    onClick={() => dispatch({ type: 'draft/update', patch: { colorCount: p } })}
+                  >
+                    {p}
+                  </button>
+                ))}
+              </div>
+            </>
+          ) : (
+            <div className="adjust__locked-row type-caption">
+              Matching is locked to My Colors. Switch to auto palette in setup to change the count.
+            </div>
+          )}
+
+          <div className="adjust__toggle-row">
+            <span className="type-row-label">Gridlines</span>
+            <Toggle
+              variant="dark"
+              checked={draft.gridlines}
+              onChange={(v) => dispatch({ type: 'draft/update', patch: { gridlines: v } })}
+            />
+          </div>
+          <div className="adjust__toggle-row">
+            <span className="type-row-label">Floyd–Steinberg dither</span>
+            <Toggle
+              variant="dark"
+              checked={draft.dither}
+              onChange={(v) => dispatch({ type: 'draft/update', patch: { dither: v } })}
+            />
+          </div>
+        </div>
+      )}
+
+      {tab === 'colors' && (
+        <div className="adjust__color-list">
+          {usage.length === 0 && <p className="type-caption adjust__coming-soon">No beads matched yet.</p>}
+          {usage.map(({ beadId, count }) => {
+            const bead = catalogBeadById(beadId);
+            return (
+              <div key={beadId} className="adjust__color-row">
+                <span className="adjust__color-swatch" style={{ background: bead?.hex }} />
+                <span className="type-mono adjust__color-symbol">{bead?.symbol ?? '?'}</span>
+                <span className="adjust__color-name">{bead?.name ?? beadId}</span>
+                <span className="adjust__color-bar">
+                  <span className="adjust__color-bar-fill" style={{ width: `${(count / maxCount) * 100}%` }} />
+                </span>
+                <span className="type-mono adjust__color-count">{count}</span>
+              </div>
+            );
+          })}
+        </div>
+      )}
+    </>
+  );
 
   return (
     <div className="screen screen--dark">
@@ -127,110 +258,7 @@ export function ResultAdjust() {
         }
       />
 
-      <div className="screen__body adjust__body">
-        <div className="adjust__grid-block">
-          <canvas ref={canvasRef} className="adjust__canvas" />
-          <div className="adjust__chips">
-            <span className="type-mono adjust__chip">{stats.beadCount} BEADS</span>
-            <span className="type-mono adjust__chip">{stats.colorCount} COLORS</span>
-            <span className="type-mono adjust__chip">{stats.emptyCount} EMPTY</span>
-          </div>
-        </div>
-      </div>
-
-      <BottomSheet variant="dark">
-        <SegmentedControl
-          variant="dark"
-          options={[
-            { value: 'adjust', label: 'Adjust' },
-            { value: 'colors', label: 'Colors' },
-            { value: 'edit', label: 'Edit' },
-          ]}
-          value={tab}
-          onChange={setTab}
-        />
-
-        {tab === 'adjust' && (
-          <div className="adjust__sliders">
-            <Slider
-              label="Contrast"
-              value={draft.preprocessSettings.contrast}
-              min={-100}
-              max={100}
-              formatValue={(v) => `${v > 0 ? '+' : ''}${v}`}
-              onChange={(v) => updatePreprocess({ contrast: v })}
-            />
-            <Slider
-              label="Saturation"
-              value={draft.preprocessSettings.saturation}
-              min={-100}
-              max={100}
-              formatValue={(v) => `${v > 0 ? '+' : ''}${v}`}
-              onChange={(v) => updatePreprocess({ saturation: v })}
-            />
-            <Slider
-              label="Brightness"
-              value={draft.preprocessSettings.brightness}
-              min={-100}
-              max={100}
-              formatValue={(v) => `${v > 0 ? '+' : ''}${v}`}
-              onChange={(v) => updatePreprocess({ brightness: v })}
-            />
-
-            {draft.paletteMode === 'auto' ? (
-              <>
-                <Slider
-                  label="Colors used"
-                  value={draft.colorCount}
-                  min={2}
-                  max={60}
-                  onChange={(v) => dispatch({ type: 'draft/update', patch: { colorCount: v } })}
-                />
-                <div className="adjust__presets">
-                  {PRESETS.map((p) => (
-                    <button
-                      key={p}
-                      type="button"
-                      className={`preset-chip${draft.colorCount === p ? ' preset-chip--active' : ''}`}
-                      onClick={() => dispatch({ type: 'draft/update', patch: { colorCount: p } })}
-                    >
-                      {p}
-                    </button>
-                  ))}
-                </div>
-              </>
-            ) : (
-              <div className="adjust__locked-row type-caption">
-                Matching is locked to My Colors. Switch to auto palette in setup to change the count.
-              </div>
-            )}
-
-            <div className="adjust__toggle-row">
-              <span className="type-row-label">Gridlines</span>
-              <Toggle
-                variant="dark"
-                checked={draft.gridlines}
-                onChange={(v) => dispatch({ type: 'draft/update', patch: { gridlines: v } })}
-              />
-            </div>
-            <div className="adjust__toggle-row">
-              <span className="type-row-label">Floyd–Steinberg dither</span>
-              <Toggle
-                variant="dark"
-                checked={draft.dither}
-                onChange={(v) => dispatch({ type: 'draft/update', patch: { dither: v } })}
-              />
-            </div>
-          </div>
-        )}
-
-        {tab !== 'adjust' && (
-          <div className="adjust__coming-soon type-caption">
-            {tab === 'colors' ? 'Per-color review' : 'Manual pixel editing'} is coming in a later round — for now,
-            use Adjust to change the palette.
-          </div>
-        )}
-      </BottomSheet>
+      <EditorLayout stage={stage} panelContent={panelContent} />
     </div>
   );
 }

@@ -1,0 +1,172 @@
+.edit__screen {
+  overflow: hidden;
+}
+
+.edit__stage-wrap {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding: 10px 0;
+  position: relative;
+}
+
+.edit__tool-row {
+  display: flex;
+  gap: 6px;
+  padding: 0 var(--gutter);
+  overflow-x: auto;
+}
+
+.edit__tool-pill {
+  appearance: none;
+  border: none;
+  background: rgba(255, 255, 255, 0.1);
+  color: var(--on-dark-85);
+  border-radius: 999px;
+  height: 32px;
+  padding: 0 14px;
+  font: 600 12.5px var(--font-ui);
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  white-space: nowrap;
+  cursor: pointer;
+  flex-shrink: 0;
+}
+
+.edit__tool-pill--active {
+  background: #fff;
+  color: var(--ink);
+}
+
+.edit__tool-swatch {
+  width: 11px;
+  height: 11px;
+  border-radius: 50%;
+  display: inline-block;
+}
+
+.edit__viewport {
+  flex: 1;
+  min-height: 0;
+  overflow: auto;
+  border-top: 1px solid rgba(255, 255, 255, 0.08);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+  touch-action: pan-x pan-y;
+  display: flex;
+}
+
+.edit__canvas {
+  display: block;
+  cursor: crosshair;
+  margin: auto;
+}
+
+.edit__hover-readout {
+  position: absolute;
+  background: rgba(20, 20, 22, 0.92);
+  color: #fff;
+  padding: 6px 10px;
+  border-radius: 8px;
+  font-size: 11px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  pointer-events: none;
+  white-space: nowrap;
+  z-index: 5;
+}
+
+.edit__hover-swatch {
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  display: inline-block;
+}
+
+.edit__palette-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.edit__palette-header .type-eyebrow {
+  color: var(--on-dark-45);
+}
+
+.edit__catalog-btn {
+  appearance: none;
+  border: none;
+  background: none;
+  color: var(--accent-light);
+  font: 600 12.5px var(--font-ui);
+  cursor: pointer;
+  padding: 4px;
+}
+
+.edit__palette-grid {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 6px;
+}
+
+.edit__swatch {
+  aspect-ratio: 1;
+  border-radius: var(--radius-swatch);
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 8.5px;
+  color: rgba(0, 0, 0, 0.5);
+}
+
+.edit__swatch--selected {
+  box-shadow: 0 0 0 2.5px #fff;
+  border-color: transparent;
+}
+
+.edit__palette-footer {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding-top: 12px;
+  border-top: 1px solid rgba(255, 255, 255, 0.08);
+  color: var(--on-dark-85);
+  font: 500 13px var(--font-ui);
+}
+
+.edit__catalog-modal-backdrop {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.6);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 30;
+  padding: 24px;
+}
+
+.edit__catalog-modal {
+  background: var(--sheet-dark);
+  border-radius: 16px;
+  padding: 18px;
+  max-width: 360px;
+  width: 100%;
+  max-height: 80vh;
+  overflow-y: auto;
+}
+
+.edit__catalog-modal-title {
+  color: #fff;
+  margin-bottom: 12px;
+}
+
+.edit__catalog-modal-grid {
+  display: grid;
+  grid-template-columns: repeat(6, 1fr);
+  gap: 8px;
+}

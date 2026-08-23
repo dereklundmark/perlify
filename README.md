@@ -13,19 +13,28 @@ implementation of that spec, not a copy of the reference HTML in that folder.
 
 ## Status
 
-**Milestone 1** (current): the full core loop in auto-palette mode on iPhone —
-Library → Board Setup → Photo/Crop → Adjust (live color matching) → Final
-Preview → PDF/JSON export.
+**Milestone 2** (current): everything from M1 (Library → Setup → Photo/Crop →
+Adjust → Final Preview → PDF/JSON export), plus:
 
-Not yet built (see the handoff README's screen list for what these are):
-manual pixel editing, the "My Collection" catalog editor, the iPad panel,
-multi-board layouts, and full offline service-worker caching.
+- Manual pixel editing (paint/clear/swap/rotate/flip, 50-step undo/redo)
+- "My Colors" catalog editor (search, custom HSB color, owned-list management)
+- iPad breakpoint (≥900px) for the Adjust/Edit screens: persistent side panel
+  instead of a bottom sheet, plus Apple Pencil/mouse hover preview
+- Multi-board (interlocked) layouts: seam lines, per-board PDF pages/legends
+- Full offline support via a precaching service worker (`vite-plugin-pwa`)
+
+Known scope cuts from this round (see the M2 plan for the reasoning): no
+dedicated vertical-flip control (compose Flip + Rotate instead), "Catalog +"
+in the editor adds a color to that pattern's working palette rather than to
+your permanent collection, the HSB picker fixes brightness at 90%, and only
+one collection ("My Colors") is supported rather than multiple named ones.
 
 ## Stack
 
 Vite + React + TypeScript, plain CSS custom properties for the design tokens,
-`idb` for IndexedDB, `jsPDF` for PDF export. No router, no UI framework —
-see `src/lib/`, `src/db/`, `src/state/`, and `src/components/` for the layout.
+`idb` for IndexedDB, `jsPDF` for PDF export, `vite-plugin-pwa` for the offline
+service worker. No router, no UI framework — see `src/lib/`, `src/db/`,
+`src/state/`, `src/hooks/`, and `src/components/` for the layout.
 
 ## Development
 
