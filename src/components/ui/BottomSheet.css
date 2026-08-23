@@ -1,0 +1,47 @@
+.bottom-sheet-backdrop {
+  position: fixed;
+  inset: 0;
+  background: rgba(25, 23, 19, 0.45);
+  z-index: 20;
+}
+
+.bottom-sheet {
+  position: relative;
+  width: 100%;
+  padding: var(--sheet-padding);
+  display: flex;
+  flex-direction: column;
+  gap: var(--control-stack-gap);
+  box-shadow: var(--shadow-sheet);
+}
+
+.bottom-sheet--modal {
+  position: fixed;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 21;
+}
+
+.bottom-sheet--light {
+  background: var(--card);
+  border-radius: var(--radius-sheet-light) var(--radius-sheet-light) 0 0;
+}
+
+.bottom-sheet--dark {
+  background: var(--sheet-dark);
+  border-radius: var(--radius-sheet-dark) var(--radius-sheet-dark) 0 0;
+}
+
+.bottom-sheet__handle {
+  width: 38px;
+  height: 4px;
+  border-radius: 2px;
+  background: var(--ink-25);
+  align-self: center;
+  margin-bottom: 4px;
+}
+
+.bottom-sheet--dark .bottom-sheet__handle {
+  background: var(--fill-dark);
+}

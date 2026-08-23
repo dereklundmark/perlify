@@ -1,0 +1,1807 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet data-dc-atomics><meta name="design_doc_mode" content="canvas"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin><link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&family=Archivo:wght@400;500;600;700&family=Archivo+Black&family=Instrument+Serif:ital@0;1&display=swap" rel="stylesheet"><style>
+*{box-sizing:border-box}
+body{margin:0;background:#e9e5db;font-family:'Space Grotesk',system-ui,sans-serif;-webkit-font-smoothing:antialiased}
+a{color:#c2542f;text-decoration:none}a:hover{color:#8f3a1d}
+.dv-turn{padding:44px 48px 40px;border-bottom:1px solid rgba(25,23,19,.1)}
+.dv-thd{display:flex;align-items:baseline;gap:10px;margin:0 0 24px}
+.dv-tid{font:600 10px 'IBM Plex Mono',monospace;padding:3px 7px;background:#191713;color:#fff;border-radius:4px}
+.dv-tname{font:600 13px/1.2 'Space Grotesk',sans-serif;color:#191713}
+.dv-opts{display:flex;flex-wrap:wrap;gap:40px;align-items:flex-start}
+.dv-opt{flex:none;display:flex;flex-direction:column;gap:10px;width:402px;scroll-margin-top:16px}
+.dv-oid{font:600 10.5px 'IBM Plex Mono',monospace;padding:3px 7px;background:rgba(25,23,19,.09);color:#191713;border-radius:5px}
+.dv-olabel{display:flex;align-items:baseline;gap:8px;font:500 12px/1.3 'Space Grotesk',sans-serif;color:#191713}
+.dv-note{margin:2px 0 0;font:400 11.5px/1.55 'Space Grotesk',sans-serif;color:rgba(25,23,19,.55);text-wrap:pretty}
+.dv-opt:target .dv-oid{background:oklch(.62 .17 32);color:#fff}
+</style></helmet>
+
+<section class="dv-turn" id="brief" style="background:#f4f1ea">
+<div class="dv-thd"><span class="dv-tid">BRIEF</span><span class="dv-tname">Perlify — bead pattern designer · UI mockups</span></div>
+<div style="display:flex;gap:56px;flex-wrap:wrap;max-width:1500px">
+<div style="max-width:430px;display:flex;flex-direction:column;gap:14px">
+<div style="font:600 11px 'IBM Plex Mono',monospace;letter-spacing:.14em;color:oklch(.55 .16 32)">PERLIFY</div>
+<h1 style="margin:0;font:700 40px/1.05 'Space Grotesk',sans-serif;color:#191713;letter-spacing:-.02em">Photo in.<br>Beadable blueprint out.</h1>
+<p style="margin:0;font:400 14px/1.6 'Space Grotesk',sans-serif;color:rgba(25,23,19,.7);text-wrap:pretty">Twelve screens covering the full wizard from your spec — library, board setup, photo, perlified result, manual editing, final preview, export, collection management — plus first run, board calibration, two interlocked boards, and the iPad split-panel editor. Turn 4 carries a second visual direction, Pegboard, built out to all twelve screens, plus a three-screen Darkroom sample that was set aside. Every bead grid below is really generated and really counted, so the legend numbers are honest.</p>
+</div>
+<div style="display:flex;flex-direction:column;gap:9px;max-width:330px">
+<div style="font:600 10px 'IBM Plex Mono',monospace;letter-spacing:.1em;color:rgba(25,23,19,.45)">ASSUMPTIONS I MADE</div>
+<div style="font:400 13px/1.6 'Space Grotesk',sans-serif;color:rgba(25,23,19,.75)">Single user, no accounts, so no profile or auth chrome anywhere. Default board is one 29×29 regular pegboard. Wizard is linear but every step is reachable again from the editor — you'll re-crop and re-match constantly. Source photo shown is a generated stand-in.</div>
+</div>
+<div style="display:flex;flex-direction:column;gap:9px;max-width:330px">
+<div style="font:600 10px 'IBM Plex Mono',monospace;letter-spacing:.1em;color:rgba(25,23,19,.45)">WHY IT LOOKS LIKE THIS</div>
+<div style="font:400 13px/1.6 'Space Grotesk',sans-serif;color:rgba(25,23,19,.75)">Setup and library screens sit on warm paper — this is a craft tool, not a productivity app. The editor flips to near-black so bead colors are judged against neutral, not against a tinted UI. One accent (terracotta) for actions only; every other color on screen is a bead.</div>
+</div>
+<div style="display:flex;flex-direction:column;gap:12px">
+<div style="font:600 10px 'IBM Plex Mono',monospace;letter-spacing:.1em;color:rgba(25,23,19,.45)">TYPE &amp; ACCENT</div>
+<div style="font:700 26px/1 'Space Grotesk',sans-serif;color:#191713">Space Grotesk</div>
+<div style="font:500 13px/1 'IBM Plex Mono',monospace;color:rgba(25,23,19,.7)">IBM Plex Mono — counts, hex, pegs</div>
+<div style="display:flex;gap:6px;margin-top:2px">
+<div style="width:34px;height:34px;border-radius:8px;background:oklch(.62 .17 32)"></div>
+<div style="width:34px;height:34px;border-radius:8px;background:#f4f1ea;border:1px solid rgba(25,23,19,.14)"></div>
+<div style="width:34px;height:34px;border-radius:8px;background:#191713"></div>
+<div style="width:34px;height:34px;border-radius:8px;background:#0e0e11"></div>
+</div>
+</div>
+</div>
+</section>
+
+<section class="dv-turn" id="t5" style="background:#fff8e7">
+<div class="dv-thd"><a class="dv-tid" href="#t5">5</a><span class="dv-tname">Swap a color · step history</span></div>
+<p class="dv-note" style="margin:-14px 0 22px;max-width:660px">In the Pegboard direction, continuing from <a href="#4a">4a</a>. Swap is a two-step flow rather than a single picker, because seeing <em>where</em> a color lives is most of the decision. History is a real timeline you can step back through, not just a stack of undos.</p>
+<div class="dv-opts">
+<div class="dv-opt" id="5a"><div class="dv-olabel"><a class="dv-oid" href="#5a">5a</a>Find the color</div><x-import component-from-global-scope="IOSDevice" from="./ios-frame.jsx" hint-size="402px,874px">
+<div style="min-height:100%;box-sizing:border-box;background:#fff8e7;padding:56px 0 0;display:flex;flex-direction:column;font-family:Archivo,sans-serif">
+<div style="display:flex;align-items:center;justify-content:space-between;padding:8px 20px 14px">
+<span style="font:700 14px Archivo,sans-serif;color:#6b6659">CANCEL</span>
+<span style="font:700 12px Archivo,sans-serif;letter-spacing:.1em;color:#6b6659">SWAP · 1 OF 2</span>
+<span style="font:700 14px Archivo,sans-serif;color:#c9c2ae">NEXT</span>
+</div>
+<div style="display:flex;justify-content:center;padding:2px 0 16px">
+<div style="padding:12px;background:#fff;border:2.5px solid #12100c;border-radius:16px;box-shadow:5px 5px 0 #12100c"><img src="data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7" data-img="imgSwapIsolate" alt="" style="display:block;width:261px;height:261px;border-radius:4px"></div>
+</div>
+<div style="text-align:center;font:500 12.5px Archivo,sans-serif;color:#3d3830;margin-top:-6px">Everything else fades so you can see exactly what moves.</div>
+<div style="margin-top:auto;background:#fff;border-top:2.5px solid #12100c;border-radius:24px 24px 0 0;padding:16px 20px 44px;display:flex;flex-direction:column;gap:15px"><div style="font:700 11.5px Archivo,sans-serif;letter-spacing:.1em;color:#6b6659">TAP A COLOR TO FIND IT</div>
+<div style="display:grid;grid-template-columns:repeat(7,1fr);gap:9px">
+<sc-for list="{{ swatchesTop }}" as="sw" hint-placeholder-count="14">
+<div style="width:100%;aspect-ratio:1;border-radius:8px;background:{{ sw.h }};border:2.5px solid #12100c"></div>
+</sc-for>
+</div>
+<div style="display:flex;align-items:center;gap:12px;background:#fff8e7;border:2.5px solid #12100c;border-radius:12px;padding:11px 13px">
+<div style="width:30px;height:30px;border-radius:7px;background:{{ selHex }};border:2px solid #12100c;flex:none"></div>
+<span style="flex:1;font:700 15px Archivo,sans-serif;color:#12100c">{{ selName }}</span>
+<span style="font:400 17px 'Archivo Black',sans-serif;color:#12100c">{{ selCount }}</span>
+</div></div>
+</div>
+</x-import><div style="font:700 11px Archivo,sans-serif;letter-spacing:.1em;color:#6b6659;text-align:center;margin-top:9px">SWAP · STEP 1</div>
+<p class="dv-note">Selecting a color isolates it — every other bead drops to 12% against the paper. You see the shape the color makes before committing to changing it, which is the thing a flat swatch list can't tell you.</p></div>
+<div class="dv-opt" id="5b"><div class="dv-olabel"><a class="dv-oid" href="#5b">5b</a>Choose the replacement</div><x-import component-from-global-scope="IOSDevice" from="./ios-frame.jsx" hint-size="402px,874px">
+<div style="min-height:100%;box-sizing:border-box;background:#fff8e7;padding:56px 0 0;display:flex;flex-direction:column;font-family:Archivo,sans-serif">
+<div style="display:flex;align-items:center;justify-content:space-between;padding:8px 20px 14px">
+<span style="font:700 14px Archivo,sans-serif;color:#6b6659">BACK</span>
+<span style="font:700 12px Archivo,sans-serif;letter-spacing:.1em;color:#6b6659">SWAP · 2 OF 2</span>
+<span style="font:700 14px Archivo,sans-serif;color:#6b6659">UNDO</span>
+</div>
+<div style="display:flex;justify-content:center;padding:2px 0 16px">
+<div style="padding:12px;background:#fff;border:2.5px solid #12100c;border-radius:16px;box-shadow:5px 5px 0 #12100c"><img src="data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7" data-img="imgSwapAfter" alt="" style="display:block;width:261px;height:261px;border-radius:4px"></div>
+</div>
+<div style="text-align:center;font:500 12.5px Archivo,sans-serif;color:#3d3830;margin-top:-6px">Live preview — outlined cells are the ones changing.</div>
+<div style="margin-top:auto;background:#fff;border-top:2.5px solid #12100c;border-radius:24px 24px 0 0;padding:16px 20px 44px;display:flex;flex-direction:column;gap:15px"><div style="display:flex;align-items:center;gap:11px;background:#fff8e7;border:2.5px solid #12100c;border-radius:12px;padding:11px 13px">
+<div style="width:30px;height:30px;border-radius:7px;background:{{ selHex }};border:2px solid #12100c;flex:none"></div>
+<span style="font:700 13.5px Archivo,sans-serif;color:#12100c">{{ selName }}</span>
+<span style="font:400 17px 'Archivo Black',sans-serif;color:#e8533f">→</span>
+<div style="width:30px;height:30px;border-radius:7px;background:{{ swapToHex }};border:2px solid #12100c;flex:none"></div>
+<span style="flex:1;font:700 13.5px Archivo,sans-serif;color:#12100c">{{ swapToName }}</span>
+<span style="font:400 17px 'Archivo Black',sans-serif;color:#12100c">{{ selCount }}</span>
+</div>
+<div><div style="font:700 11.5px Archivo,sans-serif;letter-spacing:.1em;color:#6b6659;margin-bottom:11px">SWAP IN — FROM MY COLLECTION</div>
+<div style="display:grid;grid-template-columns:repeat(7,1fr);gap:9px">
+<sc-for list="{{ collectionSwatches }}" as="sw" hint-placeholder-count="14">
+<div style="width:100%;aspect-ratio:1;border-radius:8px;background:{{ sw.h }};border:2.5px solid #12100c"></div>
+</sc-for>
+</div></div>
+<div style="display:flex;gap:10px">
+<div style="width:112px;height:54px;border-radius:27px;border:2.5px solid #12100c;display:flex;align-items:center;justify-content:center;font:700 14px Archivo,sans-serif;color:#12100c">CANCEL</div>
+<div style="flex:1;height:54px;border-radius:27px;background:#12100c;display:flex;align-items:center;justify-content:center;font:400 16px 'Archivo Black',sans-serif;color:#ffd23f">APPLY SWAP</div>
+</div></div>
+</div>
+</x-import><div style="font:700 11px Archivo,sans-serif;letter-spacing:.1em;color:#6b6659;text-align:center;margin-top:9px">SWAP · STEP 2</div>
+<p class="dv-note">The grid updates live as you tap candidates; changed cells keep a red outline so they stay findable against a similar hue. The from → to → count strip is the whole decision in one line. Replacements come from your collection by default.</p></div>
+<div class="dv-opt" id="5c"><div class="dv-olabel"><a class="dv-oid" href="#5c">5c</a>History — step backwards</div><x-import component-from-global-scope="IOSDevice" from="./ios-frame.jsx" hint-size="402px,874px">
+<div style="min-height:100%;box-sizing:border-box;background:rgba(18,16,12,.5);padding:56px 0 0;display:flex;flex-direction:column;font-family:Archivo,sans-serif">
+<div style="display:flex;justify-content:center;padding:6px 0 0">
+<div style="padding:9px;background:#fff;border:2.5px solid #12100c;border-radius:12px;box-shadow:4px 4px 0 #12100c"><img src="data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7" data-img="imgHistoryState" alt="" style="display:block;width:145px;height:145px"></div>
+</div>
+<div style="margin-top:auto;background:#fff8e7;border-top:2.5px solid #12100c;border-radius:26px 26px 0 0;padding:18px 20px 44px;display:flex;flex-direction:column;gap:14px">
+<div style="width:46px;height:5px;border-radius:3px;background:#12100c;margin:0 auto 2px"></div>
+<div style="display:flex;align-items:flex-end;justify-content:space-between">
+<div style="font:400 30px/1 'Archivo Black',sans-serif;color:#12100c;letter-spacing:-.02em">HISTORY</div>
+<span style="font:600 12px Archivo,sans-serif;color:#6b6659">6 STEPS</span>
+</div>
+<div style="display:flex;flex-direction:column;gap:8px">
+<div style="display:flex;align-items:center;gap:11px;background:#fff;border:2.5px solid #12100c;border-radius:11px;padding:9px 12px">
+<div style="width:20px;height:20px;border-radius:5px;background:#f0a830;border:2px solid #12100c;flex:none"></div>
+<span style="flex:1;font:700 13px Archivo,sans-serif;color:#12100c;">Perlified · 12 colors</span>
+<span style="font:600 11.5px Archivo,sans-serif;color:#6b6659">START</span>
+</div>
+<div style="display:flex;align-items:center;gap:11px;background:#fff;border:2.5px solid #12100c;border-radius:11px;padding:9px 12px">
+<div style="width:20px;height:20px;border-radius:5px;background:#16161a;border:2px solid #12100c;flex:none"></div>
+<span style="flex:1;font:700 13px Archivo,sans-serif;color:#12100c;">Black border added</span>
+<span style="font:600 11.5px Archivo,sans-serif;color:#6b6659">+112</span>
+</div>
+<div style="display:flex;align-items:center;gap:11px;background:#fff;border:2.5px solid #12100c;border-radius:11px;padding:9px 12px">
+<div style="display:flex;align-items:center;gap:5px;flex:none"><div style="width:20px;height:20px;border-radius:5px;background:#d1232a;border:2px solid #12100c"></div><span style="font:700 12px Archivo,sans-serif;color:#12100c">→</span><div style="width:20px;height:20px;border-radius:5px;background:#bf3273;border:2px solid #12100c"></div></div>
+<span style="flex:1;font:700 13px Archivo,sans-serif;color:#12100c;">Cherry Red → Magenta</span>
+<span style="font:600 11.5px Archivo,sans-serif;color:#6b6659">94</span>
+</div>
+<div style="display:flex;align-items:center;gap:9px;padding:3px 0">
+<div style="flex:1;height:2.5px;background:#e8533f"></div>
+<span style="font:700 11px Archivo,sans-serif;letter-spacing:.1em;color:#e8533f">YOU ARE HERE</span>
+<div style="flex:1;height:2.5px;background:#e8533f"></div>
+</div>
+<div style="display:flex;align-items:center;gap:11px;background:#f7f3e6;border:2.5px solid #c9c2ae;border-radius:11px;padding:9px 12px">
+<div style="display:flex;align-items:center;gap:5px;flex:none"><div style="width:20px;height:20px;border-radius:5px;background:#f0a830;border:2px solid #c9c2ae"></div><span style="font:700 12px Archivo,sans-serif;color:#9c9689">→</span><div style="width:20px;height:20px;border-radius:5px;background:#f7cf5a;border:2px solid #c9c2ae"></div></div>
+<span style="flex:1;font:700 13px Archivo,sans-serif;color:#9c9689;text-decoration:line-through">Butterscotch → Cheddar</span>
+<span style="font:600 11.5px Archivo,sans-serif;color:#9c9689">61</span>
+</div>
+<div style="display:flex;align-items:center;gap:11px;background:#f7f3e6;border:2.5px solid #c9c2ae;border-radius:11px;padding:9px 12px">
+<div style="width:20px;height:20px;border-radius:5px;background:#7fc4d8;border:2px solid #c9c2ae;flex:none"></div>
+<span style="flex:1;font:700 13px Archivo,sans-serif;color:#9c9689;text-decoration:line-through">Painted 8 beads</span>
+<span style="font:600 11.5px Archivo,sans-serif;color:#9c9689">8</span>
+</div>
+<div style="display:flex;align-items:center;gap:11px;background:#f7f3e6;border:2.5px solid #c9c2ae;border-radius:11px;padding:9px 12px">
+<div style="width:20px;height:20px;border-radius:5px;background:#fff;border:2px solid #c9c2ae;flex:none"></div>
+<span style="flex:1;font:700 13px Archivo,sans-serif;color:#9c9689;text-decoration:line-through">Cleared 14 beads</span>
+<span style="font:600 11.5px Archivo,sans-serif;color:#9c9689">14</span>
+</div>
+</div>
+<div style="display:flex;gap:10px">
+<div style="flex:1;height:54px;border-radius:27px;border:2.5px solid #12100c;display:flex;align-items:center;justify-content:center;font:700 14px Archivo,sans-serif;color:#12100c">REDO ALL 3</div>
+<div style="flex:1;height:54px;border-radius:27px;background:#12100c;display:flex;align-items:center;justify-content:center;font:400 15px 'Archivo Black',sans-serif;color:#ffd23f">KEEP THIS</div>
+</div>
+<div style="font:500 12.5px/1.45 Archivo,sans-serif;color:#3d3830">Tap any step to jump there. Nothing is discarded until you make a new change.</div>
+</div>
+</div>
+</x-import><div style="font:700 11px Archivo,sans-serif;letter-spacing:.1em;color:#6b6659;text-align:center;margin-top:9px">HISTORY</div>
+<p class="dv-note">Oldest at top, newest at the bottom near your thumb. Tapping a step reverts to it and shows everything after as struck-through and still recoverable — "undo the last 3" is one tap, not three. Reached by tapping the step counter next to undo/redo.</p></div>
+</div>
+</section>
+
+<section class="dv-turn" id="t4" style="background:#f4f1ea">
+<div class="dv-thd"><a class="dv-tid" href="#t4">4</a><span class="dv-tname">Two alternate directions — same product, different personality</span></div>
+<p class="dv-note" style="margin:-14px 0 22px;max-width:660px"><a href="#4a">4a</a> pushes toward the craft object and is now built out to all twelve screens. <a href="#4b">4b</a> pushed the other way, toward the precision instrument, and stayed a three-screen sample — kept here for the comparison. The original direction (<a href="#1a">1a</a>) sits between the two, which is worth knowing before you pick.</p>
+<div class="dv-opts">
+
+<div class="dv-opt" id="4a" style="width:auto">
+<div class="dv-olabel"><a class="dv-oid" href="#4a">4a</a>Pegboard — complete set, 12 screens</div>
+<div style="display:flex;flex-wrap:wrap;gap:26px;max-width:1700px">
+<div style="width:402px;flex:none"><x-import component-from-global-scope="IOSDevice" from="./ios-frame.jsx" hint-size="402px,874px">
+<div style="min-height:100%;box-sizing:border-box;background:#ffd23f;padding:62px 20px 0;display:flex;flex-direction:column;font-family:Archivo,sans-serif">
+<div style="font:400 46px/.92 'Archivo Black',sans-serif;color:#12100c;letter-spacing:-.03em">NOTHING<br>YET</div>
+<div style="display:flex;justify-content:center;padding:22px 0 18px"><img src="data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7" data-img="imgWhiteBoard" alt="" style="display:block;width:214px;height:214px;border:2.5px solid #12100c;border-radius:12px;box-shadow:5px 5px 0 #12100c"></div>
+<div style="font:500 15px/1.5 Archivo,sans-serif;color:#3d3830;text-wrap:pretty">Turn any photo into a bead blueprint sized to your own pegboard. Everything happens on this phone — no account, no upload.</div>
+<div style="display:flex;flex-direction:column;gap:9px;margin-top:20px">
+<div style="display:flex;align-items:center;gap:12px;background:#fff;border:2.5px solid #12100c;border-radius:12px;padding:11px 13px"><div style="width:28px;height:28px;border-radius:14px;background:#12100c;display:flex;align-items:center;justify-content:center;font:400 15px 'Archivo Black',sans-serif;color:#ffd23f;flex:none">1</div><span style="font:700 14px Archivo,sans-serif;color:#12100c">Set your board size and bead type</span></div><div style="display:flex;align-items:center;gap:12px;background:#fff;border:2.5px solid #12100c;border-radius:12px;padding:11px 13px"><div style="width:28px;height:28px;border-radius:14px;background:#12100c;display:flex;align-items:center;justify-content:center;font:400 15px 'Archivo Black',sans-serif;color:#ffd23f;flex:none">2</div><span style="font:700 14px Archivo,sans-serif;color:#12100c">Pick a photo and perlify it</span></div><div style="display:flex;align-items:center;gap:12px;background:#fff;border:2.5px solid #12100c;border-radius:12px;padding:11px 13px"><div style="width:28px;height:28px;border-radius:14px;background:#12100c;display:flex;align-items:center;justify-content:center;font:400 15px 'Archivo Black',sans-serif;color:#ffd23f;flex:none">3</div><span style="font:700 14px Archivo,sans-serif;color:#12100c">Print it and start beading</span></div>
+</div>
+<div style="margin-top:auto;padding:20px 0 46px;display:flex;flex-direction:column;gap:14px">
+<div style="height:60px;border-radius:30px;background:#12100c;display:flex;align-items:center;justify-content:center;font:400 18px 'Archivo Black',sans-serif;color:#ffd23f;box-shadow:5px 5px 0 rgba(18,16,12,.25)">START NEW PATTERN</div>
+<div style="text-align:center;font:700 13px Archivo,sans-serif;color:#3d3830">RESTORE FROM BACKUP</div>
+</div>
+</div>
+</x-import><div style="font:700 11px Archivo,sans-serif;letter-spacing:.1em;color:#6b6659;text-align:center;margin-top:9px">FIRST RUN</div></div>
+<div style="width:402px;flex:none"><x-import component-from-global-scope="IOSDevice" from="./ios-frame.jsx" hint-size="402px,874px">
+<div style="min-height:100%;box-sizing:border-box;background:#ffd23f;padding:62px 20px 0;display:flex;flex-direction:column;font-family:Archivo,sans-serif">
+<div style="display:flex;align-items:flex-start;justify-content:space-between">
+<div style="font:400 46px/.92 'Archivo Black',sans-serif;color:#12100c;letter-spacing:-.03em">MY<br>PATTERNS</div>
+<div style="width:52px;height:52px;border-radius:26px;background:#fff;border:2.5px solid #12100c;box-shadow:3px 3px 0 #12100c;display:flex;align-items:center;justify-content:center;font:400 20px 'Archivo Black',sans-serif;color:#12100c">14</div>
+</div>
+<div style="display:grid;grid-template-columns:1fr 1fr;gap:15px;margin-top:24px">
+<div style="background:#fff;border:2.5px solid #12100c;border-radius:14px;box-shadow:4px 4px 0 #12100c;padding:10px;display:flex;flex-direction:column;gap:9px"><img src="data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7" data-img="imgLightThumbA" alt="" style="width:100%;display:block;border-radius:6px;border:1.5px solid #12100c"><div><div style="font:700 15px/1.15 Archivo,sans-serif;color:#12100c">Ferry sunset</div><div style="font:600 11px Archivo,sans-serif;color:#6b6659;margin-top:2px">29×29 · 12 COLORS</div></div></div><div style="background:#fff;border:2.5px solid #12100c;border-radius:14px;box-shadow:4px 4px 0 #12100c;padding:10px;display:flex;flex-direction:column;gap:9px"><img src="data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7" data-img="imgLightThumbB" alt="" style="width:100%;display:block;border-radius:6px;border:1.5px solid #12100c"><div><div style="font:700 15px/1.15 Archivo,sans-serif;color:#12100c">Moonrise</div><div style="font:600 11px Archivo,sans-serif;color:#6b6659;margin-top:2px">29×29 · 9 COLORS</div></div></div><div style="background:#fff;border:2.5px solid #12100c;border-radius:14px;box-shadow:4px 4px 0 #12100c;padding:10px;display:flex;flex-direction:column;gap:9px"><img src="data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7" data-img="imgLightThumbC" alt="" style="width:100%;display:block;border-radius:6px;border:1.5px solid #12100c"><div><div style="font:700 15px/1.15 Archivo,sans-serif;color:#12100c">Citrus rings</div><div style="font:600 11px Archivo,sans-serif;color:#6b6659;margin-top:2px">58×29 · 14 COLORS</div></div></div>
+<div style="border:2.5px dashed #12100c;border-radius:14px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px;min-height:160px">
+<div style="width:40px;height:40px;border-radius:20px;background:#12100c;display:flex;align-items:center;justify-content:center;font:400 24px 'Archivo Black',sans-serif;color:#ffd23f">+</div>
+<span style="font:700 13px Archivo,sans-serif;color:#12100c">NEW</span>
+</div>
+</div>
+<div style="margin-top:auto;padding:20px 0 46px"><div style="height:60px;border-radius:30px;background:#12100c;display:flex;align-items:center;justify-content:center;font:400 18px 'Archivo Black',sans-serif;color:#ffd23f;box-shadow:5px 5px 0 rgba(18,16,12,.25)">START NEW PATTERN</div></div>
+</div>
+</x-import><div style="font:700 11px Archivo,sans-serif;letter-spacing:.1em;color:#6b6659;text-align:center;margin-top:9px">LIBRARY</div></div>
+<div style="width:402px;flex:none"><x-import component-from-global-scope="IOSDevice" from="./ios-frame.jsx" hint-size="402px,874px">
+<div style="min-height:100%;box-sizing:border-box;background:#fff8e7;padding:56px 0 0;font-family:Archivo,sans-serif">
+<div style="display:flex;align-items:center;justify-content:space-between;padding:8px 20px 12px">
+<span style="font:700 14px Archivo,sans-serif;color:#6b6659">CANCEL</span>
+<span style="font:700 12px Archivo,sans-serif;letter-spacing:.1em;color:#6b6659">STEP 1 OF 5</span>
+<span style="font:700 14px Archivo,sans-serif;color:#c9c2ae">NEXT</span>
+</div><div style="display:flex;gap:5px;padding:0 20px 16px"><div style="flex:1;height:9px;border-radius:5px;border:2px solid #12100c;box-sizing:border-box;background:#12100c"></div><div style="flex:1;height:9px;border-radius:5px;border:2px solid #12100c;box-sizing:border-box;background:#fff"></div><div style="flex:1;height:9px;border-radius:5px;border:2px solid #12100c;box-sizing:border-box;background:#fff"></div><div style="flex:1;height:9px;border-radius:5px;border:2px solid #12100c;box-sizing:border-box;background:#fff"></div><div style="flex:1;height:9px;border-radius:5px;border:2px solid #12100c;box-sizing:border-box;background:#fff"></div></div>
+<div style="padding:0 20px;display:flex;flex-direction:column;gap:15px">
+<div style="font:400 30px/1 'Archivo Black',sans-serif;color:#12100c;letter-spacing:-.02em">SET UP<br>THE BOARD</div>
+<div style="background:#fff;border:2.5px solid #12100c;border-radius:14px;box-shadow:4px 4px 0 #12100c;padding:14px"><div style="font:700 11.5px Archivo,sans-serif;letter-spacing:.1em;color:#6b6659;margin-bottom:10px">PATTERN NAME</div><div style="font:700 18px Archivo,sans-serif;color:#12100c;border-bottom:2.5px solid #12100c;padding-bottom:7px">Ferry sunset</div></div>
+<div style="background:#fff;border:2.5px solid #12100c;border-radius:14px;box-shadow:4px 4px 0 #12100c;padding:14px"><div style="font:700 11.5px Archivo,sans-serif;letter-spacing:.1em;color:#6b6659;margin-bottom:10px">BEAD SIZE</div><div style="display:flex;gap:8px"><div style="flex:1;height:44px;border-radius:22px;background:#12100c;display:flex;align-items:center;justify-content:center;font:700 13.5px Archivo,sans-serif;color:#ffd23f">REGULAR</div><div style="flex:1;height:44px;border-radius:22px;border:2.5px solid #12100c;display:flex;align-items:center;justify-content:center;font:700 13.5px Archivo,sans-serif;color:#12100c">MINI</div></div>
+<div style="display:flex;justify-content:space-between;align-items:center;margin-top:11px"><span style="font:600 12px Archivo,sans-serif;color:#6b6659">5.0 mm pitch</span><span style="font:700 13px Archivo,sans-serif;color:#e8533f">CALIBRATE</span></div></div>
+<div style="background:#fff;border:2.5px solid #12100c;border-radius:14px;box-shadow:4px 4px 0 #12100c;padding:14px"><div style="display:flex;justify-content:space-between;align-items:baseline;margin-bottom:10px"><span style="font:700 11.5px Archivo,sans-serif;letter-spacing:.1em;color:#6b6659">BOARD SIZE</span><span style="font:600 12px Archivo,sans-serif;color:#6b6659">5.7 × 5.7 in</span></div>
+<div style="display:flex;align-items:center;gap:9px">
+<div style="flex:1;border:2.5px solid #12100c;border-radius:10px;padding:7px 11px"><div style="font:600 10.5px Archivo,sans-serif;color:#6b6659">WIDTH</div><div style="font:400 24px 'Archivo Black',sans-serif;color:#12100c">29</div></div>
+<span style="font:400 17px 'Archivo Black',sans-serif;color:#12100c">×</span>
+<div style="flex:1;border:2.5px solid #12100c;border-radius:10px;padding:7px 11px"><div style="font:600 10.5px Archivo,sans-serif;color:#6b6659">HEIGHT</div><div style="font:400 24px 'Archivo Black',sans-serif;color:#12100c">29</div></div>
+<div style="width:72px;height:58px;border-radius:10px;background:#ffd23f;border:2.5px solid #12100c;display:flex;align-items:center;justify-content:center;font:700 14px Archivo,sans-serif;color:#12100c">PEGS</div>
+</div>
+<div style="display:flex;align-items:center;justify-content:space-between;margin-top:12px;padding-top:12px;border-top:2px solid #f0ebdd"><span style="font:700 14px Archivo,sans-serif;color:#12100c">BOARDS</span><div style="display:flex;align-items:center;gap:12px"><div style="width:32px;height:32px;border-radius:16px;border:2.5px solid #12100c;display:flex;align-items:center;justify-content:center;font:400 16px 'Archivo Black',sans-serif;color:#12100c">−</div><span style="font:400 16px 'Archivo Black',sans-serif;color:#12100c">1×1</span><div style="width:32px;height:32px;border-radius:16px;background:#12100c;display:flex;align-items:center;justify-content:center;font:400 16px 'Archivo Black',sans-serif;color:#ffd23f">+</div></div></div></div>
+<div style="background:#fff;border:2.5px solid #12100c;border-radius:14px;box-shadow:4px 4px 0 #12100c;padding:14px">
+<div style="display:flex;align-items:center;justify-content:space-between"><div style="display:flex;align-items:center;gap:10px"><div style="width:22px;height:22px;border-radius:11px;border:2.5px solid #12100c;background:#12100c;box-shadow:inset 0 0 0 3px #fff;box-sizing:border-box"></div><span style="font:700 15px Archivo,sans-serif;color:#12100c">AUTO PALETTE</span></div><span style="font:400 24px 'Archivo Black',sans-serif;color:#12100c">{{ colorLabel }}</span></div>
+<div style="margin-top:13px"><div style="height:14px;border-radius:7px;background:#f0ebdd;border:2px solid #12100c;position:relative;box-sizing:border-box"><div style="position:absolute;left:0;top:0;bottom:0;background:#ffd23f;border-right:2px solid #12100c;border-radius:5px 0 0 5px;width:{{ colorPct }}"></div><div style="position:absolute;left:{{ colorPct }};top:-9px;width:28px;height:28px;margin-left:-14px;border-radius:14px;background:#fff;border:2.5px solid #12100c;box-shadow:2px 2px 0 #12100c"></div></div></div>
+<div style="display:flex;gap:6px;margin-top:14px"><div style="flex:1;height:32px;border-radius:8px;border:2px solid #12100c;display:flex;align-items:center;justify-content:center;font:700 12px Archivo,sans-serif;color:#12100c">8</div><div style="flex:1;height:32px;border-radius:8px;border:2px solid #12100c;display:flex;align-items:center;justify-content:center;font:700 12px Archivo,sans-serif;color:#12100c">12</div><div style="flex:1;height:32px;border-radius:8px;border:2px solid #12100c;display:flex;align-items:center;justify-content:center;font:700 12px Archivo,sans-serif;color:#12100c">16</div><div style="flex:1;height:32px;border-radius:8px;border:2px solid #12100c;display:flex;align-items:center;justify-content:center;font:700 12px Archivo,sans-serif;color:#12100c">24</div><div style="flex:1;height:32px;border-radius:8px;border:2px solid #12100c;display:flex;align-items:center;justify-content:center;font:700 12px Archivo,sans-serif;color:#12100c">32</div><div style="flex:1;height:32px;border-radius:8px;border:2px solid #12100c;display:flex;align-items:center;justify-content:center;font:700 12px Archivo,sans-serif;color:#12100c">60</div></div>
+<div style="font:500 12.5px/1.45 Archivo,sans-serif;color:#3d3830;margin-top:12px">Fewer colors read graphic and cost less; more hold gradients. Any number 2–60.</div>
+</div>
+<div style="background:#fff;border:2.5px solid #12100c;border-radius:14px;padding:14px">
+<div style="display:flex;align-items:center;gap:10px"><div style="width:22px;height:22px;border-radius:11px;border:2.5px solid #12100c;box-sizing:border-box"></div><span style="font:700 15px Archivo,sans-serif;color:#12100c">MY COLLECTION</span><span style="margin-left:auto;font:700 13px Archivo,sans-serif;color:#e8533f">{{ collectionCount }} ›</span></div>
+<div style="display:flex;flex-wrap:wrap;gap:5px;margin-top:11px;padding-left:32px"><sc-for list="{{ collectionSwatches }}" as="sw" hint-placeholder-count="24"><div style="width:20px;height:20px;border-radius:4px;background:{{ sw.h }};border:1.5px solid #12100c"></div></sc-for></div>
+</div>
+<div style="background:#fff;border:2.5px solid #12100c;border-radius:14px;box-shadow:4px 4px 0 #12100c;padding:14px"><div style="display:flex;align-items:center;justify-content:space-between"><div><div style="font:700 15px Archivo,sans-serif;color:#12100c">DITHERING</div><div style="font:500 12px Archivo,sans-serif;color:#6b6659;margin-top:2px">Smoother, noisier</div></div><div style="width:60px;height:32px;border-radius:16px;background:#fff;border:2.5px solid #12100c;position:relative;box-sizing:border-box;flex:none"><div style="position:absolute;top:2px;left:2px;width:24px;height:24px;border-radius:12px;background:#d8d3c4"></div></div></div></div>
+<div style="height:40px"></div>
+</div>
+</div>
+</x-import><div style="font:700 11px Archivo,sans-serif;letter-spacing:.1em;color:#6b6659;text-align:center;margin-top:9px">BOARD SETUP</div></div>
+<div style="width:402px;flex:none"><x-import component-from-global-scope="IOSDevice" from="./ios-frame.jsx" hint-size="402px,874px">
+<div style="min-height:100%;box-sizing:border-box;background:rgba(18,16,12,.5);padding:56px 0 0;display:flex;flex-direction:column;font-family:Archivo,sans-serif">
+<div style="padding:0 20px;opacity:.45"><div style="font:400 30px/1 'Archivo Black',sans-serif;color:#fff8e7">SET UP<br>THE BOARD</div></div>
+<div style="margin-top:auto;background:#fff8e7;border-top:2.5px solid #12100c;border-radius:26px 26px 0 0;padding:18px 20px 44px;display:flex;flex-direction:column;gap:16px">
+<div style="width:46px;height:5px;border-radius:3px;background:#12100c;margin:0 auto 2px"></div>
+<div><div style="font:400 30px/1 'Archivo Black',sans-serif;color:#12100c;letter-spacing:-.02em">CALIBRATE<br>MY BOARD</div>
+<div style="font:500 13.5px/1.5 Archivo,sans-serif;color:#3d3830;margin-top:10px;text-wrap:pretty">Pegboards vary by brand. Measure once and every size you enter in inches or cm converts correctly.</div></div>
+<div style="background:#fff;border:2.5px solid #12100c;border-radius:14px;box-shadow:4px 4px 0 #12100c;padding:14px"><div style="font:700 11.5px Archivo,sans-serif;letter-spacing:.1em;color:#6b6659;margin-bottom:10px">MEASURE ACROSS 10 SPACINGS</div><div style="display:flex;align-items:center;justify-content:space-between;padding:0 2px"><div style="width:16px;height:16px;border-radius:8px;border:2px solid #12100c;box-sizing:border-box"></div><div style="width:16px;height:16px;border-radius:8px;border:2px solid #c9c2ae;box-sizing:border-box"></div><div style="width:16px;height:16px;border-radius:8px;border:2px solid #c9c2ae;box-sizing:border-box"></div><div style="width:16px;height:16px;border-radius:8px;border:2px solid #c9c2ae;box-sizing:border-box"></div><div style="width:16px;height:16px;border-radius:8px;border:2px solid #c9c2ae;box-sizing:border-box"></div><div style="width:16px;height:16px;border-radius:8px;border:2px solid #c9c2ae;box-sizing:border-box"></div><div style="width:16px;height:16px;border-radius:8px;border:2px solid #c9c2ae;box-sizing:border-box"></div><div style="width:16px;height:16px;border-radius:8px;border:2px solid #c9c2ae;box-sizing:border-box"></div><div style="width:16px;height:16px;border-radius:8px;border:2px solid #c9c2ae;box-sizing:border-box"></div><div style="width:16px;height:16px;border-radius:8px;border:2px solid #c9c2ae;box-sizing:border-box"></div><div style="width:16px;height:16px;border-radius:8px;border:2px solid #12100c;box-sizing:border-box"></div></div>
+<div style="display:flex;align-items:center;gap:7px;margin-top:13px"><div style="width:2.5px;height:13px;background:#12100c"></div><div style="flex:1;height:2.5px;background:#12100c"></div><span style="font:400 13px 'Archivo Black',sans-serif;color:#12100c">50.0 MM</span><div style="flex:1;height:2.5px;background:#12100c"></div><div style="width:2.5px;height:13px;background:#12100c"></div></div></div>
+<div style="display:flex;align-items:center;gap:9px">
+<div style="flex:1;background:#fff;border:2.5px solid #12100c;border-radius:10px;padding:7px 11px"><div style="font:600 10.5px Archivo,sans-serif;color:#6b6659">MEASURED</div><div style="font:400 24px 'Archivo Black',sans-serif;color:#12100c">50.0</div></div>
+<div style="width:72px;align-self:stretch;border-radius:10px;background:#ffd23f;border:2.5px solid #12100c;display:flex;align-items:center;justify-content:center;font:700 14px Archivo,sans-serif;color:#12100c">MM</div>
+</div>
+<div style="display:flex;flex-direction:column;gap:8px">
+<div style="display:flex;align-items:center;justify-content:space-between;background:#fff;border:2px solid #12100c;border-radius:10px;padding:10px 13px"><span style="font:700 13.5px Archivo,sans-serif;color:#12100c">YOUR PITCH</span><span style="font:700 13.5px Archivo,sans-serif;color:#12100c">5.00 mm</span></div>
+<div style="display:flex;align-items:center;justify-content:space-between;background:#fff;border:2px solid #c9c2ae;border-radius:10px;padding:10px 13px"><span style="font:700 13.5px Archivo,sans-serif;color:#6b6659">STANDARD MIDI</span><span style="font:700 13.5px Archivo,sans-serif;color:#6b6659">0.0% OFF</span></div>
+</div>
+<div style="display:flex;gap:10px">
+<div style="flex:1;height:56px;border-radius:28px;background:#12100c;display:flex;align-items:center;justify-content:center;font:400 15px 'Archivo Black',sans-serif;color:#ffd23f">USE MINE</div>
+<div style="width:118px;height:56px;border-radius:28px;border:2.5px solid #12100c;display:flex;align-items:center;justify-content:center;font:700 14px Archivo,sans-serif;color:#12100c">STANDARD</div>
+</div>
+</div>
+</div>
+</x-import><div style="font:700 11px Archivo,sans-serif;letter-spacing:.1em;color:#6b6659;text-align:center;margin-top:9px">CALIBRATE</div></div>
+<div style="width:402px;flex:none"><x-import component-from-global-scope="IOSDevice" from="./ios-frame.jsx" hint-size="402px,874px">
+<div style="min-height:100%;box-sizing:border-box;background:#fff8e7;padding:56px 0 0;font-family:Archivo,sans-serif;display:flex;flex-direction:column">
+<div style="display:flex;align-items:center;justify-content:space-between;padding:8px 20px 12px">
+<span style="font:700 14px Archivo,sans-serif;color:#6b6659">BACK</span>
+<span style="font:700 12px Archivo,sans-serif;letter-spacing:.1em;color:#6b6659">STEP 2 OF 5</span>
+<span style="font:700 14px Archivo,sans-serif;color:#e8533f">PERLIFY</span>
+</div><div style="display:flex;gap:5px;padding:0 20px 16px"><div style="flex:1;height:9px;border-radius:5px;border:2px solid #12100c;box-sizing:border-box;background:#12100c"></div><div style="flex:1;height:9px;border-radius:5px;border:2px solid #12100c;box-sizing:border-box;background:#12100c"></div><div style="flex:1;height:9px;border-radius:5px;border:2px solid #12100c;box-sizing:border-box;background:#fff"></div><div style="flex:1;height:9px;border-radius:5px;border:2px solid #12100c;box-sizing:border-box;background:#fff"></div><div style="flex:1;height:9px;border-radius:5px;border:2px solid #12100c;box-sizing:border-box;background:#fff"></div></div>
+<div style="position:relative;width:100%;height:378px;background:#12100c;overflow:hidden;border-top:2.5px solid #12100c;border-bottom:2.5px solid #12100c">
+<img src="data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7" data-img="imgPhoto" alt="" style="position:absolute;top:-36px;left:0;width:402px;height:450px;object-fit:cover;display:block">
+<div style="position:absolute;inset:0;background:rgba(255,248,231,.66)"></div>
+<div style="position:absolute;top:19px;left:31px;width:340px;height:340px;overflow:hidden">
+<img src="data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7" data-img="imgPhoto" alt="" style="position:absolute;top:-55px;left:-31px;width:402px;height:450px;object-fit:cover;display:block">
+<div style="position:absolute;inset:0;background:repeating-linear-gradient(to right,transparent 0 113px,rgba(18,16,12,.3) 113px 115px),repeating-linear-gradient(to bottom,transparent 0 113px,rgba(18,16,12,.3) 113px 115px)"></div>
+</div>
+<div style="position:absolute;top:19px;left:31px;width:340px;height:340px;box-sizing:border-box;border:3px solid #12100c;pointer-events:none"></div>
+<div style="position:absolute;top:12px;left:24px;width:26px;height:26px;border-top:6px solid #ffd23f;border-left:6px solid #ffd23f"></div><div style="position:absolute;top:12px;right:24px;width:26px;height:26px;border-top:6px solid #ffd23f;border-right:6px solid #ffd23f"></div><div style="position:absolute;bottom:24px;left:24px;width:26px;height:26px;border-bottom:6px solid #ffd23f;border-left:6px solid #ffd23f"></div><div style="position:absolute;bottom:24px;right:24px;width:26px;height:26px;border-bottom:6px solid #ffd23f;border-right:6px solid #ffd23f"></div>
+</div>
+<div style="padding:16px 20px 0;display:flex;flex-direction:column;gap:14px">
+<div style="display:flex;gap:8px">
+<div style="flex:1;height:44px;border-radius:22px;background:#12100c;display:flex;align-items:center;justify-content:center;font:700 13.5px Archivo,sans-serif;color:#ffd23f">CAMERA ROLL</div>
+<div style="flex:1;height:44px;border-radius:22px;border:2.5px solid #12100c;display:flex;align-items:center;justify-content:center;font:700 13.5px Archivo,sans-serif;color:#12100c">TAKE PHOTO</div>
+</div>
+<div style="display:grid;grid-template-columns:repeat(4,1fr);gap:8px">
+<img src="data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7" data-img="imgThumbPhotoA" alt="" style="width:100%;aspect-ratio:1;object-fit:cover;border-radius:8px;display:block;border:3px solid #e8533f">
+<img src="data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7" data-img="imgThumbPhotoB" alt="" style="width:100%;aspect-ratio:1;object-fit:cover;border-radius:8px;display:block;border:2px solid #12100c">
+<img src="data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7" data-img="imgThumbPhotoC" alt="" style="width:100%;aspect-ratio:1;object-fit:cover;border-radius:8px;display:block;border:2px solid #12100c">
+<div style="width:100%;aspect-ratio:1;border-radius:8px;border:2px dashed #12100c;display:flex;align-items:center;justify-content:center;font:700 11px Archivo,sans-serif;color:#6b6659;text-align:center">ALL<br>PHOTOS</div>
+</div>
+<div style="font:500 12.5px/1.45 Archivo,sans-serif;color:#3d3830">Crop is locked to your board shape. Nothing leaves the phone.</div>
+</div>
+</div>
+</x-import><div style="font:700 11px Archivo,sans-serif;letter-spacing:.1em;color:#6b6659;text-align:center;margin-top:9px">PHOTO + CROP</div></div>
+<div style="width:402px;flex:none"><x-import component-from-global-scope="IOSDevice" from="./ios-frame.jsx" hint-size="402px,874px">
+<div style="min-height:100%;box-sizing:border-box;background:#fff8e7;padding:56px 0 0;display:flex;flex-direction:column;font-family:Archivo,sans-serif">
+<div style="display:flex;align-items:center;justify-content:space-between;padding:8px 20px 14px">
+<span style="font:700 14px Archivo,sans-serif;color:#6b6659">BACK</span>
+<span style="font:400 17px 'Archivo Black',sans-serif;color:#12100c">FERRY SUNSET</span>
+<span style="font:700 14px Archivo,sans-serif;color:#e8533f">NEXT</span>
+</div>
+<div style="display:flex;flex-direction:column;align-items:center;gap:13px;padding:2px 0 16px">
+<div style="padding:12px;background:#fff;border:2.5px solid #12100c;border-radius:16px;box-shadow:5px 5px 0 #12100c"><img src="data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7" data-img="imgLightGrid" alt="" style="display:block;width:261px;height:261px;border-radius:4px"></div>
+<div style="display:flex;gap:8px">
+<span style="padding:6px 12px;border-radius:15px;background:#12100c;font:700 12px Archivo,sans-serif;color:#ffd23f">{{ beadCount }} BEADS</span>
+<span style="padding:6px 12px;border-radius:15px;background:#fff;border:2px solid #12100c;font:700 12px Archivo,sans-serif;color:#12100c">{{ colorLabel }} COLORS</span>
+</div>
+</div>
+<div style="margin-top:auto;background:#fff;border-top:2.5px solid #12100c;border-radius:24px 24px 0 0;padding:16px 20px 44px;display:flex;flex-direction:column;gap:17px">
+<div style="display:flex;gap:8px">
+<div style="flex:1;height:40px;border-radius:20px;background:#12100c;display:flex;align-items:center;justify-content:center;font:700 13.5px Archivo,sans-serif;color:#ffd23f">ADJUST</div>
+<div style="flex:1;height:40px;border-radius:20px;border:2px solid #12100c;display:flex;align-items:center;justify-content:center;font:700 13.5px Archivo,sans-serif;color:#12100c">COLORS</div>
+<div style="flex:1;height:40px;border-radius:20px;border:2px solid #12100c;display:flex;align-items:center;justify-content:center;font:700 13.5px Archivo,sans-serif;color:#12100c">EDIT</div>
+</div>
+<div><div style="display:flex;justify-content:space-between;align-items:baseline;margin-bottom:10px"><span style="font:700 14px Archivo,sans-serif;color:#12100c">HOW MANY COLORS</span><span style="font:400 22px 'Archivo Black',sans-serif;color:#12100c">{{ colorLabel }}</span></div>
+<div style="height:14px;border-radius:7px;background:#f0ebdd;border:2px solid #12100c;position:relative;box-sizing:border-box"><div style="position:absolute;left:0;top:0;bottom:0;background:#ffd23f;border-right:2px solid #12100c;border-radius:5px 0 0 5px;width:{{ colorPct }}"></div><div style="position:absolute;left:{{ colorPct }};top:-9px;width:28px;height:28px;margin-left:-14px;border-radius:14px;background:#fff;border:2.5px solid #12100c;box-shadow:2px 2px 0 #12100c"></div></div></div>
+<div><div style="font:700 14px Archivo,sans-serif;color:#12100c;margin-bottom:10px">CONTRAST</div>
+<div style="height:14px;border-radius:7px;background:#f0ebdd;border:2px solid #12100c;position:relative;box-sizing:border-box"><div style="position:absolute;left:0;top:0;bottom:0;width:62%;background:#e8533f;border-right:2px solid #12100c;border-radius:5px 0 0 5px"></div><div style="position:absolute;left:62%;top:-9px;width:28px;height:28px;margin-left:-14px;border-radius:14px;background:#fff;border:2.5px solid #12100c;box-shadow:2px 2px 0 #12100c"></div></div></div>
+<div style="display:flex;align-items:center;justify-content:space-between"><span style="font:700 14px Archivo,sans-serif;color:#12100c">GRIDLINES</span><div style="width:60px;height:32px;border-radius:16px;background:#ffd23f;border:2.5px solid #12100c;position:relative;box-sizing:border-box;flex:none"><div style="position:absolute;top:2px;right:2px;width:24px;height:24px;border-radius:12px;background:#12100c"></div></div></div>
+</div>
+</div>
+</x-import><div style="font:700 11px Archivo,sans-serif;letter-spacing:.1em;color:#6b6659;text-align:center;margin-top:9px">RESULT + ADJUST</div></div>
+<div style="width:402px;flex:none"><x-import component-from-global-scope="IOSDevice" from="./ios-frame.jsx" hint-size="402px,874px">
+<div style="min-height:100%;box-sizing:border-box;background:#fff8e7;padding:56px 0 0;display:flex;flex-direction:column;font-family:Archivo,sans-serif">
+<div style="display:flex;align-items:center;justify-content:space-between;padding:8px 20px 12px">
+<div style="display:flex;gap:7px">
+<div style="width:42px;height:36px;border-radius:10px;background:#fff;border:2.5px solid #12100c;display:flex;align-items:center;justify-content:center;font:400 16px 'Archivo Black',sans-serif;color:#12100c">↶</div>
+<div style="width:42px;height:36px;border-radius:10px;border:2.5px solid #c9c2ae;display:flex;align-items:center;justify-content:center;font:400 16px 'Archivo Black',sans-serif;color:#c9c2ae">↷</div>
+<div style="height:36px;padding:0 11px;border-radius:10px;background:#ffd23f;border:2.5px solid #12100c;display:flex;align-items:center;gap:5px"><span style="font:400 14px 'Archivo Black',sans-serif;color:#12100c">6</span><span style="font:700 10.5px Archivo,sans-serif;letter-spacing:.06em;color:#12100c">STEPS</span></div>
+</div>
+<span style="font:700 12px Archivo,sans-serif;letter-spacing:.06em;color:#6b6659">320%</span>
+<span style="font:700 14px Archivo,sans-serif;color:#e8533f">DONE</span>
+</div>
+<div style="display:flex;gap:6px;padding:0 20px 14px">
+<div style="height:36px;padding:0 12px;border-radius:18px;background:#12100c;display:flex;align-items:center;gap:6px;flex:none"><div style="width:13px;height:13px;border-radius:3px;background:{{ selHex }};border:1.5px solid #ffd23f"></div><span style="font:700 12.5px Archivo,sans-serif;color:#ffd23f">PAINT</span></div>
+<div style="height:36px;padding:0 11px;border-radius:18px;background:#fff;border:2.5px solid #12100c;display:flex;align-items:center;font:700 12.5px Archivo,sans-serif;color:#12100c;flex:none">CLEAR</div>
+<div style="height:36px;padding:0 11px;border-radius:18px;background:#fff;border:2.5px solid #12100c;display:flex;align-items:center;font:700 12.5px Archivo,sans-serif;color:#12100c;flex:none">SWAP</div>
+<div style="width:38px;height:36px;border-radius:18px;background:#fff;border:2.5px solid #12100c;display:flex;align-items:center;justify-content:center;font:400 15px 'Archivo Black',sans-serif;color:#12100c;flex:none">⟳</div>
+<div style="width:38px;height:36px;border-radius:18px;background:#fff;border:2.5px solid #12100c;display:flex;align-items:center;justify-content:center;font:400 15px 'Archivo Black',sans-serif;color:#12100c;flex:none">⇄</div>
+</div>
+<div style="display:flex;justify-content:center;padding:6px 0 16px">
+<div style="position:relative;padding:10px;background:#fff;border:2.5px solid #12100c;border-radius:14px;box-shadow:5px 5px 0 #12100c">
+<img src="data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7" data-img="imgLightZoom" alt="" style="display:block;width:312px;height:312px">
+<div style="position:absolute;left:106px;top:82px;width:26px;height:26px;box-sizing:border-box;border:3px solid #e8533f;border-radius:3px"></div>
+</div>
+</div>
+<div style="margin-top:auto;background:#fff;border-top:2.5px solid #12100c;border-radius:24px 24px 0 0;padding:16px 20px 44px;display:flex;flex-direction:column;gap:14px">
+<div style="display:flex;align-items:baseline;justify-content:space-between"><span style="font:700 13px Archivo,sans-serif;letter-spacing:.08em;color:#12100c">PALETTE · {{ colorLabel }}</span><span style="font:700 13px Archivo,sans-serif;color:#e8533f">CATALOG +</span></div>
+<div style="display:grid;grid-template-columns:repeat(7,1fr);gap:9px">
+<sc-for list="{{ swatchesTop }}" as="sw" hint-placeholder-count="14">
+<div style="width:100%;aspect-ratio:1;border-radius:8px;background:{{ sw.h }};border:2.5px solid #12100c"></div>
+</sc-for>
+</div>
+<div style="display:flex;align-items:center;justify-content:space-between;padding-top:12px;border-top:2px solid #f0ebdd"><span style="font:700 14px Archivo,sans-serif;color:#12100c">{{ selName }}</span><span style="font:600 13px Archivo,sans-serif;color:#6b6659">{{ selCount }} PLACED</span></div>
+</div>
+</div>
+</x-import><div style="font:700 11px Archivo,sans-serif;letter-spacing:.1em;color:#6b6659;text-align:center;margin-top:9px">MANUAL EDIT</div></div>
+<div style="width:402px;flex:none"><x-import component-from-global-scope="IOSDevice" from="./ios-frame.jsx" hint-size="402px,874px">
+<div style="min-height:100%;box-sizing:border-box;background:#fff8e7;padding:56px 0 0;display:flex;flex-direction:column;font-family:Archivo,sans-serif">
+<div style="display:flex;align-items:center;justify-content:space-between;padding:8px 20px 12px">
+<span style="font:700 14px Archivo,sans-serif;color:#6b6659">BACK</span>
+<span style="font:700 12px Archivo,sans-serif;letter-spacing:.1em;color:#6b6659">STEP 4 OF 5</span>
+<span style="font:700 14px Archivo,sans-serif;color:#e8533f">EXPORT</span>
+</div><div style="display:flex;gap:5px;padding:0 20px 16px"><div style="flex:1;height:9px;border-radius:5px;border:2px solid #12100c;box-sizing:border-box;background:#12100c"></div><div style="flex:1;height:9px;border-radius:5px;border:2px solid #12100c;box-sizing:border-box;background:#12100c"></div><div style="flex:1;height:9px;border-radius:5px;border:2px solid #12100c;box-sizing:border-box;background:#12100c"></div><div style="flex:1;height:9px;border-radius:5px;border:2px solid #12100c;box-sizing:border-box;background:#12100c"></div><div style="flex:1;height:9px;border-radius:5px;border:2px solid #12100c;box-sizing:border-box;background:#fff"></div></div>
+<div style="flex:1;display:flex;align-items:center;justify-content:center;padding:8px 0">
+<div style="padding:14px;background:#fff;border:2.5px solid #12100c;border-radius:16px;box-shadow:6px 6px 0 #12100c"><img src="data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7" data-img="imgLightPreview" alt="" style="display:block;width:320px;height:320px"></div>
+</div>
+<div style="padding:0 20px 44px;display:flex;flex-direction:column;gap:13px">
+<div style="font:700 11.5px Archivo,sans-serif;letter-spacing:.1em;color:#6b6659;margin-bottom:10px">BACKGROUND BEHIND PATTERN</div>
+<div style="display:flex;gap:8px;margin-top:-4px">
+<div style="flex:1;height:46px;border-radius:23px;background:#12100c;display:flex;align-items:center;justify-content:center;gap:9px"><div style="width:15px;height:15px;border-radius:4px;background:#fff"></div><span style="font:700 13.5px Archivo,sans-serif;color:#ffd23f">WHITE</span></div>
+<div style="flex:1;height:46px;border-radius:23px;border:2.5px solid #12100c;display:flex;align-items:center;justify-content:center;gap:9px"><div style="width:15px;height:15px;border-radius:4px;background:#12100c"></div><span style="font:700 13.5px Archivo,sans-serif;color:#12100c">BLACK</span></div>
+</div>
+<div style="display:flex;align-items:center;justify-content:space-between;background:#fff;border:2.5px solid #12100c;border-radius:12px;padding:11px 13px"><div><div style="font:700 14px Archivo,sans-serif;color:#12100c">SYMBOL OVERLAY</div><div style="font:500 12px Archivo,sans-serif;color:#6b6659;margin-top:2px">For B&amp;W printing</div></div><div style="width:60px;height:32px;border-radius:16px;background:#ffd23f;border:2.5px solid #12100c;position:relative;box-sizing:border-box;flex:none"><div style="position:absolute;top:2px;right:2px;width:24px;height:24px;border-radius:12px;background:#12100c"></div></div></div>
+<div style="display:flex;align-items:center;justify-content:space-between;background:#fff;border:2.5px solid #12100c;border-radius:12px;padding:11px 13px"><div><div style="font:700 14px Archivo,sans-serif;color:#12100c">GRIDLINES</div><div style="font:500 12px Archivo,sans-serif;color:#6b6659;margin-top:2px">Off = as beaded</div></div><div style="width:60px;height:32px;border-radius:16px;background:#ffd23f;border:2.5px solid #12100c;position:relative;box-sizing:border-box;flex:none"><div style="position:absolute;top:2px;right:2px;width:24px;height:24px;border-radius:12px;background:#12100c"></div></div></div>
+</div>
+</div>
+</x-import><div style="font:700 11px Archivo,sans-serif;letter-spacing:.1em;color:#6b6659;text-align:center;margin-top:9px">FINAL PREVIEW</div></div>
+<div style="width:402px;flex:none"><x-import component-from-global-scope="IOSDevice" from="./ios-frame.jsx" hint-size="402px,874px">
+<div style="min-height:100%;box-sizing:border-box;background:#ffd23f;padding:56px 0 0;display:flex;flex-direction:column;font-family:Archivo,sans-serif">
+<div style="display:flex;justify-content:center;padding:14px 0 16px"><img src="data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7" data-img="imgLightSmall" alt="" style="display:block;width:150px;height:150px;border:2.5px solid #12100c;border-radius:8px;box-shadow:4px 4px 0 #12100c"></div>
+<div style="margin-top:auto;background:#fff;border-top:2.5px solid #12100c;border-radius:24px 24px 0 0;padding:18px 20px 44px;display:flex;flex-direction:column;gap:16px">
+<div style="display:flex;align-items:flex-end;justify-content:space-between"><div style="font:400 30px/1 'Archivo Black',sans-serif;color:#12100c;letter-spacing:-.02em">SHOPPING<br>LIST</div><span style="font:600 12px Archivo,sans-serif;color:#6b6659">2 PAGES · A4</span></div>
+<div style="display:flex;flex-direction:column;gap:8px">
+<sc-for list="{{ legend }}" as="row" hint-placeholder-count="7">
+<div style="display:flex;align-items:center;gap:11px;background:#fff8e7;border:2px solid #12100c;border-radius:10px;padding:8px 11px">
+<div style="width:26px;height:26px;border-radius:6px;background:{{ row.h }};border:2px solid #12100c;flex:none"></div>
+<span style="flex:1;font:700 14px Archivo,sans-serif;color:#12100c;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">{{ row.n }}</span>
+<span style="font:400 17px 'Archivo Black',sans-serif;color:#12100c">{{ row.c }}</span>
+</div>
+</sc-for>
+</div>
+<div style="height:60px;border-radius:30px;background:#12100c;display:flex;align-items:center;justify-content:center;font:400 18px 'Archivo Black',sans-serif;color:#ffd23f;box-shadow:5px 5px 0 rgba(18,16,12,.25)">PRINT BLUEPRINT</div>
+</div>
+</div>
+</x-import><div style="font:700 11px Archivo,sans-serif;letter-spacing:.1em;color:#6b6659;text-align:center;margin-top:9px">EXPORT</div></div>
+<div style="width:402px;flex:none"><x-import component-from-global-scope="IOSDevice" from="./ios-frame.jsx" hint-size="402px,874px">
+<div style="min-height:100%;box-sizing:border-box;background:#fff8e7;padding:56px 0 0;font-family:Archivo,sans-serif">
+<div style="display:flex;align-items:center;justify-content:space-between;padding:8px 20px 14px"><span style="font:700 14px Archivo,sans-serif;color:#6b6659">COLLECTIONS</span><span style="font:700 14px Archivo,sans-serif;color:#e8533f">SAVE</span></div>
+<div style="padding:0 20px;display:flex;flex-direction:column;gap:15px">
+<div><div style="font:400 30px/1 'Archivo Black',sans-serif;color:#12100c;letter-spacing:-.02em">MY {{ collectionCount }}<br>COLORS</div>
+<div style="font:600 12px Archivo,sans-serif;color:#6b6659;margin-top:8px">USED BY 9 PATTERNS</div></div>
+<div style="display:flex;align-items:center;gap:10px;background:#fff;border:2.5px solid #12100c;border-radius:12px;padding:11px 13px"><div style="width:15px;height:15px;border-radius:8px;border:2.5px solid #12100c;box-sizing:border-box"></div><span style="font:700 15px Archivo,sans-serif;color:#12100c">cherry</span><span style="margin-left:auto;font:600 11.5px Archivo,sans-serif;color:#6b6659">3 HITS</span></div>
+<div style="display:flex;flex-direction:column;gap:8px">
+<div style="display:flex;align-items:center;gap:12px;background:#fff;border:2.5px solid #12100c;border-radius:12px;padding:10px 13px"><div style="width:30px;height:30px;border-radius:7px;background:#d1232a;border:2px solid #12100c;flex:none"></div><div style="flex:1"><div style="font:700 14.5px Archivo,sans-serif;color:#12100c">Cherry Red</div><div style="font:600 11px Archivo,sans-serif;color:#6b6659;margin-top:1px">PERLER P07</div></div><div style="width:30px;height:30px;border-radius:15px;background:#12100c;display:flex;align-items:center;justify-content:center;font:400 14px 'Archivo Black',sans-serif;color:#ffd23f;flex:none">✓</div></div><div style="display:flex;align-items:center;gap:12px;background:#fff;border:2.5px solid #12100c;border-radius:12px;padding:10px 13px"><div style="width:30px;height:30px;border-radius:7px;background:#8f1f2e;border:2px solid #12100c;flex:none"></div><div style="flex:1"><div style="font:700 14.5px Archivo,sans-serif;color:#12100c">Dark Cherry</div><div style="font:600 11px Archivo,sans-serif;color:#6b6659;margin-top:1px">PERLER P92</div></div><div style="width:30px;height:30px;border-radius:15px;border:2.5px solid #12100c;display:flex;align-items:center;justify-content:center;font:400 16px 'Archivo Black',sans-serif;color:#12100c;flex:none">+</div></div><div style="display:flex;align-items:center;gap:12px;background:#fff;border:2.5px solid #12100c;border-radius:12px;padding:10px 13px"><div style="width:30px;height:30px;border-radius:7px;background:#f4b1ae;border:2px solid #12100c;flex:none"></div><div style="flex:1"><div style="font:700 14.5px Archivo,sans-serif;color:#12100c">Cherry Blossom</div><div style="font:600 11px Archivo,sans-serif;color:#6b6659;margin-top:1px">HAMA H26</div></div><div style="width:30px;height:30px;border-radius:15px;border:2.5px solid #12100c;display:flex;align-items:center;justify-content:center;font:400 16px 'Archivo Black',sans-serif;color:#12100c;flex:none">+</div></div>
+</div>
+<div><div style="font:700 11.5px Archivo,sans-serif;letter-spacing:.1em;color:#6b6659;margin-bottom:10px">OWNED · {{ collectionCount }} OF 60</div><div style="display:grid;grid-template-columns:repeat(6,1fr);gap:9px"><sc-for list="{{ collectionSwatches }}" as="sw" hint-placeholder-count="24"><div style="width:100%;aspect-ratio:1;border-radius:8px;background:{{ sw.h }};border:2.5px solid #12100c"></div></sc-for></div></div>
+<div style="background:#fff;border:2.5px solid #12100c;border-radius:14px;box-shadow:4px 4px 0 #12100c;padding:14px"><div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:13px"><span style="font:700 14px Archivo,sans-serif;color:#12100c">CUSTOM COLOR</span><span style="font:600 12px Archivo,sans-serif;color:#6b6659">#6F7FC4</span></div>
+<div style="height:14px;border-radius:7px;border:2px solid #12100c;background:linear-gradient(to right,#e0453c,#e0b13c,#5fc46f,#3ca6e0,#7b4fd1,#e0453c);position:relative;box-sizing:border-box"><div style="position:absolute;left:64%;top:-9px;width:26px;height:26px;margin-left:-13px;border-radius:13px;background:#6f7fc4;border:2.5px solid #12100c;box-shadow:2px 2px 0 #12100c"></div></div></div>
+<div style="height:40px"></div>
+</div>
+</div>
+</x-import><div style="font:700 11px Archivo,sans-serif;letter-spacing:.1em;color:#6b6659;text-align:center;margin-top:9px">MY COLLECTION</div></div>
+<div style="width:402px;flex:none"><x-import component-from-global-scope="IOSDevice" from="./ios-frame.jsx" hint-size="402px,874px">
+<div style="min-height:100%;box-sizing:border-box;background:#fff8e7;padding:56px 0 0;display:flex;flex-direction:column;font-family:Archivo,sans-serif">
+<div style="display:flex;align-items:center;justify-content:space-between;padding:8px 20px 16px">
+<span style="font:700 14px Archivo,sans-serif;color:#6b6659">BACK</span>
+<span style="font:400 15px 'Archivo Black',sans-serif;color:#12100c">58 × 29 · 2 BOARDS</span>
+<span style="font:700 14px Archivo,sans-serif;color:#e8533f">EXPORT</span>
+</div>
+<div style="padding:0 20px">
+<div style="display:flex;padding-bottom:8px"><span style="flex:1;font:700 11.5px Archivo,sans-serif;letter-spacing:.1em;color:#6b6659;text-align:center">BOARD 1</span><span style="flex:1;font:700 11.5px Archivo,sans-serif;letter-spacing:.1em;color:#6b6659;text-align:center">BOARD 2</span></div>
+<div style="padding:10px;background:#fff;border:2.5px solid #12100c;border-radius:14px;box-shadow:5px 5px 0 #12100c"><img src="data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7" data-img="imgLightWide" alt="" style="display:block;width:341px;height:171px"></div>
+<div style="display:flex;align-items:center;gap:9px;justify-content:center;margin-top:13px"><div style="width:24px;height:4px;background:#12100c"></div><span style="font:700 11.5px Archivo,sans-serif;letter-spacing:.06em;color:#3d3830">SEAM — SNAP HERE WHEN ASSEMBLING</span></div>
+</div>
+<div style="padding:18px 20px 0;display:flex;flex-direction:column;gap:14px">
+<div style="display:flex;gap:8px;flex-wrap:wrap">
+<span style="padding:6px 12px;border-radius:15px;background:#12100c;font:700 12px Archivo,sans-serif;color:#ffd23f">{{ widePegs }} PEGS</span>
+<span style="padding:6px 12px;border-radius:15px;background:#fff;border:2px solid #12100c;font:700 12px Archivo,sans-serif;color:#12100c">{{ colorLabel }} COLORS</span>
+<span style="padding:6px 12px;border-radius:15px;background:#fff;border:2px solid #12100c;font:700 12px Archivo,sans-serif;color:#12100c">PDF: 4 PAGES</span>
+</div>
+<div style="display:flex;gap:7px">
+<div style="flex:1;height:42px;border-radius:21px;background:#12100c;display:flex;align-items:center;justify-content:center;font:700 13px Archivo,sans-serif;color:#ffd23f">FIT</div>
+<div style="flex:1;height:42px;border-radius:21px;border:2.5px solid #12100c;display:flex;align-items:center;justify-content:center;font:700 13px Archivo,sans-serif;color:#12100c">100%</div><div style="flex:1;height:42px;border-radius:21px;border:2.5px solid #12100c;display:flex;align-items:center;justify-content:center;font:700 13px Archivo,sans-serif;color:#12100c">BOARD 1</div><div style="flex:1;height:42px;border-radius:21px;border:2.5px solid #12100c;display:flex;align-items:center;justify-content:center;font:700 13px Archivo,sans-serif;color:#12100c">BOARD 2</div>
+</div>
+<div style="display:flex;align-items:center;justify-content:space-between;background:#fff;border:2.5px solid #12100c;border-radius:12px;padding:11px 13px"><span style="font:700 14px Archivo,sans-serif;color:#12100c">SEAM LINES</span><div style="width:60px;height:32px;border-radius:16px;background:#ffd23f;border:2.5px solid #12100c;position:relative;box-sizing:border-box;flex:none"><div style="position:absolute;top:2px;right:2px;width:24px;height:24px;border-radius:12px;background:#12100c"></div></div></div>
+<div style="display:flex;align-items:center;justify-content:space-between;background:#fff;border:2.5px solid #12100c;border-radius:12px;padding:11px 13px"><span style="font:700 14px Archivo,sans-serif;color:#12100c">SPLIT PDF PER BOARD</span><div style="width:60px;height:32px;border-radius:16px;background:#ffd23f;border:2.5px solid #12100c;position:relative;box-sizing:border-box;flex:none"><div style="position:absolute;top:2px;right:2px;width:24px;height:24px;border-radius:12px;background:#12100c"></div></div></div>
+<div style="font:500 12.5px/1.45 Archivo,sans-serif;color:#3d3830">Beads are counted per board, so you can finish and iron one before starting the next.</div>
+</div>
+</div>
+</x-import><div style="font:700 11px Archivo,sans-serif;letter-spacing:.1em;color:#6b6659;text-align:center;margin-top:9px">TWO BOARDS</div></div>
+<div style="flex:none"><div style="width:1194px;height:834px;border-radius:34px;padding:12px;background:#12100c;box-sizing:border-box;box-shadow:8px 8px 0 rgba(18,16,12,.22)">
+<div style="width:100%;height:100%;border-radius:24px;overflow:hidden;background:#fff8e7;display:flex;font-family:Archivo,sans-serif">
+<div style="flex:1;display:flex;flex-direction:column;min-width:0">
+<div style="display:flex;align-items:center;justify-content:space-between;padding:16px 24px;border-bottom:2.5px solid #12100c">
+<div style="display:flex;align-items:center;gap:18px">
+<span style="font:700 14px Archivo,sans-serif;color:#6b6659">LIBRARY</span>
+<div><div style="font:400 19px 'Archivo Black',sans-serif;color:#12100c">FERRY SUNSET</div><div style="font:600 11.5px Archivo,sans-serif;color:#6b6659;margin-top:2px">29 × 29 · MIDI · {{ sourceLabel }}</div></div>
+</div>
+<div style="display:flex;align-items:center;gap:9px">
+<div style="height:40px;padding:0 16px;border-radius:20px;border:2.5px solid #12100c;display:flex;align-items:center;font:700 13px Archivo,sans-serif;color:#12100c">ADJUST</div>
+<div style="height:40px;padding:0 16px;border-radius:20px;border:2.5px solid #12100c;display:flex;align-items:center;font:700 13px Archivo,sans-serif;color:#12100c">PREVIEW</div>
+<div style="height:40px;padding:0 18px;border-radius:20px;background:#12100c;display:flex;align-items:center;font:700 13px Archivo,sans-serif;color:#ffd23f">EXPORT</div>
+</div>
+</div>
+<div style="flex:1;display:flex;align-items:center;justify-content:center;position:relative">
+<div style="position:relative;padding:16px;background:#fff;border:2.5px solid #12100c;border-radius:18px;box-shadow:8px 8px 0 #12100c">
+<img src="data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7" data-img="imgLightPad" alt="" style="display:block;width:466px;height:466px">
+<div style="position:absolute;left:236px;top:184px;width:18px;height:18px;box-sizing:border-box;border:3px solid #e8533f;border-radius:2px"></div>
+<div style="position:absolute;left:262px;top:160px;display:flex;align-items:center;gap:8px;padding:7px 11px;border-radius:10px;background:#12100c">
+<div style="width:14px;height:14px;border-radius:3px;background:{{ selHex }};border:1.5px solid #ffd23f"></div>
+<span style="font:700 12px Archivo,sans-serif;color:#ffd23f">14,17 → {{ selUpper }}</span>
+</div>
+</div>
+<div style="position:absolute;left:26px;bottom:22px;display:flex;gap:8px">
+<span style="padding:7px 13px;border-radius:16px;background:#12100c;font:700 12px Archivo,sans-serif;color:#ffd23f">{{ beadCount }} BEADS</span>
+<span style="padding:7px 13px;border-radius:16px;background:#fff;border:2px solid #12100c;font:700 12px Archivo,sans-serif;color:#12100c">PENCIL HOVER ON</span>
+</div>
+<div style="position:absolute;right:26px;bottom:22px;display:flex;gap:9px">
+<div style="width:42px;height:42px;border-radius:21px;background:#fff;border:2.5px solid #12100c;display:flex;align-items:center;justify-content:center;font:400 17px 'Archivo Black',sans-serif;color:#12100c">↶</div>
+<div style="width:42px;height:42px;border-radius:21px;border:2.5px solid #c9c2ae;display:flex;align-items:center;justify-content:center;font:400 17px 'Archivo Black',sans-serif;color:#c9c2ae">↷</div>
+</div>
+</div>
+</div>
+<div style="width:340px;flex:none;background:#ffd23f;border-left:2.5px solid #12100c;padding:22px;display:flex;flex-direction:column;gap:20px;box-sizing:border-box;overflow:hidden">
+<div style="display:flex;gap:7px">
+<div style="height:38px;padding:0 15px;border-radius:19px;background:#12100c;display:flex;align-items:center;gap:8px"><div style="width:12px;height:12px;border-radius:3px;background:{{ selHex }};border:1.5px solid #ffd23f"></div><span style="font:700 12.5px Archivo,sans-serif;color:#ffd23f">PAINT</span></div>
+<div style="height:38px;padding:0 15px;border-radius:19px;background:#fff;border:2.5px solid #12100c;display:flex;align-items:center;font:700 12.5px Archivo,sans-serif;color:#12100c">CLEAR</div>
+<div style="height:38px;padding:0 15px;border-radius:19px;background:#fff;border:2.5px solid #12100c;display:flex;align-items:center;font:700 12.5px Archivo,sans-serif;color:#12100c">SWAP</div>
+</div>
+<div><div style="font:700 11.5px Archivo,sans-serif;letter-spacing:.1em;color:#3d3830;margin-bottom:11px">PALETTE · {{ colorLabel }} OF 60</div>
+<div style="background:#fff;border:2.5px solid #12100c;border-radius:12px;padding:11px"><div style="display:grid;grid-template-columns:repeat(7,1fr);gap:8px"><sc-for list="{{ swatchesTop }}" as="sw" hint-placeholder-count="14"><div style="width:100%;aspect-ratio:1;border-radius:7px;background:{{ sw.h }};border:2px solid #12100c"></div></sc-for></div></div></div>
+<div><div style="font:700 11.5px Archivo,sans-serif;letter-spacing:.1em;color:#3d3830;margin-bottom:11px">BEAD COUNTS</div>
+<div style="display:flex;flex-direction:column;gap:7px">
+<sc-for list="{{ legend }}" as="row" hint-placeholder-count="7">
+<div style="display:flex;align-items:center;gap:10px;background:#fff;border:2px solid #12100c;border-radius:9px;padding:6px 10px">
+<div style="width:19px;height:19px;border-radius:4px;background:{{ row.h }};border:1.5px solid #12100c;flex:none"></div>
+<span style="flex:1;font:700 12.5px Archivo,sans-serif;color:#12100c;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">{{ row.n }}</span>
+<span style="font:400 14px 'Archivo Black',sans-serif;color:#12100c">{{ row.c }}</span>
+</div>
+</sc-for>
+</div></div>
+<div style="margin-top:auto;display:flex;flex-direction:column;gap:10px;padding-top:16px;border-top:2.5px solid #12100c">
+<div style="display:flex;align-items:center;justify-content:space-between"><span style="font:700 13px Archivo,sans-serif;color:#12100c">GRIDLINES</span><div style="width:60px;height:32px;border-radius:16px;background:#ffd23f;border:2.5px solid #12100c;position:relative;box-sizing:border-box;flex:none"><div style="position:absolute;top:2px;right:2px;width:24px;height:24px;border-radius:12px;background:#12100c"></div></div></div>
+<div style="display:flex;align-items:center;justify-content:space-between"><span style="font:700 13px Archivo,sans-serif;color:#12100c">SYMBOL OVERLAY</span><div style="width:60px;height:32px;border-radius:16px;background:#ffd23f;border:2.5px solid #12100c;position:relative;box-sizing:border-box;flex:none"><div style="position:absolute;top:2px;right:2px;width:24px;height:24px;border-radius:12px;background:#12100c"></div></div></div>
+<div style="display:flex;align-items:center;justify-content:space-between"><span style="font:700 13px Archivo,sans-serif;color:#12100c">PENCIL HOVER</span><div style="width:60px;height:32px;border-radius:16px;background:#ffd23f;border:2.5px solid #12100c;position:relative;box-sizing:border-box;flex:none"><div style="position:absolute;top:2px;right:2px;width:24px;height:24px;border-radius:12px;background:#12100c"></div></div></div>
+</div>
+</div>
+</div>
+</div><div style="font:700 11px Archivo,sans-serif;letter-spacing:.1em;color:#6b6659;text-align:center;margin-top:9px">IPAD EDITOR</div></div>
+</div>
+<p class="dv-note" style="max-width:1240px">Hard black outlines, offset shadows, no mono type, and it never goes dark — bead colors are judged against white, the way they sit on a real board. Yellow is the shelf surface (first run, library, export); working screens drop to cream so the pattern is the brightest thing on screen. Red is reserved for the one forward action per screen. On iPad the tool panel takes the yellow, which keeps the canvas neutral.</p>
+</div>
+
+<div class="dv-opt" id="4b" style="width:auto">
+<div class="dv-olabel"><a class="dv-oid" href="#4b">4b</a>Darkroom — precision instrument, image first</div>
+<div style="display:flex;gap:24px">
+
+<x-import component-from-global-scope="IOSDevice" from="./ios-frame.jsx" dark="{{ true }}" hint-size="402px,874px">
+<div style="min-height:100%;box-sizing:border-box;background:#0a0a0b;padding:70px 24px 0;display:flex;flex-direction:column;font-family:'IBM Plex Mono',monospace">
+<div style="font:400 11px 'IBM Plex Mono',monospace;letter-spacing:.24em;color:#c9b892">PATTERNS — 14</div>
+<div style="font:400 52px/.95 'Instrument Serif',serif;color:#f2f0ec;margin-top:14px;letter-spacing:-.01em">Library</div>
+<div style="height:1px;background:rgba(242,240,236,.12);margin:26px 0 4px"></div>
+<div style="display:flex;flex-direction:column">
+<div style="display:flex;align-items:center;gap:16px;padding:16px 0;border-bottom:1px solid rgba(242,240,236,.08)">
+<img src="data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7" data-img="imgDarkThumbA" alt="" style="width:62px;height:62px;display:block;flex:none">
+<div style="flex:1"><div style="font:400 21px/1.15 'Instrument Serif',serif;color:#f2f0ec">Ferry sunset</div><div style="font:400 10px 'IBM Plex Mono',monospace;letter-spacing:.14em;color:rgba(242,240,236,.4);margin-top:5px">29×29 · MIDI · 12C</div></div>
+<span style="font:400 11px 'IBM Plex Mono',monospace;color:rgba(242,240,236,.28)">→</span>
+</div>
+<div style="display:flex;align-items:center;gap:16px;padding:16px 0;border-bottom:1px solid rgba(242,240,236,.08)">
+<img src="data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7" data-img="imgDarkThumbB" alt="" style="width:62px;height:62px;display:block;flex:none">
+<div style="flex:1"><div style="font:400 21px/1.15 'Instrument Serif',serif;color:#f2f0ec">Moonrise</div><div style="font:400 10px 'IBM Plex Mono',monospace;letter-spacing:.14em;color:rgba(242,240,236,.4);margin-top:5px">29×29 · MIDI · 9C</div></div>
+<span style="font:400 11px 'IBM Plex Mono',monospace;color:rgba(242,240,236,.28)">→</span>
+</div>
+<div style="display:flex;align-items:center;gap:16px;padding:16px 0;border-bottom:1px solid rgba(242,240,236,.08)">
+<img src="data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7" data-img="imgDarkThumbC" alt="" style="width:62px;height:62px;display:block;flex:none">
+<div style="flex:1"><div style="font:400 21px/1.15 'Instrument Serif',serif;color:#f2f0ec">Citrus rings</div><div style="font:400 10px 'IBM Plex Mono',monospace;letter-spacing:.14em;color:rgba(242,240,236,.4);margin-top:5px">58×29 · MINI · 14C</div></div>
+<span style="font:400 11px 'IBM Plex Mono',monospace;color:rgba(242,240,236,.28)">→</span>
+</div>
+</div>
+<div style="margin-top:auto;padding:24px 0 46px;display:flex;align-items:center;justify-content:space-between;border-top:1px solid rgba(242,240,236,.12)">
+<span style="font:400 13px 'IBM Plex Mono',monospace;letter-spacing:.14em;color:#f2f0ec">NEW PATTERN</span>
+<div style="width:44px;height:44px;border-radius:22px;border:1px solid #c9b892;display:flex;align-items:center;justify-content:center;font:400 19px 'IBM Plex Mono',monospace;color:#c9b892">+</div>
+</div>
+</div>
+</x-import>
+
+<x-import component-from-global-scope="IOSDevice" from="./ios-frame.jsx" dark="{{ true }}" hint-size="402px,874px">
+<div style="min-height:100%;box-sizing:border-box;background:#0a0a0b;padding:62px 0 0;display:flex;flex-direction:column;font-family:'IBM Plex Mono',monospace">
+<div style="display:flex;align-items:center;justify-content:space-between;padding:0 24px 0">
+<span style="font:400 11px 'IBM Plex Mono',monospace;letter-spacing:.16em;color:rgba(242,240,236,.45)">ESC</span>
+<span style="font:400 11px 'IBM Plex Mono',monospace;letter-spacing:.16em;color:rgba(242,240,236,.45)">29×29 · MIDI</span>
+<span style="font:400 11px 'IBM Plex Mono',monospace;letter-spacing:.16em;color:#c9b892">NEXT</span>
+</div>
+<div style="flex:1;display:flex;align-items:center;justify-content:center;padding:20px 0">
+<img src="data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7" data-img="imgDarkGrid" alt="" style="display:block;width:348px;height:348px">
+</div>
+<div style="padding:0 24px 44px;display:flex;flex-direction:column;gap:22px">
+<div style="display:flex;justify-content:space-between;padding-bottom:16px;border-bottom:1px solid rgba(242,240,236,.1)">
+<div><div style="font:400 9.5px 'IBM Plex Mono',monospace;letter-spacing:.16em;color:rgba(242,240,236,.35)">BEADS</div><div style="font:400 20px 'IBM Plex Mono',monospace;color:#f2f0ec;margin-top:4px">{{ beadCount }}</div></div>
+<div><div style="font:400 9.5px 'IBM Plex Mono',monospace;letter-spacing:.16em;color:rgba(242,240,236,.35)">COLORS</div><div style="font:400 20px 'IBM Plex Mono',monospace;color:#f2f0ec;margin-top:4px">{{ colorLabel }}</div></div>
+<div><div style="font:400 9.5px 'IBM Plex Mono',monospace;letter-spacing:.16em;color:rgba(242,240,236,.35)">EMPTY</div><div style="font:400 20px 'IBM Plex Mono',monospace;color:#f2f0ec;margin-top:4px">{{ emptyCount }}</div></div>
+<div><div style="font:400 9.5px 'IBM Plex Mono',monospace;letter-spacing:.16em;color:rgba(242,240,236,.35)">ΔE AVG</div><div style="font:400 20px 'IBM Plex Mono',monospace;color:#c9b892;margin-top:4px">4.1</div></div>
+</div>
+<div style="display:flex;flex-direction:column;gap:16px">
+<div>
+<div style="display:flex;justify-content:space-between;margin-bottom:8px"><span style="font:400 11px 'IBM Plex Mono',monospace;letter-spacing:.14em;color:rgba(242,240,236,.6)">COLORS</span><span style="font:400 11px 'IBM Plex Mono',monospace;color:#f2f0ec">{{ colorLabel }}</span></div>
+<div style="height:1px;background:rgba(242,240,236,.14);position:relative"><div style="position:absolute;left:0;top:0;height:1px;background:#c9b892;width:{{ colorPct }}"></div><div style="position:absolute;left:{{ colorPct }};top:-4px;width:9px;height:9px;margin-left:-4.5px;background:#c9b892"></div></div>
+</div>
+<div>
+<div style="display:flex;justify-content:space-between;margin-bottom:8px"><span style="font:400 11px 'IBM Plex Mono',monospace;letter-spacing:.14em;color:rgba(242,240,236,.6)">CONTRAST</span><span style="font:400 11px 'IBM Plex Mono',monospace;color:#f2f0ec">+18</span></div>
+<div style="height:1px;background:rgba(242,240,236,.14);position:relative"><div style="position:absolute;left:0;top:0;height:1px;background:#c9b892;width:62%"></div><div style="position:absolute;left:62%;top:-4px;width:9px;height:9px;margin-left:-4.5px;background:#c9b892"></div></div>
+</div>
+<div>
+<div style="display:flex;justify-content:space-between;margin-bottom:8px"><span style="font:400 11px 'IBM Plex Mono',monospace;letter-spacing:.14em;color:rgba(242,240,236,.6)">SATURATION</span><span style="font:400 11px 'IBM Plex Mono',monospace;color:#f2f0ec">+34</span></div>
+<div style="height:1px;background:rgba(242,240,236,.14);position:relative"><div style="position:absolute;left:0;top:0;height:1px;background:#c9b892;width:74%"></div><div style="position:absolute;left:74%;top:-4px;width:9px;height:9px;margin-left:-4.5px;background:#c9b892"></div></div>
+</div>
+</div>
+<div style="display:flex;align-items:center;justify-content:space-between;padding-top:4px">
+<span style="font:400 11px 'IBM Plex Mono',monospace;letter-spacing:.14em;color:rgba(242,240,236,.6)">GRIDLINES</span>
+<div style="display:flex;gap:0;border:1px solid rgba(242,240,236,.18)">
+<span style="padding:5px 12px;font:400 10.5px 'IBM Plex Mono',monospace;letter-spacing:.1em;color:#0a0a0b;background:#c9b892">OFF</span>
+<span style="padding:5px 12px;font:400 10.5px 'IBM Plex Mono',monospace;letter-spacing:.1em;color:rgba(242,240,236,.55)">ON</span>
+</div>
+</div>
+</div>
+</div>
+</x-import>
+
+<x-import component-from-global-scope="IOSDevice" from="./ios-frame.jsx" dark="{{ true }}" hint-size="402px,874px">
+<div style="min-height:100%;box-sizing:border-box;background:#0a0a0b;padding:70px 24px 0;display:flex;flex-direction:column;font-family:'IBM Plex Mono',monospace">
+<div style="display:flex;align-items:flex-start;justify-content:space-between">
+<div>
+<div style="font:400 11px 'IBM Plex Mono',monospace;letter-spacing:.24em;color:#c9b892">EXPORT</div>
+<div style="font:400 40px/1 'Instrument Serif',serif;color:#f2f0ec;margin-top:12px">Bead legend</div>
+</div>
+<img src="data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7" data-img="imgDarkSmall" alt="" style="display:block;width:96px;height:96px;flex:none">
+</div>
+<div style="display:flex;justify-content:space-between;padding:22px 0 10px;margin-top:16px;border-top:1px solid rgba(242,240,236,.12);border-bottom:1px solid rgba(242,240,236,.12);font:400 9.5px 'IBM Plex Mono',monospace;letter-spacing:.16em;color:rgba(242,240,236,.35)">
+<span>BEAD</span><span>COUNT</span>
+</div>
+<div style="display:flex;flex-direction:column">
+<sc-for list="{{ legend }}" as="row" hint-placeholder-count="7">
+<div style="display:flex;align-items:center;gap:13px;padding:13px 0;border-bottom:1px solid rgba(242,240,236,.07)">
+<div style="width:15px;height:15px;background:{{ row.h }};flex:none"></div>
+<span style="width:16px;font:400 11px 'IBM Plex Mono',monospace;color:rgba(242,240,236,.4);flex:none">{{ row.s }}</span>
+<span style="flex:1;font:400 15px 'Instrument Serif',serif;color:#f2f0ec;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">{{ row.n }}</span>
+<span style="font:400 13px 'IBM Plex Mono',monospace;color:#f2f0ec">{{ row.c }}</span>
+</div>
+</sc-for>
+</div>
+<div style="display:flex;justify-content:space-between;padding:14px 0;font:400 11px 'IBM Plex Mono',monospace;letter-spacing:.14em;color:rgba(242,240,236,.45)">
+<span>TOTAL</span><span style="color:#f2f0ec">{{ beadCount }}</span>
+</div>
+<div style="margin-top:auto;padding:20px 0 46px;display:flex;align-items:center;justify-content:space-between;border-top:1px solid rgba(242,240,236,.12)">
+<span style="font:400 13px 'IBM Plex Mono',monospace;letter-spacing:.14em;color:#f2f0ec">SAVE PDF</span>
+<span style="font:400 11px 'IBM Plex Mono',monospace;letter-spacing:.14em;color:rgba(242,240,236,.4)">2 PAGES · A4</span>
+</div>
+</div>
+</x-import>
+
+</div>
+<p class="dv-note" style="max-width:1254px">One neutral dark surface throughout, hairlines instead of cards, serif for names and mono for every number — the pattern is the only saturated thing on screen. Wins if this is a tool you use for an hour at a time and want the colors judged honestly. Costs warmth: it reads like a photo app, not a craft one, and the library is a list rather than a shelf.</p>
+</div>
+
+</div>
+</section>
+
+<section class="dv-turn" id="t3" style="background:#e9e5db">
+<div class="dv-thd"><a class="dv-tid" href="#t3">3</a><span class="dv-tname">Gaps closed — first run, calibration, multi-board</span></div>
+<div class="dv-opts">
+
+<div class="dv-opt" id="3a">
+<div class="dv-olabel"><a class="dv-oid" href="#3a">3a</a>First run — empty library</div>
+<x-import component-from-global-scope="IOSDevice" from="./ios-frame.jsx" hint-size="402px,874px">
+<div style="min-height:100%;box-sizing:border-box;background:#f4f1ea;padding:62px 20px 0;display:flex;flex-direction:column;font-family:'Space Grotesk',sans-serif">
+<div style="font:600 10px 'IBM Plex Mono',monospace;letter-spacing:.12em;color:rgba(25,23,19,.42)">MY PATTERNS</div>
+<div style="font:700 32px/1.1 'Space Grotesk',sans-serif;color:#191713;letter-spacing:-.02em;margin-top:4px">Nothing yet</div>
+<div style="display:flex;justify-content:center;padding:26px 0 22px">
+<img src="data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7" data-img="imgEmptyBoard" alt="" style="display:block;width:232px;height:232px;border-radius:10px;border:1px solid rgba(25,23,19,.1)">
+</div>
+<div style="font:400 14.5px/1.55 'Space Grotesk',sans-serif;color:rgba(25,23,19,.7);text-wrap:pretty">Turn any photo into a bead blueprint sized to your own pegboard. Everything happens on this phone — no account, no upload.</div>
+<div style="display:flex;flex-direction:column;gap:1px;background:rgba(25,23,19,.08);border-radius:12px;overflow:hidden;margin-top:20px">
+<div style="display:flex;align-items:center;gap:12px;background:#fffdf8;padding:13px 14px"><span style="font:600 12px 'IBM Plex Mono',monospace;color:oklch(.55 .16 32);width:14px">1</span><span style="font:500 14px 'Space Grotesk',sans-serif;color:#191713">Set your board size and bead type</span></div>
+<div style="display:flex;align-items:center;gap:12px;background:#fffdf8;padding:13px 14px"><span style="font:600 12px 'IBM Plex Mono',monospace;color:oklch(.55 .16 32);width:14px">2</span><span style="font:500 14px 'Space Grotesk',sans-serif;color:#191713">Pick a photo and perlify it</span></div>
+<div style="display:flex;align-items:center;gap:12px;background:#fffdf8;padding:13px 14px"><span style="font:600 12px 'IBM Plex Mono',monospace;color:oklch(.55 .16 32);width:14px">3</span><span style="font:500 14px 'Space Grotesk',sans-serif;color:#191713">Print the blueprint and start beading</span></div>
+</div>
+<div style="margin-top:auto;padding:18px 0 46px;display:flex;flex-direction:column;gap:12px">
+<div style="height:54px;border-radius:27px;background:oklch(.62 .17 32);display:flex;align-items:center;justify-content:center;font:600 16px 'Space Grotesk',sans-serif;color:#fff;box-shadow:0 8px 20px rgba(190,80,45,.28)">Start new pattern</div>
+<div style="display:flex;align-items:center;justify-content:center;gap:14px">
+<span style="font:500 13px 'Space Grotesk',sans-serif;color:rgba(25,23,19,.6)">Restore from backup</span>
+<span style="width:1px;height:12px;background:rgba(25,23,19,.18)"></span>
+<span style="font:400 11px 'IBM Plex Mono',monospace;color:rgba(25,23,19,.45)">ADD TO HOME SCREEN</span>
+</div>
+</div>
+</div>
+</x-import>
+<p class="dv-note">Zero state carries the whole pitch and the three-step model, so the first launch teaches the flow instead of showing an empty grid. Restore sits next to Start because a reinstall is the other reason you'd be here.</p>
+</div>
+
+<div class="dv-opt" id="3b">
+<div class="dv-olabel"><a class="dv-oid" href="#3b">3b</a>Calibrate my board</div>
+<x-import component-from-global-scope="IOSDevice" from="./ios-frame.jsx" hint-size="402px,874px">
+<div style="min-height:100%;box-sizing:border-box;background:rgba(25,23,19,.45);padding:56px 0 0;font-family:'Space Grotesk',sans-serif;display:flex;flex-direction:column">
+<div style="padding:0 18px;opacity:.5;display:flex;flex-direction:column;gap:10px">
+<div style="font:700 22px/1.1 'Space Grotesk',sans-serif;color:#fff">Set up the board</div>
+<div style="height:64px;border-radius:14px;background:rgba(255,255,255,.55)"></div>
+</div>
+<div style="margin-top:auto;background:#fffdf8;border-radius:24px 24px 0 0;padding:12px 18px 44px;display:flex;flex-direction:column;gap:17px">
+<div style="width:38px;height:4px;border-radius:2px;background:rgba(25,23,19,.18);margin:0 auto 2px"></div>
+<div>
+<div style="font:700 24px/1.1 'Space Grotesk',sans-serif;color:#191713;letter-spacing:-.02em">Calibrate my board</div>
+<div style="font:400 13px/1.55 'Space Grotesk',sans-serif;color:rgba(25,23,19,.6);margin-top:7px;text-wrap:pretty">Pegboards vary by brand. Measure once and every board size you enter in inches or centimeters converts correctly.</div>
+</div>
+<div style="background:#f4f1ea;border-radius:14px;padding:16px 14px">
+<div style="font:600 10px 'IBM Plex Mono',monospace;letter-spacing:.1em;color:rgba(25,23,19,.45);margin-bottom:14px">MEASURE ACROSS 10 SPACINGS</div>
+<div style="display:flex;align-items:center;justify-content:space-between;padding:0 2px">
+<div style="width:15px;height:15px;border-radius:8px;border:1.5px solid rgba(25,23,19,.55);box-sizing:border-box"></div>
+<div style="width:15px;height:15px;border-radius:8px;border:1.5px solid rgba(25,23,19,.22);box-sizing:border-box"></div>
+<div style="width:15px;height:15px;border-radius:8px;border:1.5px solid rgba(25,23,19,.22);box-sizing:border-box"></div>
+<div style="width:15px;height:15px;border-radius:8px;border:1.5px solid rgba(25,23,19,.22);box-sizing:border-box"></div>
+<div style="width:15px;height:15px;border-radius:8px;border:1.5px solid rgba(25,23,19,.22);box-sizing:border-box"></div>
+<div style="width:15px;height:15px;border-radius:8px;border:1.5px solid rgba(25,23,19,.22);box-sizing:border-box"></div>
+<div style="width:15px;height:15px;border-radius:8px;border:1.5px solid rgba(25,23,19,.22);box-sizing:border-box"></div>
+<div style="width:15px;height:15px;border-radius:8px;border:1.5px solid rgba(25,23,19,.22);box-sizing:border-box"></div>
+<div style="width:15px;height:15px;border-radius:8px;border:1.5px solid rgba(25,23,19,.22);box-sizing:border-box"></div>
+<div style="width:15px;height:15px;border-radius:8px;border:1.5px solid rgba(25,23,19,.22);box-sizing:border-box"></div>
+<div style="width:15px;height:15px;border-radius:8px;border:1.5px solid rgba(25,23,19,.55);box-sizing:border-box"></div>
+</div>
+<div style="display:flex;align-items:center;gap:6px;margin-top:12px">
+<div style="width:1.5px;height:11px;background:#191713"></div>
+<div style="flex:1;height:1.5px;background:#191713"></div>
+<span style="font:500 10.5px 'IBM Plex Mono',monospace;color:#191713">50.0 MM</span>
+<div style="flex:1;height:1.5px;background:#191713"></div>
+<div style="width:1.5px;height:11px;background:#191713"></div>
+</div>
+</div>
+<div style="display:flex;align-items:center;gap:10px">
+<div style="flex:1;border:1.5px solid oklch(.62 .17 32);border-radius:10px;padding:8px 11px;background:#fff">
+<div style="font:400 9.5px 'IBM Plex Mono',monospace;color:rgba(25,23,19,.45)">MEASURED</div>
+<div style="font:600 22px 'IBM Plex Mono',monospace;color:#191713">50.0</div>
+</div>
+<div style="width:76px;height:56px;border-radius:10px;background:rgba(25,23,19,.06);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:1px">
+<span style="font:600 13px 'Space Grotesk',sans-serif;color:#191713">mm</span>
+<span style="font:400 9px 'IBM Plex Mono',monospace;color:rgba(25,23,19,.45)">mm · in</span>
+</div>
+</div>
+<div style="display:flex;flex-direction:column;gap:1px;background:rgba(25,23,19,.08);border-radius:12px;overflow:hidden">
+<div style="display:flex;align-items:center;justify-content:space-between;background:#f4f1ea;padding:11px 14px"><span style="font:500 13px 'Space Grotesk',sans-serif;color:rgba(25,23,19,.7)">Your pitch</span><span style="font:600 12px 'IBM Plex Mono',monospace;color:#191713">5.00 mm · 5.08 pegs/in</span></div>
+<div style="display:flex;align-items:center;justify-content:space-between;background:#f4f1ea;padding:11px 14px"><span style="font:500 13px 'Space Grotesk',sans-serif;color:rgba(25,23,19,.7)">Standard midi</span><span style="font:600 12px 'IBM Plex Mono',monospace;color:rgba(25,23,19,.5)">5.00 mm · 0.0% off</span></div>
+</div>
+<div style="display:flex;gap:10px">
+<div style="flex:1;height:52px;border-radius:26px;background:oklch(.62 .17 32);display:flex;align-items:center;justify-content:center;font:600 15.5px 'Space Grotesk',sans-serif;color:#fff">Use my measurement</div>
+<div style="width:110px;height:52px;border-radius:26px;background:rgba(25,23,19,.07);display:flex;align-items:center;justify-content:center;font:500 13.5px 'Space Grotesk',sans-serif;color:rgba(25,23,19,.65);text-align:center">Standard</div>
+</div>
+</div>
+</div>
+</x-import>
+<p class="dv-note">Measuring 10 spacings instead of one peg divides your ruler error by ten. Result is shown against the published midi pitch with a percentage delta, so an obviously bad measurement is visible before you commit.</p>
+</div>
+
+<div class="dv-opt" id="3c">
+<div class="dv-olabel"><a class="dv-oid" href="#3c">3c</a>Two interlocked boards — 58 × 29</div>
+<x-import component-from-global-scope="IOSDevice" from="./ios-frame.jsx" dark="{{ true }}" hint-size="402px,874px">
+<div style="min-height:100%;box-sizing:border-box;background:#0e0e11;padding:56px 0 0;font-family:'Space Grotesk',sans-serif;display:flex;flex-direction:column">
+<div style="display:flex;align-items:center;justify-content:space-between;padding:6px 18px 0">
+<span style="font:500 15px 'Space Grotesk',sans-serif;color:rgba(255,255,255,.55)">Back</span>
+<div style="text-align:center"><div style="font:600 14px 'Space Grotesk',sans-serif;color:#fff">Ferry sunset wide</div><div style="font:400 10px 'IBM Plex Mono',monospace;color:rgba(255,255,255,.4)">58 × 29 · 2 BOARDS</div></div>
+<span style="font:600 15px 'Space Grotesk',sans-serif;color:oklch(.7 .15 32)">Export</span>
+</div>
+<div style="padding:20px 0 16px;background:#08080a;margin-top:16px;border-top:1px solid rgba(255,255,255,.06);border-bottom:1px solid rgba(255,255,255,.06)">
+<div style="display:flex;justify-content:center;gap:0;padding:0 27px 8px">
+<span style="flex:1;font:600 9.5px 'IBM Plex Mono',monospace;letter-spacing:.1em;color:rgba(255,255,255,.4);text-align:center">BOARD 1</span>
+<span style="flex:1;font:600 9.5px 'IBM Plex Mono',monospace;letter-spacing:.1em;color:rgba(255,255,255,.4);text-align:center">BOARD 2</span>
+</div>
+<div style="display:flex;justify-content:center">
+<img src="data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7" data-img="imgGridWide" alt="" style="display:block;width:348px;height:174px;box-shadow:0 14px 34px rgba(0,0,0,.55)">
+</div>
+<div style="display:flex;align-items:center;gap:8px;justify-content:center;margin-top:12px">
+<div style="width:22px;height:3px;background:rgba(255,255,255,.92)"></div>
+<span style="font:400 10.5px 'IBM Plex Mono',monospace;color:rgba(255,255,255,.55)">BOARD SEAM — SNAP HERE WHEN ASSEMBLING</span>
+</div>
+</div>
+<div style="padding:16px 18px 0;display:flex;flex-direction:column;gap:14px">
+<div style="display:flex;gap:6px;flex-wrap:wrap">
+<span style="font:500 10.5px 'IBM Plex Mono',monospace;color:rgba(255,255,255,.75);background:rgba(255,255,255,.08);padding:5px 9px;border-radius:11px">{{ widePegs }} PEGS</span>
+<span style="font:500 10.5px 'IBM Plex Mono',monospace;color:rgba(255,255,255,.75);background:rgba(255,255,255,.08);padding:5px 9px;border-radius:11px">{{ colorLabel }} COLORS</span>
+<span style="font:500 10.5px 'IBM Plex Mono',monospace;color:rgba(255,255,255,.75);background:rgba(255,255,255,.08);padding:5px 9px;border-radius:11px">PDF: 4 PAGES</span>
+</div>
+<div style="display:flex;gap:6px;padding:3px;background:rgba(255,255,255,.08);border-radius:11px">
+<div style="flex:1;height:36px;border-radius:9px;background:rgba(255,255,255,.92);display:flex;align-items:center;justify-content:center;font:600 13px 'Space Grotesk',sans-serif;color:#0e0e11">Fit</div>
+<div style="flex:1;height:36px;border-radius:9px;display:flex;align-items:center;justify-content:center;font:500 13px 'Space Grotesk',sans-serif;color:rgba(255,255,255,.6)">100%</div>
+<div style="flex:1;height:36px;border-radius:9px;display:flex;align-items:center;justify-content:center;font:500 13px 'Space Grotesk',sans-serif;color:rgba(255,255,255,.6)">Board 1</div>
+<div style="flex:1;height:36px;border-radius:9px;display:flex;align-items:center;justify-content:center;font:500 13px 'Space Grotesk',sans-serif;color:rgba(255,255,255,.6)">Board 2</div>
+</div>
+<div style="display:flex;flex-direction:column;gap:1px;background:rgba(255,255,255,.09);border-radius:12px;overflow:hidden">
+<div style="display:flex;align-items:center;justify-content:space-between;background:#1a1a1e;padding:12px 14px"><span style="font:500 13px 'Space Grotesk',sans-serif;color:rgba(255,255,255,.85)">Board layout</span><span style="font:600 12px 'IBM Plex Mono',monospace;color:rgba(255,255,255,.6)">2 × 1</span></div>
+<div style="display:flex;align-items:center;justify-content:space-between;background:#1a1a1e;padding:12px 14px"><span style="font:500 13px 'Space Grotesk',sans-serif;color:rgba(255,255,255,.85)">Seam lines</span><span style="font:600 12px 'IBM Plex Mono',monospace;color:oklch(.75 .13 32)">ON</span></div>
+<div style="display:flex;align-items:center;justify-content:space-between;background:#1a1a1e;padding:12px 14px"><span style="font:500 13px 'Space Grotesk',sans-serif;color:rgba(255,255,255,.85)">Split PDF per board</span><span style="font:600 12px 'IBM Plex Mono',monospace;color:oklch(.75 .13 32)">ON</span></div>
+</div>
+<div style="font:400 11.5px/1.5 'Space Grotesk',sans-serif;color:rgba(255,255,255,.42)">Beads per board are counted separately in the legend, so you can finish and iron one board before starting the next.</div>
+</div>
+</div>
+</x-import>
+<p class="dv-note">Wide designs get a fit-to-width view plus per-board jump chips rather than free pinch-panning as the primary control — you bead one board at a time. Gridlines drop out at this zoom; the seam stays.</p>
+</div>
+
+</div>
+<p class="dv-note" style="margin-top:22px">Try next: "add the bead-inventory warning to <a class="dv-oid" href="#1g">1g</a>" · "show <a class="dv-oid" href="#3c">3c</a> at 100% zoom" · "row-by-row beading mode"</p>
+</section>
+
+<section class="dv-turn" id="t1" style="background:#e9e5db">
+<div class="dv-thd"><a class="dv-tid" href="#t1">1</a><span class="dv-tname">iPhone — full creation flow</span></div>
+<div class="dv-opts">
+
+<div class="dv-opt" id="1a">
+<div class="dv-olabel"><a class="dv-oid" href="#1a">1a</a>Library — app entry</div>
+<x-import component-from-global-scope="IOSDevice" from="./ios-frame.jsx" hint-size="402px,874px">
+<div style="min-height:100%;box-sizing:border-box;background:#f4f1ea;padding:62px 20px 0;display:flex;flex-direction:column;font-family:'Space Grotesk',sans-serif">
+<div style="display:flex;align-items:flex-end;justify-content:space-between;margin-bottom:4px">
+<div><div style="font:600 10px 'IBM Plex Mono',monospace;letter-spacing:.12em;color:rgba(25,23,19,.42)">MY PATTERNS</div>
+<div style="font:700 32px/1.1 'Space Grotesk',sans-serif;color:#191713;letter-spacing:-.02em">14 saved</div></div>
+<div style="display:flex;align-items:center;height:34px;padding:0 13px;border-radius:17px;background:rgba(25,23,19,.06);font:500 12.5px 'Space Grotesk',sans-serif;color:rgba(25,23,19,.7)">Back up</div>
+</div>
+<div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-top:20px">
+<div style="display:flex;flex-direction:column;gap:8px;background:#fffdf8;border:1px solid rgba(25,23,19,.09);border-radius:14px;padding:10px 10px 12px">
+<img src="data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7" data-img="imgThumbA" alt="" style="width:100%;border-radius:8px;display:block;background:#0e0e11">
+<div><div style="font:600 13.5px/1.25 'Space Grotesk',sans-serif;color:#191713">Ferry sunset</div>
+<div style="font:400 10.5px 'IBM Plex Mono',monospace;color:rgba(25,23,19,.5);margin-top:3px">29×29 · midi · 12 col</div></div>
+</div>
+<div style="display:flex;flex-direction:column;gap:8px;background:#fffdf8;border:1px solid rgba(25,23,19,.09);border-radius:14px;padding:10px 10px 12px">
+<img src="data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7" data-img="imgThumbB" alt="" style="width:100%;border-radius:8px;display:block;background:#0e0e11">
+<div><div style="font:600 13.5px/1.25 'Space Grotesk',sans-serif;color:#191713">Moonrise</div>
+<div style="font:400 10.5px 'IBM Plex Mono',monospace;color:rgba(25,23,19,.5);margin-top:3px">29×29 · midi · 9 col</div></div>
+</div>
+<div style="display:flex;flex-direction:column;gap:8px;background:#fffdf8;border:1px solid rgba(25,23,19,.09);border-radius:14px;padding:10px 10px 12px">
+<img src="data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7" data-img="imgThumbC" alt="" style="width:100%;border-radius:8px;display:block;background:#0e0e11">
+<div><div style="font:600 13.5px/1.25 'Space Grotesk',sans-serif;color:#191713">Citrus rings</div>
+<div style="font:400 10.5px 'IBM Plex Mono',monospace;color:rgba(25,23,19,.5);margin-top:3px">58×29 · mini · 14 col</div></div>
+</div>
+<div style="display:flex;flex-direction:column;justify-content:flex-end;gap:6px;border:1px dashed rgba(25,23,19,.25);border-radius:14px;padding:14px;min-height:150px">
+<div style="font:500 12px/1.45 'Space Grotesk',sans-serif;color:rgba(25,23,19,.45)">Long-press a pattern to duplicate, rename or delete.</div>
+</div>
+</div>
+<div style="margin-top:auto;padding:18px 0 46px;position:sticky;bottom:0;background:linear-gradient(to top,#f4f1ea 62%,rgba(244,241,234,0))">
+<div style="height:54px;border-radius:27px;background:oklch(.62 .17 32);display:flex;align-items:center;justify-content:center;font:600 16px 'Space Grotesk',sans-serif;color:#fff;box-shadow:0 8px 20px rgba(190,80,45,.28)">Start new pattern</div>
+</div>
+</div>
+</x-import>
+<p class="dv-note">The library is the whole home screen — no tab bar, since a single-user tool has nowhere else to go. Collections are reached from setup, where they're actually needed.</p>
+</div>
+
+<div class="dv-opt" id="1b">
+<div class="dv-olabel"><a class="dv-oid" href="#1b">1b</a>Board, bead &amp; palette setup</div>
+<x-import component-from-global-scope="IOSDevice" from="./ios-frame.jsx" hint-size="402px,874px">
+<div style="min-height:100%;box-sizing:border-box;background:#f4f1ea;padding:56px 0 0;font-family:'Space Grotesk',sans-serif">
+<div style="display:flex;align-items:center;justify-content:space-between;padding:6px 18px 10px">
+<span style="font:500 15px 'Space Grotesk',sans-serif;color:rgba(25,23,19,.55)">Cancel</span>
+<span style="font:600 10px 'IBM Plex Mono',monospace;letter-spacing:.1em;color:rgba(25,23,19,.45)">STEP 1 OF 5</span>
+<span style="font:500 15px 'Space Grotesk',sans-serif;color:rgba(25,23,19,.25)">Next</span>
+</div>
+<div style="padding:0 18px 12px"><div style="height:3px;border-radius:2px;background:rgba(25,23,19,.1);overflow:hidden"><div style="width:20%;height:100%;background:oklch(.62 .17 32)"></div></div></div>
+<div style="padding:8px 18px 0;display:flex;flex-direction:column;gap:16px">
+<div><div style="font:700 27px/1.1 'Space Grotesk',sans-serif;color:#191713;letter-spacing:-.02em">Set up the board</div></div>
+
+<div style="background:#fffdf8;border:1px solid rgba(25,23,19,.09);border-radius:14px;padding:14px">
+<div style="font:600 10px 'IBM Plex Mono',monospace;letter-spacing:.1em;color:rgba(25,23,19,.42);margin-bottom:8px">PATTERN NAME</div>
+<div style="font:600 17px 'Space Grotesk',sans-serif;color:#191713;border-bottom:1.5px solid oklch(.62 .17 32);padding-bottom:7px">Ferry sunset</div>
+</div>
+
+<div style="background:#fffdf8;border:1px solid rgba(25,23,19,.09);border-radius:14px;padding:14px">
+<div style="font:600 10px 'IBM Plex Mono',monospace;letter-spacing:.1em;color:rgba(25,23,19,.42);margin-bottom:10px">BEAD SIZE</div>
+<div style="display:flex;gap:6px;padding:3px;background:rgba(25,23,19,.06);border-radius:11px">
+<div style="flex:1;height:38px;border-radius:9px;background:#191713;display:flex;flex-direction:column;align-items:center;justify-content:center"><span style="font:600 13.5px 'Space Grotesk',sans-serif;color:#fff">Regular · midi</span></div>
+<div style="flex:1;height:38px;border-radius:9px;display:flex;align-items:center;justify-content:center"><span style="font:500 13.5px 'Space Grotesk',sans-serif;color:rgba(25,23,19,.6)">Mini</span></div>
+</div>
+<div style="display:flex;justify-content:space-between;margin-top:9px">
+<span style="font:400 11px 'IBM Plex Mono',monospace;color:rgba(25,23,19,.5)">5.0 mm pitch · 5.08 pegs/in</span>
+<span style="font:500 11px 'Space Grotesk',sans-serif;color:oklch(.62 .17 32)">Calibrate</span>
+</div>
+</div>
+
+<div style="background:#fffdf8;border:1px solid rgba(25,23,19,.09);border-radius:14px;padding:14px">
+<div style="display:flex;align-items:baseline;justify-content:space-between;margin-bottom:10px">
+<span style="font:600 10px 'IBM Plex Mono',monospace;letter-spacing:.1em;color:rgba(25,23,19,.42)">BOARD SIZE</span>
+<span style="font:400 11px 'IBM Plex Mono',monospace;color:rgba(25,23,19,.5)">= 5.7 × 5.7 in · 14.5 cm</span>
+</div>
+<div style="display:flex;align-items:center;gap:10px">
+<div style="flex:1;border:1px solid rgba(25,23,19,.14);border-radius:10px;padding:8px 11px">
+<div style="font:400 9.5px 'IBM Plex Mono',monospace;color:rgba(25,23,19,.45)">WIDTH</div>
+<div style="font:600 22px 'IBM Plex Mono',monospace;color:#191713">29</div>
+</div>
+<span style="font:400 15px 'IBM Plex Mono',monospace;color:rgba(25,23,19,.35)">×</span>
+<div style="flex:1;border:1px solid rgba(25,23,19,.14);border-radius:10px;padding:8px 11px">
+<div style="font:400 9.5px 'IBM Plex Mono',monospace;color:rgba(25,23,19,.45)">HEIGHT</div>
+<div style="font:600 22px 'IBM Plex Mono',monospace;color:#191713">29</div>
+</div>
+<div style="width:76px;height:56px;border-radius:10px;background:rgba(25,23,19,.06);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:1px">
+<span style="font:600 13px 'Space Grotesk',sans-serif;color:#191713">pegs</span>
+<span style="font:400 9px 'IBM Plex Mono',monospace;color:rgba(25,23,19,.45)">in · cm · pegs</span>
+</div>
+</div>
+<div style="display:flex;align-items:center;justify-content:space-between;margin-top:12px;padding-top:12px;border-top:1px solid rgba(25,23,19,.08)">
+<span style="font:500 13.5px 'Space Grotesk',sans-serif;color:rgba(25,23,19,.75)">Interlocked boards</span>
+<div style="display:flex;align-items:center;gap:12px"><span style="font:500 15px 'IBM Plex Mono',monospace;color:rgba(25,23,19,.3)">−</span><span style="font:600 14px 'IBM Plex Mono',monospace;color:#191713">1 × 1</span><span style="font:500 15px 'IBM Plex Mono',monospace;color:#191713">+</span></div>
+</div>
+</div>
+
+<div style="display:flex;flex-direction:column;gap:8px">
+<div style="font:600 10px 'IBM Plex Mono',monospace;letter-spacing:.1em;color:rgba(25,23,19,.42)">COLOR SOURCE</div>
+<sc-if value="{{ modeAuto }}" hint-placeholder-val="{{ true }}">
+<div style="background:#fffdf8;border:1.5px solid oklch(.62 .17 32);border-radius:14px;padding:13px 14px">
+<div style="display:flex;align-items:center;justify-content:space-between">
+<div style="display:flex;align-items:center;gap:10px">
+<div style="width:18px;height:18px;border-radius:9px;border:5px solid oklch(.62 .17 32);box-sizing:border-box"></div>
+<span style="font:600 15px 'Space Grotesk',sans-serif;color:#191713">Auto palette</span>
+</div>
+<div style="display:flex;align-items:center;gap:7px">
+<div style="min-width:56px;border:1.5px solid oklch(.62 .17 32);border-radius:9px;padding:5px 10px;display:flex;align-items:baseline;gap:2px;background:#fff">
+<span style="font:600 20px 'IBM Plex Mono',monospace;color:#191713">{{ colorLabel }}</span>
+<span style="width:1px;height:17px;background:oklch(.62 .17 32);align-self:center"></span>
+</div>
+<span style="font:400 11px 'IBM Plex Mono',monospace;color:rgba(25,23,19,.45)">/60</span>
+</div>
+</div>
+<div style="padding-left:28px;margin-top:14px;display:flex;flex-direction:column;gap:12px">
+<div style="height:4px;border-radius:2px;background:rgba(25,23,19,.12);position:relative"><div style="position:absolute;left:0;top:0;height:100%;border-radius:2px;background:oklch(.62 .17 32);width:{{ colorPct }}"></div><div style="position:absolute;left:{{ colorPct }};top:-11px;width:26px;height:26px;margin-left:-13px;border-radius:13px;background:#fff;border:1px solid rgba(25,23,19,.1);box-shadow:0 2px 6px rgba(0,0,0,.18)"></div></div>
+<div style="display:flex;justify-content:space-between;font:400 9.5px 'IBM Plex Mono',monospace;color:rgba(25,23,19,.4)"><span>2</span><span>TYPE ANY NUMBER · 2–60</span><span>60</span></div>
+<div style="display:flex;gap:6px"><div style="flex:1;height:30px;border-radius:8px;background:rgba(25,23,19,.06);display:flex;align-items:center;justify-content:center;font:600 12px 'IBM Plex Mono',monospace;color:rgba(25,23,19,.7)">8</div><div style="flex:1;height:30px;border-radius:8px;background:rgba(25,23,19,.06);display:flex;align-items:center;justify-content:center;font:600 12px 'IBM Plex Mono',monospace;color:rgba(25,23,19,.7)">12</div><div style="flex:1;height:30px;border-radius:8px;background:rgba(25,23,19,.06);display:flex;align-items:center;justify-content:center;font:600 12px 'IBM Plex Mono',monospace;color:rgba(25,23,19,.7)">16</div><div style="flex:1;height:30px;border-radius:8px;background:rgba(25,23,19,.06);display:flex;align-items:center;justify-content:center;font:600 12px 'IBM Plex Mono',monospace;color:rgba(25,23,19,.7)">24</div><div style="flex:1;height:30px;border-radius:8px;background:rgba(25,23,19,.06);display:flex;align-items:center;justify-content:center;font:600 12px 'IBM Plex Mono',monospace;color:rgba(25,23,19,.7)">32</div><div style="flex:1;height:30px;border-radius:8px;background:rgba(25,23,19,.06);display:flex;align-items:center;justify-content:center;font:600 12px 'IBM Plex Mono',monospace;color:rgba(25,23,19,.7)">60</div></div>
+<div style="font:400 11.5px/1.45 'Space Grotesk',sans-serif;color:rgba(25,23,19,.5)">Fewer colors read graphic and cost less; more hold gradients. Picks the {{ colorLabel }} nearest matches from the 60-color catalog — you may not own them all.</div>
+</div>
+</div>
+<div style="background:#fffdf8;border:1px solid rgba(25,23,19,.09);border-radius:14px;padding:13px 14px">
+<div style="display:flex;align-items:center;gap:10px">
+<div style="width:18px;height:18px;border-radius:9px;border:1.5px solid rgba(25,23,19,.25);box-sizing:border-box"></div>
+<span style="font:600 15px 'Space Grotesk',sans-serif;color:#191713">My collection</span>
+<span style="margin-left:auto;font:500 12.5px 'Space Grotesk',sans-serif;color:oklch(.62 .17 32)">My {{ collectionCount }} Colors ›</span>
+</div>
+<div style="display:flex;flex-wrap:wrap;gap:4px;margin-top:10px;padding-left:28px">
+<sc-for list="{{ collectionSwatches }}" as="sw" hint-placeholder-count="24">
+<div style="width:19px;height:19px;border-radius:4px;background:{{ sw.h }};border:1px solid rgba(25,23,19,.1)"></div>
+</sc-for>
+</div>
+</div>
+</sc-if>
+<sc-if value="{{ modeCollection }}">
+<div style="background:#fffdf8;border:1px solid rgba(25,23,19,.09);border-radius:14px;padding:13px 14px">
+<div style="display:flex;align-items:center;justify-content:space-between">
+<div style="display:flex;align-items:center;gap:10px">
+<div style="width:18px;height:18px;border-radius:9px;border:1.5px solid rgba(25,23,19,.25);box-sizing:border-box"></div>
+<span style="font:600 15px 'Space Grotesk',sans-serif;color:#191713">Auto palette</span>
+</div>
+<span style="font:400 11px 'IBM Plex Mono',monospace;color:rgba(25,23,19,.45)">2–60 FROM CATALOG</span>
+</div>
+</div>
+<div style="background:#fffdf8;border:1.5px solid oklch(.62 .17 32);border-radius:14px;padding:13px 14px">
+<div style="display:flex;align-items:center;gap:10px">
+<div style="width:18px;height:18px;border-radius:9px;border:5px solid oklch(.62 .17 32);box-sizing:border-box"></div>
+<span style="font:600 15px 'Space Grotesk',sans-serif;color:#191713">My collection</span>
+<span style="margin-left:auto;font:500 12.5px 'Space Grotesk',sans-serif;color:oklch(.62 .17 32)">My {{ collectionCount }} Colors ›</span>
+</div>
+<div style="display:flex;flex-wrap:wrap;gap:4px;margin-top:10px;padding-left:28px">
+<sc-for list="{{ collectionSwatches }}" as="sw" hint-placeholder-count="24">
+<div style="width:19px;height:19px;border-radius:4px;background:{{ sw.h }};border:1px solid rgba(25,23,19,.1)"></div>
+</sc-for>
+</div>
+<div style="margin:12px 0 0 28px;padding:10px 12px;border-radius:10px;background:rgba(190,80,45,.09);font:500 11.5px/1.45 'Space Grotesk',sans-serif;color:#7a3418">Locked to these {{ collectionCount }} colors. Nothing outside your collection can appear in the pattern — the color count follows the collection, not a slider.</div>
+</div>
+</sc-if>
+</div>
+
+<div style="display:flex;align-items:center;justify-content:space-between;background:#fffdf8;border:1px solid rgba(25,23,19,.09);border-radius:14px;padding:14px">
+<div><div style="font:600 15px 'Space Grotesk',sans-serif;color:#191713">Dithering</div>
+<div style="font:400 11.5px 'Space Grotesk',sans-serif;color:rgba(25,23,19,.5);margin-top:2px">Smoother gradients, noisier pattern</div></div>
+<div style="width:51px;height:31px;border-radius:16px;background:rgba(25,23,19,.15);position:relative;flex:none"><div style="position:absolute;top:2px;left:2px;width:27px;height:27px;border-radius:14px;background:#fff;box-shadow:0 1px 3px rgba(0,0,0,.2)"></div></div>
+</div>
+<div style="height:40px"></div>
+</div>
+</div>
+</x-import>
+<p class="dv-note">Width and height are separate mono numerals with one shared unit chip — the unit is a property of the entry, not of each field. Live inch/cm readout sits in the section header so the conversion is never hidden behind a tap.</p>
+</div>
+
+<div class="dv-opt" id="1c">
+<div class="dv-olabel"><a class="dv-oid" href="#1c">1c</a>Photo + crop to board</div>
+<x-import component-from-global-scope="IOSDevice" from="./ios-frame.jsx" dark="{{ true }}" hint-size="402px,874px">
+<div style="min-height:100%;box-sizing:border-box;background:#0e0e11;padding:56px 0 0;font-family:'Space Grotesk',sans-serif;display:flex;flex-direction:column">
+<div style="display:flex;align-items:center;justify-content:space-between;padding:6px 18px 14px">
+<span style="font:500 15px 'Space Grotesk',sans-serif;color:rgba(255,255,255,.55)">Back</span>
+<span style="font:600 10px 'IBM Plex Mono',monospace;letter-spacing:.1em;color:rgba(255,255,255,.4)">STEP 2 OF 5</span>
+<span style="font:600 15px 'Space Grotesk',sans-serif;color:oklch(.7 .15 32)">Perlify</span>
+</div>
+<div style="position:relative;width:100%;height:402px;background:#000;overflow:hidden">
+<img src="data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7" data-img="imgPhoto" alt="" style="position:absolute;top:-24px;left:0;width:402px;height:450px;object-fit:cover;display:block">
+<div style="position:absolute;inset:0;box-shadow:inset 0 0 0 2000px rgba(0,0,0,.45)"></div>
+<div style="position:absolute;top:31px;left:31px;width:340px;height:340px;box-shadow:0 0 0 2000px rgba(0,0,0,.45)">
+<img src="data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7" data-img="imgPhoto" alt="" style="position:absolute;top:-55px;left:-31px;width:402px;height:450px;object-fit:cover;display:block">
+<div style="position:absolute;inset:0;border:1px solid rgba(255,255,255,.9)"></div>
+<div style="position:absolute;inset:0;background:repeating-linear-gradient(to right,transparent 0 113px,rgba(255,255,255,.28) 113px 114px),repeating-linear-gradient(to bottom,transparent 0 113px,rgba(255,255,255,.28) 113px 114px)"></div>
+<div style="position:absolute;top:-3px;left:-3px;width:22px;height:22px;border-top:4px solid #fff;border-left:4px solid #fff"></div>
+<div style="position:absolute;top:-3px;right:-3px;width:22px;height:22px;border-top:4px solid #fff;border-right:4px solid #fff"></div>
+<div style="position:absolute;bottom:-3px;left:-3px;width:22px;height:22px;border-bottom:4px solid #fff;border-left:4px solid #fff"></div>
+<div style="position:absolute;bottom:-3px;right:-3px;width:22px;height:22px;border-bottom:4px solid #fff;border-right:4px solid #fff"></div>
+</div>
+<div style="position:absolute;bottom:12px;left:0;right:0;display:flex;justify-content:center"><span style="font:500 10.5px 'IBM Plex Mono',monospace;color:rgba(255,255,255,.85);background:rgba(0,0,0,.5);padding:5px 10px;border-radius:12px">CROP LOCKED 29:29 · PINCH TO ZOOM</span></div>
+</div>
+<div style="padding:20px 18px 0;display:flex;flex-direction:column;gap:16px">
+<div style="display:flex;gap:6px;padding:3px;background:rgba(255,255,255,.08);border-radius:11px">
+<div style="flex:1;height:38px;border-radius:9px;background:rgba(255,255,255,.92);display:flex;align-items:center;justify-content:center;font:600 13.5px 'Space Grotesk',sans-serif;color:#0e0e11">Camera roll</div>
+<div style="flex:1;height:38px;border-radius:9px;display:flex;align-items:center;justify-content:center;font:500 13.5px 'Space Grotesk',sans-serif;color:rgba(255,255,255,.6)">Take photo</div>
+</div>
+<div style="display:grid;grid-template-columns:repeat(4,1fr);gap:6px">
+<img src="data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7" data-img="imgThumbPhotoA" alt="" style="width:100%;aspect-ratio:1;object-fit:cover;border-radius:7px;display:block;outline:2px solid oklch(.7 .15 32);outline-offset:1px">
+<img src="data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7" data-img="imgThumbPhotoB" alt="" style="width:100%;aspect-ratio:1;object-fit:cover;border-radius:7px;display:block">
+<img src="data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7" data-img="imgThumbPhotoC" alt="" style="width:100%;aspect-ratio:1;object-fit:cover;border-radius:7px;display:block">
+<div style="width:100%;aspect-ratio:1;border-radius:7px;background:rgba(255,255,255,.07);display:flex;align-items:center;justify-content:center;font:400 10px 'IBM Plex Mono',monospace;color:rgba(255,255,255,.4);text-align:center">ALL<br>PHOTOS</div>
+</div>
+<div style="font:400 12px/1.5 'Space Grotesk',sans-serif;color:rgba(255,255,255,.45)">Nothing leaves the phone — matching runs on-device, so this works in airplane mode.</div>
+</div>
+</div>
+</x-import>
+<p class="dv-note">The crop frame is locked to the board's aspect ratio from step 1, so what you frame is exactly what gets beaded. Dark UI starts here — the moment color judgement begins.</p>
+</div>
+
+<div class="dv-opt" id="1d">
+<div class="dv-olabel"><a class="dv-oid" href="#1d">1d</a>Perlified result + adjust</div>
+<x-import component-from-global-scope="IOSDevice" from="./ios-frame.jsx" dark="{{ true }}" hint-size="402px,874px">
+<div style="min-height:100%;box-sizing:border-box;background:#0e0e11;padding:56px 0 0;font-family:'Space Grotesk',sans-serif;display:flex;flex-direction:column">
+<div style="display:flex;align-items:center;justify-content:space-between;padding:6px 18px 0">
+<span style="font:500 15px 'Space Grotesk',sans-serif;color:rgba(255,255,255,.55)">Back</span>
+<div style="text-align:center"><div style="font:600 14px 'Space Grotesk',sans-serif;color:#fff">Ferry sunset</div><div style="font:400 10px 'IBM Plex Mono',monospace;color:rgba(255,255,255,.4)">29 × 29 · MIDI</div></div>
+<span style="font:600 15px 'Space Grotesk',sans-serif;color:oklch(.7 .15 32)">Preview</span>
+</div>
+<div style="flex:none;display:flex;flex-direction:column;align-items:center;gap:12px;padding:16px 0 14px">
+<img src="data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7" data-img="imgGrid" alt="" style="display:block;width:261px;height:261px;border-radius:3px;box-shadow:0 18px 40px rgba(0,0,0,.55)">
+<div style="display:flex;gap:6px">
+<span style="font:500 10.5px 'IBM Plex Mono',monospace;color:rgba(255,255,255,.75);background:rgba(255,255,255,.08);padding:5px 9px;border-radius:11px">{{ beadCount }} BEADS</span>
+<span style="font:500 10.5px 'IBM Plex Mono',monospace;color:rgba(255,255,255,.75);background:rgba(255,255,255,.08);padding:5px 9px;border-radius:11px">{{ colorCount }} COLORS</span>
+<span style="font:500 10.5px 'IBM Plex Mono',monospace;color:rgba(255,255,255,.75);background:rgba(255,255,255,.08);padding:5px 9px;border-radius:11px">{{ emptyCount }} EMPTY</span>
+</div>
+</div>
+<div style="margin-top:auto;background:#1a1a1e;border-radius:22px 22px 0 0;padding:10px 18px 44px;box-shadow:0 -12px 30px rgba(0,0,0,.4)">
+<div style="width:38px;height:4px;border-radius:2px;background:rgba(255,255,255,.22);margin:0 auto 14px"></div>
+<div style="display:flex;gap:4px;padding:3px;background:rgba(255,255,255,.07);border-radius:11px;margin-bottom:18px">
+<div style="flex:1;height:34px;border-radius:9px;background:rgba(255,255,255,.92);display:flex;align-items:center;justify-content:center;font:600 13px 'Space Grotesk',sans-serif;color:#0e0e11">Adjust</div>
+<div style="flex:1;height:34px;border-radius:9px;display:flex;align-items:center;justify-content:center;font:500 13px 'Space Grotesk',sans-serif;color:rgba(255,255,255,.6)">Colors</div>
+<div style="flex:1;height:34px;border-radius:9px;display:flex;align-items:center;justify-content:center;font:500 13px 'Space Grotesk',sans-serif;color:rgba(255,255,255,.6)">Edit</div>
+</div>
+<div style="display:flex;flex-direction:column;gap:17px">
+<div>
+<div style="display:flex;justify-content:space-between;margin-bottom:9px"><span style="font:500 13px 'Space Grotesk',sans-serif;color:rgba(255,255,255,.85)">Contrast</span><span style="font:500 12px 'IBM Plex Mono',monospace;color:oklch(.75 .13 32)">+18</span></div>
+<div style="height:4px;border-radius:2px;background:rgba(255,255,255,.14);position:relative"><div style="position:absolute;left:0;top:0;height:100%;width:62%;background:oklch(.7 .15 32);border-radius:2px"></div><div style="position:absolute;left:62%;top:-11px;width:26px;height:26px;margin-left:-13px;border-radius:13px;background:#fff;box-shadow:0 2px 8px rgba(0,0,0,.5)"></div></div>
+</div>
+<div>
+<div style="display:flex;justify-content:space-between;margin-bottom:9px"><span style="font:500 13px 'Space Grotesk',sans-serif;color:rgba(255,255,255,.85)">Saturation</span><span style="font:500 12px 'IBM Plex Mono',monospace;color:oklch(.75 .13 32)">+34</span></div>
+<div style="height:4px;border-radius:2px;background:rgba(255,255,255,.14);position:relative"><div style="position:absolute;left:0;top:0;height:100%;width:74%;background:oklch(.7 .15 32);border-radius:2px"></div><div style="position:absolute;left:74%;top:-11px;width:26px;height:26px;margin-left:-13px;border-radius:13px;background:#fff;box-shadow:0 2px 8px rgba(0,0,0,.5)"></div></div>
+</div>
+<div>
+<div style="display:flex;justify-content:space-between;margin-bottom:9px"><span style="font:500 13px 'Space Grotesk',sans-serif;color:rgba(255,255,255,.85)">Brightness</span><span style="font:500 12px 'IBM Plex Mono',monospace;color:rgba(255,255,255,.5)">0</span></div>
+<div style="height:4px;border-radius:2px;background:rgba(255,255,255,.14);position:relative"><div style="position:absolute;left:50%;top:-11px;width:26px;height:26px;margin-left:-13px;border-radius:13px;background:#fff;box-shadow:0 2px 8px rgba(0,0,0,.5)"></div></div>
+</div>
+<sc-if value="{{ modeAuto }}" hint-placeholder-val="{{ true }}">
+<div style="padding-top:2px">
+<div style="display:flex;justify-content:space-between;margin-bottom:9px"><span style="font:500 13px 'Space Grotesk',sans-serif;color:rgba(255,255,255,.85)">Colors used</span><span style="font:500 12px 'IBM Plex Mono',monospace;color:oklch(.75 .13 32)">{{ colorLabel }} / 60</span></div>
+<div style="height:4px;border-radius:2px;background:rgba(255,255,255,.14);position:relative;margin-bottom:11px"><div style="position:absolute;left:0;top:0;height:100%;border-radius:2px;background:oklch(.7 .15 32);width:{{ colorPct }}"></div><div style="position:absolute;left:{{ colorPct }};top:-11px;width:26px;height:26px;margin-left:-13px;border-radius:13px;background:#fff;box-shadow:0 2px 8px rgba(0,0,0,.5)"></div></div>
+<div style="display:flex;gap:5px"><div style="flex:1;height:28px;border-radius:8px;background:rgba(255,255,255,.08);display:flex;align-items:center;justify-content:center;font:600 11.5px 'IBM Plex Mono',monospace;color:rgba(255,255,255,.7)">8</div><div style="flex:1;height:28px;border-radius:8px;background:rgba(255,255,255,.08);display:flex;align-items:center;justify-content:center;font:600 11.5px 'IBM Plex Mono',monospace;color:rgba(255,255,255,.7)">12</div><div style="flex:1;height:28px;border-radius:8px;background:rgba(255,255,255,.08);display:flex;align-items:center;justify-content:center;font:600 11.5px 'IBM Plex Mono',monospace;color:rgba(255,255,255,.7)">16</div><div style="flex:1;height:28px;border-radius:8px;background:rgba(255,255,255,.08);display:flex;align-items:center;justify-content:center;font:600 11.5px 'IBM Plex Mono',monospace;color:rgba(255,255,255,.7)">24</div><div style="flex:1;height:28px;border-radius:8px;background:rgba(255,255,255,.08);display:flex;align-items:center;justify-content:center;font:600 11.5px 'IBM Plex Mono',monospace;color:rgba(255,255,255,.7)">32</div><div style="flex:1;height:28px;border-radius:8px;background:rgba(255,255,255,.08);display:flex;align-items:center;justify-content:center;font:600 11.5px 'IBM Plex Mono',monospace;color:rgba(255,255,255,.7)">60</div></div>
+</div>
+</sc-if>
+<sc-if value="{{ modeCollection }}">
+<div style="padding-top:2px">
+<div style="display:flex;justify-content:space-between;margin-bottom:9px"><span style="font:500 13px 'Space Grotesk',sans-serif;color:rgba(255,255,255,.85)">Colors used</span><span style="font:500 12px 'IBM Plex Mono',monospace;color:oklch(.75 .13 32)">{{ colorLabel }} OWNED</span></div>
+<div style="display:flex;align-items:center;gap:9px;padding:10px 12px;border-radius:10px;background:rgba(255,255,255,.06)">
+<div style="width:11px;height:11px;border-radius:2px;border:2px solid oklch(.75 .13 32);box-sizing:border-box;flex:none"></div>
+<span style="font:500 11.5px/1.4 'Space Grotesk',sans-serif;color:rgba(255,255,255,.7)">Matching is locked to My {{ collectionCount }} Colors. Switch to auto palette in setup to change the count.</span>
+</div>
+</div>
+</sc-if>
+<div style="display:flex;align-items:center;justify-content:space-between">
+<span style="font:500 13px 'Space Grotesk',sans-serif;color:rgba(255,255,255,.85)">Gridlines</span>
+<sc-if value="{{ gridOn }}" hint-placeholder-val="{{ true }}"><div style="width:47px;height:29px;border-radius:15px;background:oklch(.62 .17 32);position:relative;flex:none"><div style="position:absolute;top:2px;right:2px;width:25px;height:25px;border-radius:13px;background:#fff"></div></div></sc-if>
+<sc-if value="{{ gridOff }}"><div style="width:47px;height:29px;border-radius:15px;background:rgba(255,255,255,.16);position:relative;flex:none"><div style="position:absolute;top:2px;left:2px;width:25px;height:25px;border-radius:13px;background:#fff"></div></div></sc-if>
+</div>
+<div style="display:flex;align-items:center;justify-content:space-between">
+<span style="font:500 13px 'Space Grotesk',sans-serif;color:rgba(255,255,255,.85)">Floyd–Steinberg dither</span>
+<div style="width:47px;height:29px;border-radius:15px;background:rgba(255,255,255,.16);position:relative;flex:none"><div style="position:absolute;top:2px;left:2px;width:25px;height:25px;border-radius:13px;background:#fff"></div></div>
+</div>
+</div>
+</div>
+</div>
+</x-import>
+<p class="dv-note">Sliders re-run Lab matching live, so the sheet stays shallow and the grid stays visible above it. Counts update as you drag — they're the numbers you'll actually shop against.</p>
+</div>
+
+<div class="dv-opt" id="1e">
+<div class="dv-olabel"><a class="dv-oid" href="#1e">1e</a>Manual editing — finger</div>
+<x-import component-from-global-scope="IOSDevice" from="./ios-frame.jsx" dark="{{ true }}" hint-size="402px,874px">
+<div style="min-height:100%;box-sizing:border-box;background:#0e0e11;padding:56px 0 0;font-family:'Space Grotesk',sans-serif;display:flex;flex-direction:column">
+<div style="display:flex;align-items:center;justify-content:space-between;padding:6px 16px 12px">
+<div style="display:flex;gap:8px">
+<div style="width:38px;height:34px;border-radius:9px;background:rgba(255,255,255,.1);display:flex;align-items:center;justify-content:center;font:500 15px 'IBM Plex Mono',monospace;color:#fff">↶</div>
+<div style="width:38px;height:34px;border-radius:9px;background:rgba(255,255,255,.05);display:flex;align-items:center;justify-content:center;font:500 15px 'IBM Plex Mono',monospace;color:rgba(255,255,255,.3)">↷</div>
+</div>
+<span style="font:400 10px 'IBM Plex Mono',monospace;color:rgba(255,255,255,.4)">ZOOM 320% · CELL 14,17</span>
+<span style="font:600 15px 'Space Grotesk',sans-serif;color:oklch(.7 .15 32)">Done</span>
+</div>
+<div style="display:flex;gap:6px;padding:0 16px 14px;overflow:hidden">
+<div style="height:32px;padding:0 12px;border-radius:16px;background:#fff;display:flex;align-items:center;gap:6px"><div style="width:11px;height:11px;border-radius:2px;background:{{ selHex }}"></div><span style="font:600 12.5px 'Space Grotesk',sans-serif;color:#0e0e11">Paint</span></div>
+<div style="height:32px;padding:0 12px;border-radius:16px;background:rgba(255,255,255,.09);display:flex;align-items:center;gap:6px"><div style="width:11px;height:11px;border-radius:6px;border:1.5px solid rgba(255,255,255,.6);box-sizing:border-box"></div><span style="font:500 12.5px 'Space Grotesk',sans-serif;color:rgba(255,255,255,.8)">Clear</span></div>
+<div style="height:32px;padding:0 12px;border-radius:16px;background:rgba(255,255,255,.09);display:flex;align-items:center;justify-content:center"><span style="font:500 12.5px 'Space Grotesk',sans-serif;color:rgba(255,255,255,.8)">Swap</span></div>
+<div style="height:32px;padding:0 12px;border-radius:16px;background:rgba(255,255,255,.09);display:flex;align-items:center;justify-content:center"><span style="font:500 12.5px 'Space Grotesk',sans-serif;color:rgba(255,255,255,.8)">Rotate</span></div>
+<div style="height:32px;padding:0 12px;border-radius:16px;background:rgba(255,255,255,.09);display:flex;align-items:center;justify-content:center"><span style="font:500 12.5px 'Space Grotesk',sans-serif;color:rgba(255,255,255,.8)">Flip</span></div>
+</div>
+<div style="position:relative;background:#08080a;padding:14px 0;display:flex;justify-content:center;border-top:1px solid rgba(255,255,255,.06);border-bottom:1px solid rgba(255,255,255,.06)">
+<div style="position:relative">
+<img src="data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7" data-img="imgGridZoom" alt="" style="display:block;width:338px;height:338px">
+<div style="position:absolute;left:104px;top:78px;width:26px;height:26px;box-sizing:border-box;border:2.5px solid #fff;border-radius:3px;box-shadow:0 0 0 2px rgba(0,0,0,.5),0 0 14px rgba(255,255,255,.4)"></div>
+<div style="position:absolute;left:78px;top:44px;width:78px;height:26px;box-sizing:border-box;border:1.5px dashed rgba(255,255,255,.45);border-radius:3px"></div>
+</div>
+</div>
+<div style="margin-top:auto;background:#1a1a1e;border-radius:22px 22px 0 0;padding:10px 16px 44px">
+<div style="width:38px;height:4px;border-radius:2px;background:rgba(255,255,255,.22);margin:0 auto 12px"></div>
+<div style="display:flex;align-items:baseline;justify-content:space-between;margin-bottom:11px">
+<span style="font:600 10px 'IBM Plex Mono',monospace;letter-spacing:.1em;color:rgba(255,255,255,.4)">ACTIVE PALETTE · {{ colorLabel }} COLORS</span>
+<span style="font:500 12px 'Space Grotesk',sans-serif;color:oklch(.75 .13 32)">Catalog +</span>
+</div>
+<div style="display:grid;grid-template-columns:repeat(7,1fr);gap:9px">
+<sc-for list="{{ swatchesTop }}" as="sw" hint-placeholder-count="14">
+<div style="display:flex;flex-direction:column;align-items:center;gap:4px">
+<div style="width:100%;aspect-ratio:1;border-radius:8px;background:{{ sw.h }};box-shadow:{{ sw.ring }}"></div>
+<span style="font:400 8.5px 'IBM Plex Mono',monospace;color:rgba(255,255,255,.45)">{{ sw.s }}</span>
+</div>
+</sc-for>
+</div>
+<div style="display:flex;align-items:center;justify-content:space-between;margin-top:14px;padding-top:12px;border-top:1px solid rgba(255,255,255,.08)">
+<span style="font:500 13px 'Space Grotesk',sans-serif;color:#fff">{{ selName }}</span>
+<span style="font:400 11.5px 'IBM Plex Mono',monospace;color:rgba(255,255,255,.5)">{{ selCount }} placed</span>
+</div>
+</div>
+</div>
+</x-import>
+<p class="dv-note">Tap targets stay ~26 px at 320% zoom — comfortable for a fingertip. The dashed rectangle is the last stroke; on iPad the same box becomes the Pencil hover preview.</p>
+</div>
+
+<div class="dv-opt" id="1f">
+<div class="dv-olabel"><a class="dv-oid" href="#1f">1f</a>Final preview — contrast check</div>
+<x-import component-from-global-scope="IOSDevice" from="./ios-frame.jsx" dark="{{ true }}" hint-size="402px,874px">
+<div style="min-height:100%;box-sizing:border-box;background:#000;padding:56px 0 0;font-family:'Space Grotesk',sans-serif;display:flex;flex-direction:column">
+<div style="display:flex;align-items:center;justify-content:space-between;padding:6px 18px 0">
+<span style="font:500 15px 'Space Grotesk',sans-serif;color:rgba(255,255,255,.55)">Back</span>
+<span style="font:600 10px 'IBM Plex Mono',monospace;letter-spacing:.1em;color:rgba(255,255,255,.4)">STEP 4 OF 5</span>
+<span style="font:600 15px 'Space Grotesk',sans-serif;color:oklch(.7 .15 32)">Export</span>
+</div>
+<div style="flex:1;display:flex;align-items:center;justify-content:center;padding:24px 0">
+<img src="data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7" data-img="imgGridPreview" alt="" style="display:block;width:348px;height:348px;box-shadow:0 0 0 1px rgba(255,255,255,.14)">
+</div>
+<div style="padding:0 18px 44px;display:flex;flex-direction:column;gap:14px">
+<div style="display:flex;flex-direction:column;gap:9px">
+<span style="font:600 10px 'IBM Plex Mono',monospace;letter-spacing:.1em;color:rgba(255,255,255,.4)">BACKGROUND BEHIND PATTERN</span>
+<div style="display:flex;gap:6px;padding:3px;background:rgba(255,255,255,.08);border-radius:11px">
+<div style="flex:1;height:38px;border-radius:9px;display:flex;align-items:center;justify-content:center;gap:8px"><div style="width:14px;height:14px;border-radius:3px;background:#fff"></div><span style="font:500 13.5px 'Space Grotesk',sans-serif;color:rgba(255,255,255,.6)">White</span></div>
+<div style="flex:1;height:38px;border-radius:9px;background:rgba(255,255,255,.92);display:flex;align-items:center;justify-content:center;gap:8px"><div style="width:14px;height:14px;border-radius:3px;background:#000"></div><span style="font:600 13.5px 'Space Grotesk',sans-serif;color:#0e0e11">Black</span></div>
+</div>
+</div>
+<div style="display:flex;align-items:center;justify-content:space-between;background:rgba(255,255,255,.06);border-radius:14px;padding:13px 15px">
+<div><div style="font:600 14.5px 'Space Grotesk',sans-serif;color:#fff">Symbol overlay</div><div style="font:400 11.5px 'Space Grotesk',sans-serif;color:rgba(255,255,255,.45);margin-top:2px">Letter per color — for B&amp;W printing</div></div>
+<sc-if value="{{ symOn }}" hint-placeholder-val="{{ true }}"><div style="width:47px;height:29px;border-radius:15px;background:oklch(.62 .17 32);position:relative;flex:none"><div style="position:absolute;top:2px;right:2px;width:25px;height:25px;border-radius:13px;background:#fff"></div></div></sc-if>
+<sc-if value="{{ symOff }}"><div style="width:47px;height:29px;border-radius:15px;background:rgba(255,255,255,.16);position:relative;flex:none"><div style="position:absolute;top:2px;left:2px;width:25px;height:25px;border-radius:13px;background:#fff"></div></div></sc-if>
+</div>
+<div style="display:flex;align-items:center;justify-content:space-between;background:rgba(255,255,255,.06);border-radius:14px;padding:13px 15px">
+<div><div style="font:600 14.5px 'Space Grotesk',sans-serif;color:#fff">Gridlines</div><div style="font:400 11.5px 'Space Grotesk',sans-serif;color:rgba(255,255,255,.45);margin-top:2px">Off shows the finished piece as beaded</div></div>
+<sc-if value="{{ gridOn }}" hint-placeholder-val="{{ true }}"><div style="width:47px;height:29px;border-radius:15px;background:oklch(.62 .17 32);position:relative;flex:none"><div style="position:absolute;top:2px;right:2px;width:25px;height:25px;border-radius:13px;background:#fff"></div></div></sc-if>
+<sc-if value="{{ gridOff }}"><div style="width:47px;height:29px;border-radius:15px;background:rgba(255,255,255,.16);position:relative;flex:none"><div style="position:absolute;top:2px;left:2px;width:25px;height:25px;border-radius:13px;background:#fff"></div></div></sc-if>
+</div>
+<div style="font:400 11.5px/1.5 'Space Grotesk',sans-serif;color:rgba(255,255,255,.4)">Display only — toggling these never changes a bead.</div>
+</div>
+</div>
+</x-import>
+<p class="dv-note">Full-bleed black, no chrome around the art: the point of this screen is judging the design, not operating the app. Same screen with the toggle flipped gives the white-background read.</p>
+</div>
+
+<div class="dv-opt" id="1g">
+<div class="dv-olabel"><a class="dv-oid" href="#1g">1g</a>Export PDF + legend</div>
+<x-import component-from-global-scope="IOSDevice" from="./ios-frame.jsx" dark="{{ true }}" hint-size="402px,874px">
+<div style="min-height:100%;box-sizing:border-box;background:#0e0e11;padding:56px 0 0;font-family:'Space Grotesk',sans-serif;display:flex;flex-direction:column">
+<div style="display:flex;align-items:center;justify-content:center;padding:6px 18px 10px;opacity:.5">
+<img src="data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7" data-img="imgGridMini" alt="" style="display:block;width:174px;height:174px;border-radius:2px">
+</div>
+<div style="margin-top:auto;background:#fffdf8;border-radius:24px 24px 0 0;padding:12px 18px 44px;display:flex;flex-direction:column;gap:16px">
+<div style="width:38px;height:4px;border-radius:2px;background:rgba(25,23,19,.18);margin:0 auto 4px"></div>
+<div style="display:flex;align-items:flex-end;justify-content:space-between">
+<div><div style="font:700 24px/1.1 'Space Grotesk',sans-serif;color:#191713;letter-spacing:-.02em">Export blueprint</div>
+<div style="font:400 11px 'IBM Plex Mono',monospace;color:rgba(25,23,19,.5);margin-top:4px">2 PAGES · A4 · 1:1 SCALE</div></div>
+<span style="font:500 13px 'Space Grotesk',sans-serif;color:rgba(25,23,19,.5)">Options</span>
+</div>
+<div style="display:flex;flex-direction:column;gap:1px;background:rgba(25,23,19,.08);border-radius:12px;overflow:hidden">
+<div style="display:flex;align-items:center;justify-content:space-between;background:#f4f1ea;padding:12px 14px"><span style="font:500 13.5px 'Space Grotesk',sans-serif;color:#191713">Include symbol overlay</span><span style="font:600 12px 'IBM Plex Mono',monospace;color:oklch(.55 .16 32)">{{ symWord }}</span></div>
+<div style="display:flex;align-items:center;justify-content:space-between;background:#f4f1ea;padding:12px 14px"><span style="font:500 13.5px 'Space Grotesk',sans-serif;color:#191713">Gridlines</span><span style="font:600 12px 'IBM Plex Mono',monospace;color:oklch(.55 .16 32)">{{ gridWord }}</span></div>
+<div style="display:flex;align-items:center;justify-content:space-between;background:#f4f1ea;padding:12px 14px"><span style="font:500 13.5px 'Space Grotesk',sans-serif;color:#191713">Heavier line every 10 pegs</span><span style="font:600 12px 'IBM Plex Mono',monospace;color:oklch(.55 .16 32)">ON</span></div>
+<div style="display:flex;align-items:center;justify-content:space-between;background:#f4f1ea;padding:12px 14px"><span style="font:500 13.5px 'Space Grotesk',sans-serif;color:#191713">Split across pages</span><span style="font:600 12px 'IBM Plex Mono',monospace;color:rgba(25,23,19,.4)">AUTO</span></div>
+</div>
+<div>
+<div style="display:flex;align-items:baseline;justify-content:space-between;margin-bottom:8px">
+<span style="font:600 10px 'IBM Plex Mono',monospace;letter-spacing:.1em;color:rgba(25,23,19,.45)">BEAD LEGEND</span>
+<span style="font:400 10.5px 'IBM Plex Mono',monospace;color:rgba(25,23,19,.45)">{{ beadCount }} TOTAL · {{ emptyCount }} EMPTY</span>
+</div>
+<div style="display:flex;flex-direction:column;gap:7px">
+<sc-for list="{{ legend }}" as="row" hint-placeholder-count="7">
+<div style="display:flex;align-items:center;gap:10px">
+<div style="width:22px;height:22px;border-radius:5px;background:{{ row.h }};border:1px solid rgba(25,23,19,.12);flex:none"></div>
+<span style="width:20px;font:600 11px 'IBM Plex Mono',monospace;color:rgba(25,23,19,.55);flex:none">{{ row.s }}</span>
+<span style="flex:1;font:500 13px 'Space Grotesk',sans-serif;color:#191713;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">{{ row.n }}</span>
+<div style="width:74px;height:5px;border-radius:3px;background:rgba(25,23,19,.09);flex:none;overflow:hidden"><div style="height:100%;background:rgba(25,23,19,.4);width:{{ row.pct }}"></div></div>
+<span style="width:34px;text-align:right;font:600 12.5px 'IBM Plex Mono',monospace;color:#191713;flex:none">{{ row.c }}</span>
+</div>
+</sc-for>
+</div>
+</div>
+<div style="display:flex;gap:10px">
+<div style="flex:1;height:52px;border-radius:26px;background:oklch(.62 .17 32);display:flex;align-items:center;justify-content:center;font:600 15.5px 'Space Grotesk',sans-serif;color:#fff">Save PDF</div>
+<div style="width:52px;height:52px;border-radius:26px;background:rgba(25,23,19,.07);display:flex;align-items:center;justify-content:center;font:500 11px 'IBM Plex Mono',monospace;color:rgba(25,23,19,.65)">JSON</div>
+</div>
+</div>
+</div>
+</x-import>
+<p class="dv-note">Legend rows carry a proportion bar as well as a count, so you can see at a glance which colors you'll burn through. JSON is the whole-library backup from the spec, parked next to the primary action.</p>
+</div>
+
+<div class="dv-opt" id="1h">
+<div class="dv-olabel"><a class="dv-oid" href="#1h">1h</a>My collection — catalog search</div>
+<x-import component-from-global-scope="IOSDevice" from="./ios-frame.jsx" hint-size="402px,874px">
+<div style="min-height:100%;box-sizing:border-box;background:#f4f1ea;padding:56px 0 0;font-family:'Space Grotesk',sans-serif">
+<div style="display:flex;align-items:center;justify-content:space-between;padding:6px 18px 12px">
+<span style="font:500 15px 'Space Grotesk',sans-serif;color:rgba(25,23,19,.55)">Collections</span>
+<span style="font:600 15px 'Space Grotesk',sans-serif;color:oklch(.55 .16 32)">Save</span>
+</div>
+<div style="padding:0 18px;display:flex;flex-direction:column;gap:16px">
+<div>
+<div style="font:700 26px/1.1 'Space Grotesk',sans-serif;color:#191713;letter-spacing:-.02em">My {{ collectionCount }} Colors</div>
+<div style="font:400 11px 'IBM Plex Mono',monospace;color:rgba(25,23,19,.5);margin-top:5px">{{ collectionCount }} BEADS OWNED · USED BY 9 PATTERNS</div>
+</div>
+<div style="display:flex;align-items:center;gap:9px;background:#fffdf8;border:1px solid rgba(25,23,19,.12);border-radius:12px;padding:11px 13px">
+<div style="width:13px;height:13px;border-radius:7px;border:1.5px solid rgba(25,23,19,.35);box-sizing:border-box"></div>
+<span style="font:500 14.5px 'Space Grotesk',sans-serif;color:#191713">cherry</span>
+<span style="margin-left:auto;font:400 11px 'IBM Plex Mono',monospace;color:rgba(25,23,19,.4)">CATALOG · 3 HITS</span>
+</div>
+<div style="display:flex;flex-direction:column;gap:1px;background:rgba(25,23,19,.08);border-radius:12px;overflow:hidden">
+<div style="display:flex;align-items:center;gap:12px;background:#fffdf8;padding:12px 14px">
+<div style="width:26px;height:26px;border-radius:6px;background:#d1232a;flex:none"></div>
+<div style="flex:1"><div style="font:600 14px 'Space Grotesk',sans-serif;color:#191713">Cherry Red</div><div style="font:400 10.5px 'IBM Plex Mono',monospace;color:rgba(25,23,19,.45)">PERLER P07 · #D1232A</div></div>
+<div style="width:26px;height:26px;border-radius:13px;background:#191713;display:flex;align-items:center;justify-content:center;font:600 13px 'Space Grotesk',sans-serif;color:#fff">✓</div>
+</div>
+<div style="display:flex;align-items:center;gap:12px;background:#fffdf8;padding:12px 14px">
+<div style="width:26px;height:26px;border-radius:6px;background:#8f1f2e;flex:none"></div>
+<div style="flex:1"><div style="font:600 14px 'Space Grotesk',sans-serif;color:#191713">Dark Cherry</div><div style="font:400 10.5px 'IBM Plex Mono',monospace;color:rgba(25,23,19,.45)">PERLER P92 · #8F1F2E</div></div>
+<div style="width:26px;height:26px;border-radius:13px;border:1.5px solid rgba(25,23,19,.2);box-sizing:border-box;display:flex;align-items:center;justify-content:center;font:500 15px 'Space Grotesk',sans-serif;color:rgba(25,23,19,.45)">+</div>
+</div>
+<div style="display:flex;align-items:center;gap:12px;background:#fffdf8;padding:12px 14px">
+<div style="width:26px;height:26px;border-radius:6px;background:#f4b1ae;flex:none"></div>
+<div style="flex:1"><div style="font:600 14px 'Space Grotesk',sans-serif;color:#191713">Cherry Blossom</div><div style="font:400 10.5px 'IBM Plex Mono',monospace;color:rgba(25,23,19,.45)">HAMA H26 · #F4B1AE</div></div>
+<div style="width:26px;height:26px;border-radius:13px;border:1.5px solid rgba(25,23,19,.2);box-sizing:border-box;display:flex;align-items:center;justify-content:center;font:500 15px 'Space Grotesk',sans-serif;color:rgba(25,23,19,.45)">+</div>
+</div>
+</div>
+<div>
+<div style="font:600 10px 'IBM Plex Mono',monospace;letter-spacing:.1em;color:rgba(25,23,19,.45);margin-bottom:9px">OWNED · {{ collectionCount }} OF 60 CATALOG</div>
+<div style="display:grid;grid-template-columns:repeat(6,1fr);gap:8px">
+<sc-for list="{{ collectionSwatches }}" as="sw" hint-placeholder-count="24">
+<div style="display:flex;flex-direction:column;align-items:center;gap:4px">
+<div style="width:100%;aspect-ratio:1;border-radius:8px;background:{{ sw.h }};box-shadow:{{ sw.ringLight }}"></div>
+<span style="font:400 8.5px 'IBM Plex Mono',monospace;color:rgba(25,23,19,.45)">{{ sw.s }}</span>
+</div>
+</sc-for>
+</div>
+</div>
+<div style="background:#fffdf8;border:1px solid rgba(25,23,19,.09);border-radius:14px;padding:14px;display:flex;flex-direction:column;gap:12px">
+<div style="display:flex;align-items:center;justify-content:space-between"><span style="font:600 13.5px 'Space Grotesk',sans-serif;color:#191713">Custom color</span><span style="font:400 11px 'IBM Plex Mono',monospace;color:rgba(25,23,19,.5)">HSB · #6F7FC4</span></div>
+<div style="height:8px;border-radius:4px;background:linear-gradient(to right,#e0453c,#e0b13c,#5fc46f,#3ca6e0,#7b4fd1,#e0453c);position:relative"><div style="position:absolute;left:64%;top:-5px;width:18px;height:18px;margin-left:-9px;border-radius:9px;background:#6f7fc4;border:2.5px solid #fff;box-shadow:0 1px 4px rgba(0,0,0,.3)"></div></div>
+<div style="height:8px;border-radius:4px;background:linear-gradient(to right,#d8d8d8,#6f7fc4);position:relative"><div style="position:absolute;left:80%;top:-5px;width:18px;height:18px;margin-left:-9px;border-radius:9px;background:#fff;border:2.5px solid #fff;box-shadow:0 1px 4px rgba(0,0,0,.3)"></div></div>
+</div>
+<div style="height:40px"></div>
+</div>
+</div>
+</x-import>
+<p class="dv-note">Catalog search first, manual picker second — typing "cherry" is faster than eyeballing HSB, and it gets you the real bead name for the printed legend. Off-brand beads still get the sliders.</p>
+</div>
+
+</div>
+</section>
+
+<section class="dv-turn" id="t2" style="background:#f4f1ea">
+<div class="dv-thd"><a class="dv-tid" href="#t2">2</a><span class="dv-tname">iPad — same code, split panel</span></div>
+<div class="dv-opts">
+<div class="dv-opt" id="2a" style="width:auto">
+<div class="dv-olabel"><a class="dv-oid" href="#2a">2a</a>iPad editor — persistent tool panel + Pencil hover</div>
+<div style="width:1194px;height:834px;border-radius:34px;padding:12px;background:#1b1b1d;box-shadow:0 40px 80px rgba(0,0,0,.2),0 0 0 1px rgba(0,0,0,.12);box-sizing:border-box">
+<div style="width:100%;height:100%;border-radius:24px;overflow:hidden;background:#0e0e11;display:flex;font-family:'Space Grotesk',sans-serif">
+<div style="flex:1;display:flex;flex-direction:column;min-width:0">
+<div style="display:flex;align-items:center;justify-content:space-between;padding:14px 22px;border-bottom:1px solid rgba(255,255,255,.07)">
+<div style="display:flex;align-items:center;gap:16px">
+<span style="font:500 13.5px 'Space Grotesk',sans-serif;color:rgba(255,255,255,.55)">Library</span>
+<div><div style="font:600 15px 'Space Grotesk',sans-serif;color:#fff">Ferry sunset</div><div style="font:400 10px 'IBM Plex Mono',monospace;color:rgba(255,255,255,.4)">29 × 29 · MIDI · {{ sourceLabel }}</div></div>
+</div>
+<div style="display:flex;align-items:center;gap:8px">
+<div style="height:32px;padding:0 12px;border-radius:16px;background:rgba(255,255,255,.09);display:flex;align-items:center;font:500 12.5px 'Space Grotesk',sans-serif;color:rgba(255,255,255,.8)">Adjust</div>
+<div style="height:32px;padding:0 12px;border-radius:16px;background:rgba(255,255,255,.09);display:flex;align-items:center;font:500 12.5px 'Space Grotesk',sans-serif;color:rgba(255,255,255,.8)">Preview</div>
+<div style="height:32px;padding:0 14px;border-radius:16px;background:oklch(.62 .17 32);display:flex;align-items:center;font:600 12.5px 'Space Grotesk',sans-serif;color:#fff">Export</div>
+</div>
+</div>
+<div style="flex:1;display:flex;align-items:center;justify-content:center;background:#08080a;position:relative">
+<div style="position:relative">
+<img src="data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7" data-img="imgGridPad" alt="" style="display:block;width:493px;height:493px;box-shadow:0 20px 60px rgba(0,0,0,.6)">
+<div style="position:absolute;left:238px;top:170px;width:17px;height:17px;box-sizing:border-box;border:2px solid #fff;border-radius:2px;box-shadow:0 0 0 2px rgba(0,0,0,.45),0 0 12px rgba(255,255,255,.45)"></div>
+<div style="position:absolute;left:262px;top:150px;display:flex;align-items:center;gap:7px;padding:6px 9px;border-radius:9px;background:rgba(14,14,17,.92);box-shadow:0 4px 14px rgba(0,0,0,.5)">
+<div style="width:12px;height:12px;border-radius:3px;background:{{ selHex }}"></div>
+<span style="font:500 10.5px 'IBM Plex Mono',monospace;color:#fff">14,17 → {{ selUpper }}</span>
+</div>
+</div>
+<div style="position:absolute;left:22px;bottom:18px;display:flex;gap:6px">
+<span style="font:500 10.5px 'IBM Plex Mono',monospace;color:rgba(255,255,255,.7);background:rgba(255,255,255,.08);padding:5px 9px;border-radius:11px">{{ beadCount }} BEADS</span>
+<span style="font:500 10.5px 'IBM Plex Mono',monospace;color:rgba(255,255,255,.7);background:rgba(255,255,255,.08);padding:5px 9px;border-radius:11px">PENCIL HOVER ON</span>
+</div>
+<div style="position:absolute;right:22px;bottom:18px;display:flex;gap:8px">
+<div style="width:36px;height:36px;border-radius:18px;background:rgba(255,255,255,.1);display:flex;align-items:center;justify-content:center;font:500 15px 'IBM Plex Mono',monospace;color:#fff">↶</div>
+<div style="width:36px;height:36px;border-radius:18px;background:rgba(255,255,255,.05);display:flex;align-items:center;justify-content:center;font:500 15px 'IBM Plex Mono',monospace;color:rgba(255,255,255,.3)">↷</div>
+</div>
+</div>
+</div>
+<div style="width:332px;flex:none;background:#17171a;border-left:1px solid rgba(255,255,255,.07);padding:20px;display:flex;flex-direction:column;gap:20px;box-sizing:border-box;overflow:hidden">
+<div style="display:flex;gap:6px">
+<div style="height:34px;padding:0 14px;border-radius:17px;background:#fff;display:flex;align-items:center;gap:7px"><div style="width:11px;height:11px;border-radius:2px;background:{{ selHex }}"></div><span style="font:600 12.5px 'Space Grotesk',sans-serif;color:#0e0e11">Paint</span></div>
+<div style="height:34px;padding:0 14px;border-radius:17px;background:rgba(255,255,255,.09);display:flex;align-items:center;font:500 12.5px 'Space Grotesk',sans-serif;color:rgba(255,255,255,.8)">Clear</div>
+<div style="height:34px;padding:0 14px;border-radius:17px;background:rgba(255,255,255,.09);display:flex;align-items:center;font:500 12.5px 'Space Grotesk',sans-serif;color:rgba(255,255,255,.8)">Swap</div>
+</div>
+<div>
+<div style="font:600 10px 'IBM Plex Mono',monospace;letter-spacing:.1em;color:rgba(255,255,255,.4);margin-bottom:11px">PALETTE · {{ colorLabel }} ACTIVE OF 60</div>
+<div style="display:grid;grid-template-columns:repeat(7,1fr);gap:8px">
+<sc-for list="{{ swatches }}" as="sw" hint-placeholder-count="14">
+<div style="display:flex;flex-direction:column;align-items:center;gap:4px">
+<div style="width:100%;aspect-ratio:1;border-radius:8px;background:{{ sw.h }};box-shadow:{{ sw.ring }}"></div>
+<span style="font:400 8.5px 'IBM Plex Mono',monospace;color:rgba(255,255,255,.45)">{{ sw.s }}</span>
+</div>
+</sc-for>
+</div>
+</div>
+<div>
+<div style="font:600 10px 'IBM Plex Mono',monospace;letter-spacing:.1em;color:rgba(255,255,255,.4);margin-bottom:11px">BEAD COUNTS</div>
+<div style="display:flex;flex-direction:column;gap:8px">
+<sc-for list="{{ legend }}" as="row" hint-placeholder-count="7">
+<div style="display:flex;align-items:center;gap:9px">
+<div style="width:18px;height:18px;border-radius:4px;background:{{ row.h }};flex:none"></div>
+<span style="flex:1;font:500 12px 'Space Grotesk',sans-serif;color:rgba(255,255,255,.85);white-space:nowrap;overflow:hidden;text-overflow:ellipsis">{{ row.n }}</span>
+<div style="width:56px;height:4px;border-radius:2px;background:rgba(255,255,255,.12);flex:none;overflow:hidden"><div style="height:100%;background:rgba(255,255,255,.5);width:{{ row.pct }}"></div></div>
+<span style="width:30px;text-align:right;font:600 11.5px 'IBM Plex Mono',monospace;color:#fff;flex:none">{{ row.c }}</span>
+</div>
+</sc-for>
+</div>
+</div>
+<div style="margin-top:auto;display:flex;flex-direction:column;gap:11px;padding-top:16px;border-top:1px solid rgba(255,255,255,.08)">
+<div style="display:flex;align-items:center;justify-content:space-between"><span style="font:500 12.5px 'Space Grotesk',sans-serif;color:rgba(255,255,255,.85)">Gridlines</span>
+<sc-if value="{{ gridOn }}" hint-placeholder-val="{{ true }}"><div style="width:42px;height:26px;border-radius:13px;background:oklch(.62 .17 32);position:relative"><div style="position:absolute;top:2px;right:2px;width:22px;height:22px;border-radius:11px;background:#fff"></div></div></sc-if>
+<sc-if value="{{ gridOff }}"><div style="width:42px;height:26px;border-radius:13px;background:rgba(255,255,255,.16);position:relative"><div style="position:absolute;top:2px;left:2px;width:22px;height:22px;border-radius:11px;background:#fff"></div></div></sc-if>
+</div>
+<div style="display:flex;align-items:center;justify-content:space-between"><span style="font:500 12.5px 'Space Grotesk',sans-serif;color:rgba(255,255,255,.85)">Symbol overlay</span>
+<sc-if value="{{ symOn }}" hint-placeholder-val="{{ true }}"><div style="width:42px;height:26px;border-radius:13px;background:oklch(.62 .17 32);position:relative"><div style="position:absolute;top:2px;right:2px;width:22px;height:22px;border-radius:11px;background:#fff"></div></div></sc-if>
+<sc-if value="{{ symOff }}"><div style="width:42px;height:26px;border-radius:13px;background:rgba(255,255,255,.16);position:relative"><div style="position:absolute;top:2px;left:2px;width:22px;height:22px;border-radius:11px;background:#fff"></div></div></sc-if></div>
+<div style="display:flex;align-items:center;justify-content:space-between"><span style="font:500 12.5px 'Space Grotesk',sans-serif;color:rgba(255,255,255,.85)">Board seam lines</span><div style="width:42px;height:26px;border-radius:13px;background:oklch(.62 .17 32);position:relative"><div style="position:absolute;top:2px;right:2px;width:22px;height:22px;border-radius:11px;background:#fff"></div></div></div>
+<div style="display:flex;align-items:center;justify-content:space-between"><span style="font:500 12.5px 'Space Grotesk',sans-serif;color:rgba(255,255,255,.85)">Pencil hover preview</span><div style="width:42px;height:26px;border-radius:13px;background:oklch(.62 .17 32);position:relative"><div style="position:absolute;top:2px;right:2px;width:22px;height:22px;border-radius:11px;background:#fff"></div></div></div>
+</div>
+</div>
+</div>
+</div>
+<p class="dv-note">Identical flow, one breakpoint: the iPhone bottom sheet becomes a fixed right panel, so palette, counts and display toggles are all visible while you bead. Hover readout sits beside the tip rather than under the hand.</p>
+</div>
+</div>
+<p class="dv-note" style="margin-top:22px">Try next: "show <a class="dv-oid" href="#1f">1f</a> on white background too" · "make <a class="dv-oid" href="#1b">1b</a> a single scrolling page instead of a 5-step wizard" · "riff on <a class="dv-oid" href="#1d">1d</a> with the palette always visible"</p>
+</section>
+
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{&quot;paletteMode&quot;:{&quot;editor&quot;:&quot;enum&quot;,&quot;options&quot;:[&quot;auto&quot;,&quot;collection&quot;],&quot;default&quot;:&quot;auto&quot;,&quot;tsType&quot;:&quot;string&quot;,&quot;section&quot;:&quot;Pattern&quot;},&quot;colorCount&quot;:{&quot;editor&quot;:&quot;int&quot;,&quot;default&quot;:12,&quot;min&quot;:2,&quot;max&quot;:60,&quot;step&quot;:1,&quot;unit&quot;:&quot;colors&quot;,&quot;tsType&quot;:&quot;number&quot;,&quot;section&quot;:&quot;Pattern&quot;},&quot;gridlines&quot;:{&quot;editor&quot;:&quot;boolean&quot;,&quot;default&quot;:true,&quot;tsType&quot;:&quot;boolean&quot;,&quot;section&quot;:&quot;Pattern display&quot;},&quot;symbolOverlay&quot;:{&quot;editor&quot;:&quot;boolean&quot;,&quot;default&quot;:true,&quot;tsType&quot;:&quot;boolean&quot;,&quot;section&quot;:&quot;Pattern display&quot;},&quot;previewBg&quot;:{&quot;editor&quot;:&quot;enum&quot;,&quot;options&quot;:[&quot;black&quot;,&quot;white&quot;],&quot;default&quot;:&quot;black&quot;,&quot;tsType&quot;:&quot;string&quot;,&quot;section&quot;:&quot;Pattern display&quot;},&quot;sceneKind&quot;:{&quot;editor&quot;:&quot;enum&quot;,&quot;options&quot;:[&quot;sunset&quot;,&quot;moon&quot;,&quot;citrus&quot;],&quot;default&quot;:&quot;sunset&quot;,&quot;tsType&quot;:&quot;string&quot;,&quot;section&quot;:&quot;Pattern&quot;}}">
+class Component extends DCLogic {
+  CAT = [
+    ['Black','#16161a'],['Charcoal','#2e3036'],['Dark Grey','#4a4c52'],['Grey','#8b8d93'],
+    ['Silver','#c3c5c9'],['Pearl','#e4e5e7'],['White','#f5f4f0'],['Cream','#f3e7c8'],
+    ['Butter','#f7e6a1'],['Cheddar','#f7cf5a'],['Marigold','#f5b731'],['Butterscotch','#f0a830'],
+    ['Orange','#f26a1b'],['Hot Coral','#e8533f'],['Peach','#f9b48f'],['Blush','#f4b1ae'],
+    ['Salmon','#ef8a7a'],['Cherry Red','#d1232a'],['Red','#b71f24'],['Dark Cherry','#8f1f2e'],
+    ['Maroon','#6d1a2a'],['Rust','#8f4a24'],['Tan','#b98a5a'],['Sand','#d9b382'],
+    ['Toasted Marshmallow','#e8c9a0'],['Light Brown','#a9723f'],['Brown','#6f4726'],['Dark Brown','#4a2f1c'],
+    ['Bubblegum','#e0709f'],['Pink','#ef86b7'],['Pale Pink','#f7c3d6'],['Magenta','#bf3273'],
+    ['Fuchsia','#d5348f'],['Berry','#8e2a5c'],['Plum','#4a2a63'],['Purple','#6b3f9e'],
+    ['Violet','#8355c4'],['Lavender','#a98ed0'],['Pale Lavender','#cdbde6'],['Periwinkle','#6f7fc4'],
+    ['Cobalt','#2b6cc4'],['Blue','#1f4fa0'],['Dark Blue','#22356e'],['Navy','#172445'],
+    ['Sky','#58a8de'],['Light Blue','#7fc4d8'],['Pale Blue','#bfe0ea'],['Turquoise','#35b6bd'],
+    ['Teal','#2b8f8a'],['Dark Teal','#1c5f5e'],['Mint','#a8dfc0'],['Pastel Green','#b7e08a'],
+    ['Kiwi','#6fbf5a'],['Green','#3f9e44'],['Dark Green','#2f6b3a'],['Forest','#1e4a2b'],
+    ['Olive','#8a9440'],['Moss','#5f6f31'],['Khaki','#b6b077'],['Slate Blue','#55698c']
+  ];
+  COL = [0,3,6,7,9,11,12,13,17,19,28,31,34,35,37,39,40,42,45,46,48,52,53,54];
+  MODE = 'auto';
+  _P = null;
+  get P(){
+    if(this._P) return this._P;
+    var SY='ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789abcdefghijklmnopqrstuvwx';
+    this._P=this.CAT.map(function(c,i){ return {n:c[0],h:c[1],s:SY.charAt(i)||'?'}; });
+    return this._P;
+  }
+  N = 29;
+  C = 12;
+  GL = true;
+  _m = {};
+
+  hx(h){ return [parseInt(h.slice(1,3),16),parseInt(h.slice(3,5),16),parseInt(h.slice(5,7),16)]; }
+
+  ramp(stops,t){
+    t = t<0?0:t>1?1:t;
+    for(var i=0;i<stops.length-1;i++){
+      var a=stops[i], b=stops[i+1];
+      if(t<=b[0]||i===stops.length-2){
+        var k=(t-a[0])/((b[0]-a[0])||1); k=k<0?0:k>1?1:k;
+        var ca=this.hx(a[1]), cb=this.hx(b[1]);
+        return [ca[0]+(cb[0]-ca[0])*k, ca[1]+(cb[1]-ca[1])*k, ca[2]+(cb[2]-ca[2])*k];
+      }
+    }
+    return this.hx(stops[stops.length-1][1]);
+  }
+
+  mix(a,b,k){ return [a[0]+(b[0]-a[0])*k, a[1]+(b[1]-a[1])*k, a[2]+(b[2]-a[2])*k]; }
+  mixHex(a,b,k){
+    var o=this.mix(this.hx(a),this.hx(b),k);
+    return 'rgb('+Math.round(o[0])+','+Math.round(o[1])+','+Math.round(o[2])+')';
+  }
+  catIndex(name){
+    for(var i=0;i<this.CAT.length;i++) if(this.CAT[i][0]===name) return i;
+    return 0;
+  }
+  rnd(x,y){ var s=Math.sin(x*127.1+y*311.7)*43758.5453; return s-Math.floor(s); }
+
+  scene(kind,u,v){
+    if(kind==='citrus'){
+      var d=Math.sqrt((u-.5)*(u-.5)+(v-.5)*(v-.5))*1.75;
+      var k=(Math.sin(d*15.5)+1)/2;
+      var c=this.ramp([[0,'#f7cf5a'],[.42,'#f26a1b'],[.72,'#bf3273'],[1,'#4a2a63']], k*.62+d*.42);
+      return this.mix(c,[245,244,240], Math.max(0,.22-d)*1.1);
+    }
+    if(kind==='moon'){
+      var hzm=.66;
+      if(v<hzm){
+        var cm=this.ramp([[0,'#0d1330'],[.55,'#1d2a55'],[1,'#3c5a86']],v/hzm);
+        var dmx=u-.64, dmy=v-.3, dm=Math.sqrt(dmx*dmx+dmy*dmy);
+        if(dm<.085) cm=this.mix(cm,[244,238,216],.95);
+        else if(dm<.16) cm=this.mix(cm,[214,222,240],.38*(1-(dm-.085)/.075));
+        else if(this.rnd(Math.floor(u*44),Math.floor(v*44))>.945) cm=this.mix(cm,[255,255,255],.6);
+        return cm;
+      }
+      var tw=(v-hzm)/(1-hzm);
+      var wm=this.ramp([[0,'#2b4568'],[.45,'#16233f'],[1,'#0a1022']],tw);
+      wm=this.mix(wm,[196,210,238],Math.max(0,Math.sin(v*70+Math.sin(u*5)*.6))*.17*(1-tw*.5));
+      if(Math.abs(u-.64)<.045+tw*.07) wm=this.mix(wm,[238,236,218],(1-tw)*.42);
+      return wm;
+    }
+    var hz=.6;
+    if(v<hz){
+      var t=v/hz;
+      var c=this.ramp([[0,'#2b2a63'],[.4,'#7d3676'],[.72,'#dd5a2c'],[1,'#f7bd5e']],t);
+      var dx=(u-.5), dy=(v-.44)*1.02;
+      var d=Math.sqrt(dx*dx+dy*dy);
+      if(d<.12) c=this.mix(c,[255,240,196],.96);
+      else if(d<.2) c=this.mix(c,[255,198,72],.7*(1-(d-.12)/.08));
+      return c;
+    }
+    var t2=(v-hz)/(1-hz);
+    var w=this.ramp([[0,'#c85231'],[.3,'#7d2f58'],[.7,'#3a2350'],[1,'#1b1740']],t2);
+    var band=Math.sin(v*78+Math.sin(u*7)*.7);
+    w=this.mix(w,[255,255,255],Math.max(0,band)*.07);
+    var col=Math.abs(u-.5)-(.055+t2*.075);
+    if(col<0){
+      var wob=Math.sin(v*54)*.5+.5;
+      w=this.mix(w,[255,206,140],(1-t2)*.62*(0.35+0.65*wob));
+    }
+    return w;
+  }
+
+  boost(c){
+    var l=c[0]*.299+c[1]*.587+c[2]*.114, s=1.45, k=1.1, o=[];
+    for(var i=0;i<3;i++){
+      var v=l+(c[i]-l)*s;
+      v=(v-128)*k+128;
+      o[i]=v<0?0:v>255?255:v;
+    }
+    return o;
+  }
+
+  lab(c){
+    var f=function(v){ v/=255; return v<=.04045 ? v/12.92 : Math.pow((v+.055)/1.055,2.4); };
+    var r=f(c[0]), g=f(c[1]), b=f(c[2]);
+    var X=(r*.4124564+g*.3575761+b*.1804375)/.95047;
+    var Y=(r*.2126729+g*.7151522+b*.0721750);
+    var Z=(r*.0193339+g*.1191920+b*.9503041)/1.08883;
+    var k=function(t){ return t>.008856 ? Math.pow(t,1/3) : (7.787*t)+16/116; };
+    var fx=k(X), fy=k(Y), fz=k(Z);
+    return [116*fy-16, 500*(fx-fy), 200*(fy-fz)];
+  }
+
+  palLab(){
+    if(this._pl) return this._pl;
+    var self=this;
+    this._pl=this.P.map(function(p){ return self.lab(self.hx(p.h)); });
+    return this._pl;
+  }
+
+  quant(c,allowed){
+    var pl=this.palLab(), t=this.lab(c);
+    var list=allowed||null, len=list?list.length:this.P.length;
+    var best=list?list[0]:0, bd=1e9;
+    for(var k=0;k<len;k++){
+      var i=list?list[k]:k, q=pl[i];
+      var dL=t[0]-q[0], da=t[1]-q[1], db=t[2]-q[2];
+      var d=dL*dL+da*da+db*db;
+      if(d<bd){bd=d;best=i;}
+    }
+    return best;
+  }
+
+  grid(kind){
+    var key='g'+kind+'_'+this.N+'_'+this.C+'_'+this.MODE;
+    if(this._m[key]) return this._m[key];
+    var N=this.N, avg=[], g=[], y, x;
+    for(y=0;y<N;y++){
+      avg[y]=[]; g[y]=[];
+      for(x=0;x<N;x++){
+        var edge=Math.min(x,N-1-x)+Math.min(y,N-1-y);
+        if(edge<2){ avg[y][x]=null; g[y][x]=null; continue; }
+        var r=0,gg=0,b=0,n=0;
+        for(var sy=0;sy<2;sy++)for(var sx=0;sx<2;sx++){
+          var c=this.scene(kind,(x+.25+sx*.5)/N,(y+.25+sy*.5)/N);
+          r+=c[0];gg+=c[1];b+=c[2];n++;
+        }
+        avg[y][x]=this.boost([r/n,gg/n,b/n]);
+      }
+    }
+    var allowed;
+    if(this.MODE==='collection'){
+      allowed=this.COL.slice();
+    } else {
+      var counts={};
+      for(y=0;y<N;y++)for(x=0;x<N;x++){
+        if(!avg[y][x]) continue;
+        var i0=this.quant(avg[y][x],null);
+        counts[i0]=(counts[i0]||0)+1;
+      }
+      var idxs=Object.keys(counts).map(Number);
+      idxs.sort(function(a,b){return counts[b]-counts[a];});
+      allowed=idxs.slice(0,this.C);
+    }
+    for(y=0;y<N;y++)for(x=0;x<N;x++) g[y][x]=avg[y][x]?this.quant(avg[y][x],allowed):null;
+    this._m[key]=g;
+    return g;
+  }
+
+  lum(hex){ var c=this.hx(hex); return (c[0]*.299+c[1]*.587+c[2]*.114)/255; }
+
+  gridImg(kind,cell,o){
+    o=o||{};
+    var key=['i',kind,cell,this.N,this.C,this.MODE,o.bg,o.symbols?1:0,o.line===false?0:1,(o.sub||[]).join('-'),o.isolate,o.swapFrom,o.swapTo,o.mark?1:0].join('_');
+    if(this._m[key]) return this._m[key];
+    var g=this.grid(kind), N=this.N;
+    var sx=o.sub?o.sub[0]:0, sy=o.sub?o.sub[1]:0, n=o.sub?o.sub[2]:N;
+    var W=n*cell;
+    var cv=document.createElement('canvas');
+    var dpr=2; cv.width=W*dpr; cv.height=W*dpr;
+    var x=cv.getContext('2d'); x.scale(dpr,dpr);
+    var bg=o.bg||'#0e0e11';
+    x.fillStyle=bg; x.fillRect(0,0,W,W);
+    var darkBg=this.lum(bg.length===7?bg:'#0e0e11')<.5;
+    for(var gy=0;gy<n;gy++)for(var gx=0;gx<n;gx++){
+      var row=g[sy+gy]||[]; var idx=row[sx+gx];
+      var px=gx*cell, py=gy*cell;
+      if(idx===null||idx===undefined){
+        if(cell>=7){
+          x.strokeStyle=darkBg?'rgba(255,255,255,.22)':'rgba(0,0,0,.22)';
+          x.lineWidth=1; x.beginPath();
+          x.arc(px+cell/2,py+cell/2,cell*.27,0,6.2832); x.stroke();
+        }
+        continue;
+      }
+      var p=this.P[idx], fill=p.h, dim=false, hit=false;
+      if(o.swapFrom!=null&&idx===o.swapFrom){ fill=this.P[o.swapTo].h; hit=true; }
+      if(o.isolate!=null){
+        if(idx===o.isolate) hit=true;
+        else { fill=this.mixHex(p.h,bg,.88); dim=true; }
+      }
+      x.fillStyle=fill; x.fillRect(px,py,cell,cell);
+      if(o.mark&&hit&&!dim){ x.strokeStyle='#e8533f'; x.lineWidth=1.5; x.strokeRect(px+.75,py+.75,cell-1.5,cell-1.5); }
+      if(cell>=9&&!dim){
+        x.fillStyle='rgba(0,0,0,.14)';
+        x.beginPath(); x.arc(px+cell/2,py+cell/2,cell*.16,0,6.2832); x.fill();
+      }
+      if(o.symbols&&cell>=11){
+        x.fillStyle=this.lum(p.h)>.55?'rgba(0,0,0,.62)':'rgba(255,255,255,.72)';
+        x.font='600 '+Math.round(cell*.56)+'px "IBM Plex Mono", monospace';
+        x.textAlign='center'; x.textBaseline='middle';
+        x.fillText(p.s,px+cell/2,py+cell/2+cell*.04);
+      }
+    }
+    if(o.line!==false&&cell>=6){
+      x.strokeStyle=darkBg?'rgba(255,255,255,.13)':'rgba(0,0,0,.13)';
+      x.lineWidth=1;
+      for(var i=0;i<=n;i++){
+        var q=i*cell+.5;
+        x.beginPath(); x.moveTo(q,0); x.lineTo(q,W); x.stroke();
+        x.beginPath(); x.moveTo(0,q); x.lineTo(W,q); x.stroke();
+      }
+      x.strokeStyle=darkBg?'rgba(255,255,255,.4)':'rgba(0,0,0,.34)';
+      x.lineWidth=1.5;
+      for(var j=0;j<=n;j+=10){
+        var r2=Math.min(j,n)*cell+.5;
+        x.beginPath(); x.moveTo(r2,0); x.lineTo(r2,W); x.stroke();
+        x.beginPath(); x.moveTo(0,r2); x.lineTo(W,r2); x.stroke();
+      }
+    }
+    var url=cv.toDataURL('image/png');
+    this._m[key]=url;
+    return url;
+  }
+
+  gridRC(kind,W,H){
+    var key='gr'+kind+'_'+W+'x'+H+'_'+this.C+'_'+this.MODE;
+    if(this._m[key]) return this._m[key];
+    var avg=[],g=[],y,x;
+    for(y=0;y<H;y++){
+      avg[y]=[];g[y]=[];
+      for(x=0;x<W;x++){
+        if(Math.min(x,W-1-x)+Math.min(y,H-1-y)<2){ avg[y][x]=null;g[y][x]=null;continue; }
+        var u=(x+.5)/W, v=(y+.5)/H;
+        if(W>H) v=.5+(v-.5)*(H/W); else if(H>W) u=.5+(u-.5)*(W/H);
+        avg[y][x]=this.boost(this.scene(kind,u,v));
+      }
+    }
+    var allowed;
+    if(this.MODE==='collection'){ allowed=this.COL.slice(); }
+    else {
+      var counts={};
+      for(y=0;y<H;y++)for(x=0;x<W;x++){ if(!avg[y][x])continue; var i0=this.quant(avg[y][x],null); counts[i0]=(counts[i0]||0)+1; }
+      var idxs=Object.keys(counts).map(Number);
+      idxs.sort(function(a,b){return counts[b]-counts[a];});
+      allowed=idxs.slice(0,this.C);
+    }
+    for(y=0;y<H;y++)for(x=0;x<W;x++) g[y][x]=avg[y][x]?this.quant(avg[y][x],allowed):null;
+    this._m[key]=g;
+    return g;
+  }
+
+  gridWideImg(kind,W,H,cell,seam,line,bg){
+    bg=bg||'#08080a';
+    var dark=this.lum(bg)<.5;
+    var key=['w',kind,W,H,cell,seam,line?1:0,bg,this.C,this.MODE].join('_');
+    if(this._m[key]) return this._m[key];
+    var g=this.gridRC(kind,W,H), dpr=2;
+    var cv=document.createElement('canvas');
+    cv.width=W*cell*dpr; cv.height=H*cell*dpr;
+    var x=cv.getContext('2d'); x.scale(dpr,dpr);
+    x.fillStyle=bg; x.fillRect(0,0,W*cell,H*cell);
+    for(var gy=0;gy<H;gy++)for(var gx=0;gx<W;gx++){
+      var idx=g[gy][gx], px=gx*cell, py=gy*cell;
+      if(idx===null){ continue; }
+      x.fillStyle=this.P[idx].h; x.fillRect(px,py,cell,cell);
+    }
+    if(line){
+      x.strokeStyle=dark?'rgba(255,255,255,.11)':'rgba(0,0,0,.13)'; x.lineWidth=1;
+      for(var i=0;i<=W;i++){ x.beginPath(); x.moveTo(i*cell+.5,0); x.lineTo(i*cell+.5,H*cell); x.stroke(); }
+      for(var j=0;j<=H;j++){ x.beginPath(); x.moveTo(0,j*cell+.5); x.lineTo(W*cell,j*cell+.5); x.stroke(); }
+      x.strokeStyle=dark?'rgba(255,255,255,.34)':'rgba(0,0,0,.32)'; x.lineWidth=1.25;
+      for(var a=0;a<=W;a+=10){ x.beginPath(); x.moveTo(a*cell+.5,0); x.lineTo(a*cell+.5,H*cell); x.stroke(); }
+      for(var b=0;b<=H;b+=10){ x.beginPath(); x.moveTo(0,b*cell+.5); x.lineTo(W*cell,b*cell+.5); x.stroke(); }
+    }
+    if(seam){
+      x.strokeStyle=dark?'rgba(255,255,255,.92)':'#12100c'; x.lineWidth=3;
+      x.beginPath(); x.moveTo(seam*cell,0); x.lineTo(seam*cell,H*cell); x.stroke();
+    }
+    var url=cv.toDataURL('image/png');
+    this._m[key]=url;
+    return url;
+  }
+
+  emptyBoardImg(n,cell){
+    var key='eb'+n+'_'+cell;
+    if(this._m[key]) return this._m[key];
+    var dpr=2, S=n*cell;
+    var cv=document.createElement('canvas'); cv.width=S*dpr; cv.height=S*dpr;
+    var x=cv.getContext('2d'); x.scale(dpr,dpr);
+    x.fillStyle='#efece4'; x.fillRect(0,0,S,S);
+    x.strokeStyle='rgba(25,23,19,.17)'; x.lineWidth=1;
+    for(var gy=0;gy<n;gy++)for(var gx=0;gx<n;gx++){
+      x.beginPath(); x.arc(gx*cell+cell/2,gy*cell+cell/2,cell*.26,0,6.2832); x.stroke();
+    }
+    var url=cv.toDataURL('image/png');
+    this._m[key]=url;
+    return url;
+  }
+
+  photoImg(kind,w,h){
+    var key=['p',kind,w,h].join('_');
+    if(this._m[key]) return this._m[key];
+    var S=150;
+    var src=document.createElement('canvas'); src.width=S; src.height=S;
+    var sx=src.getContext('2d');
+    var img=sx.createImageData(S,S);
+    for(var y=0;y<S;y++)for(var x2=0;x2<S;x2++){
+      var c=this.scene(kind,(x2+.5)/S,(y+.5)/S);
+      var i=(y*S+x2)*4;
+      img.data[i]=c[0]; img.data[i+1]=c[1]; img.data[i+2]=c[2]; img.data[i+3]=255;
+    }
+    sx.putImageData(img,0,0);
+    var cv=document.createElement('canvas'); cv.width=w; cv.height=h;
+    var cx=cv.getContext('2d');
+    cx.imageSmoothingEnabled=true; cx.imageSmoothingQuality='high';
+    cx.drawImage(src,0,0,S,S,0,0,w,h);
+    var url=cv.toDataURL('image/png');
+    this._m[key]=url;
+    return url;
+  }
+
+  stats(kind){
+    var key='s'+kind+'_'+this.N+'_'+this.C+'_'+this.MODE;
+    if(this._m[key]) return this._m[key];
+    var g=this.grid(kind), counts={}, total=0, empty=0;
+    for(var y=0;y<g.length;y++)for(var x=0;x<g[y].length;x++){
+      var v=g[y][x];
+      if(v===null){empty++;continue;}
+      counts[v]=(counts[v]||0)+1; total++;
+    }
+    var rows=Object.keys(counts).map(function(k){return {i:+k,c:counts[k]};});
+    rows.sort(function(a,b){return b.c-a.c;});
+    var max=rows.length?rows[0].c:1, self=this;
+    var legend=rows.slice(0,7).map(function(r){
+      var p=self.P[r.i];
+      return {n:p.n,s:p.s,h:p.h,c:r.c,pct:Math.round(r.c/max*100)+'%'};
+    });
+    var active=rows.map(function(r){ var p=self.P[r.i]; return {i:r.i,n:p.n,s:p.s,h:p.h,c:r.c}; });
+    var out={total:total,empty:empty,colors:rows.length,legend:legend,active:active};
+    this._m[key]=out;
+    return out;
+  }
+
+  _sync(){
+    var u=this._urls; if(!u) return;
+    var list=document.querySelectorAll('img[data-img]');
+    for(var i=0;i<list.length;i++){
+      var s=u[list[i].getAttribute('data-img')];
+      if(s && list[i].src!==s) list[i].src=s;
+    }
+  }
+  componentDidMount(){ this._mounted=true; this._sync(); requestAnimationFrame(this._sync.bind(this)); }
+  componentDidUpdate(){ this._sync(); }
+
+  renderVals(){
+    var sym = this.props.symbolOverlay ?? true;
+    var kind = this.props.sceneKind || 'sunset';
+    var pbg = (this.props.previewBg || 'black') === 'white' ? '#ffffff' : '#000000';
+    var cc = this.props.colorCount ?? 12;
+    this.C = Math.max(2, Math.min(60, Math.round(cc)));
+    this.MODE = (this.props.paletteMode === 'collection') ? 'collection' : 'auto';
+    var isCol = this.MODE === 'collection';
+    this.GL = this.props.gridlines ?? true;
+    var gl = this.GL;
+    var self = this;
+    var st = this.stats(kind);
+    var act = st.active;
+    var sel = act.length > 3 ? 3 : 0;
+    var selBead = act[sel] || {n:'—',h:'#888',c:0};
+    var swatches = act.map(function(p,i){
+      return {n:p.n,s:p.s,h:p.h,ring: i===sel ? '0 0 0 2.5px #fff' : '0 0 0 1px rgba(255,255,255,.14)',
+              ringLight: i===sel ? '0 0 0 2.5px #191713' : '0 0 0 1px rgba(25,23,19,.12)'};
+    });
+    var swapFrom = selBead.i != null ? selBead.i : 0;
+    var swapTo = this.catIndex('Magenta');
+    this._urls = {
+      imgThumbA: this.gridImg('sunset',4,{line:false,bg:'#0e0e11'}),
+      imgThumbB: this.gridImg('moon',4,{line:false,bg:'#0e0e11'}),
+      imgThumbC: this.gridImg('citrus',4,{line:false,bg:'#0e0e11'}),
+      imgPhoto: this.photoImg(kind,402,450),
+      imgThumbPhotoA: this.photoImg(kind,150,150),
+      imgThumbPhotoB: this.photoImg('citrus',150,150),
+      imgThumbPhotoC: this.photoImg('moon',150,150),
+      imgGrid: this.gridImg(kind,9,{bg:'#0e0e11',line:gl}),
+      imgGridZoom: this.gridImg(kind,26,{bg:'#08080a',sub:[8,9,13],symbols:sym,line:gl}),
+      imgGridPreview: this.gridImg(kind,12,{bg:pbg,symbols:sym,line:gl}),
+      imgGridMini: this.gridImg(kind,6,{bg:'#0e0e11',line:gl}),
+      imgGridPad: this.gridImg(kind,17,{bg:'#08080a',symbols:sym,line:gl}),
+      imgLightGrid: this.gridImg(kind,9,{bg:'#ffffff',line:true}),
+      imgLightZoom: this.gridImg(kind,26,{bg:'#ffffff',sub:[8,9,13],symbols:sym,line:gl}),
+      imgLightPreview: this.gridImg(kind,12,{bg:'#ffffff',symbols:sym,line:gl}),
+      imgLightPad: this.gridImg(kind,17,{bg:'#ffffff',symbols:sym,line:gl}),
+      imgLightWide: this.gridWideImg(kind,58,29,6,29,gl,'#ffffff'),
+      imgWhiteBoard: this.emptyBoardImg(29,8),
+      imgSwapIsolate: this.gridImg(kind,9,{bg:'#ffffff',line:true,isolate:swapFrom}),
+      imgSwapAfter: this.gridImg(kind,9,{bg:'#ffffff',line:true,swapFrom:swapFrom,swapTo:swapTo,mark:true}),
+      imgHistoryState: this.gridImg(kind,5,{bg:'#ffffff',line:false,swapFrom:swapFrom,swapTo:swapTo}),
+      imgLightSmall: this.gridImg(kind,6,{bg:'#ffffff',line:false}),
+      imgLightThumbA: this.gridImg('sunset',4,{bg:'#ffffff',line:false}),
+      imgLightThumbB: this.gridImg('moon',4,{bg:'#ffffff',line:false}),
+      imgLightThumbC: this.gridImg('citrus',4,{bg:'#ffffff',line:false}),
+      imgDarkGrid: this.gridImg(kind,12,{bg:'#0a0a0b',line:false}),
+      imgDarkSmall: this.gridImg(kind,6,{bg:'#0a0a0b',line:false}),
+      imgDarkThumbA: this.gridImg('sunset',4,{bg:'#0a0a0b',line:false}),
+      imgDarkThumbB: this.gridImg('moon',4,{bg:'#0a0a0b',line:false}),
+      imgDarkThumbC: this.gridImg('citrus',4,{bg:'#0a0a0b',line:false}),
+      imgGridWide: this.gridWideImg(kind,58,29,6,29,gl),
+      imgEmptyBoard: this.emptyBoardImg(29,8)
+    };
+    if(this._mounted) requestAnimationFrame(this._sync.bind(this));
+    return {
+      colorLabel: isCol ? this.COL.length : this.C,
+      colorCap: isCol ? this.COL.length : 60,
+      sourceLabel: isCol ? 'MY ' + this.COL.length + ' COLORS' : 'AUTO ' + this.C + ' COLORS',
+      modeAuto: !isCol,
+      modeCollection: isCol,
+      collectionCount: this.COL.length,
+      widePegs: (58*29).toLocaleString(),
+      wideBeads: (this.stats(kind).total * 2).toLocaleString(),
+      collectionSwatches: this.COL.map(function(i){ var p=self.P[i]; return {n:p.n,s:p.s,h:p.h}; }),
+      gridWord: gl ? 'EVERY CELL' : 'OFF',
+      symWord: sym ? 'ON' : 'OFF',
+      symOn: !!sym,
+      symOff: !sym,
+      gridOn: gl,
+      gridOff: !gl,
+      colorPct: Math.round((this.C - 2) / 58 * 100) + '%',
+      selName: selBead.n,
+      selHex: selBead.h,
+      selUpper: selBead.n.toUpperCase(),
+      selCount: selBead.c,
+      swapToName: this.CAT[swapTo][0].toUpperCase(),
+      swapToHex: this.CAT[swapTo][1],
+      swatchesTop: swatches.slice(0, 14),
+      swatchesOwned: swatches.slice(0, 18),
+      beadCount: st.total,
+      emptyCount: st.empty,
+      colorCount: st.colors,
+      legend: st.legend,
+      swatches: swatches
+    };
+  }
+}
+</script>
+</body>
+</html>

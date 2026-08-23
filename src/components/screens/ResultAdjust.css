@@ -1,0 +1,100 @@
+.adjust__title-center {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+  flex: 1.4;
+}
+
+.adjust__title {
+  font-size: 15px;
+  max-width: 180px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.adjust__title-meta {
+  font-size: 10px;
+  color: var(--on-dark-45);
+}
+
+.adjust__body {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 0;
+  flex: 1;
+}
+
+.adjust__grid-block {
+  padding: 16px 0 14px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+}
+
+.adjust__canvas {
+  width: 261px;
+  height: 261px;
+  border-radius: var(--radius-grid);
+  box-shadow: var(--shadow-grid);
+}
+
+.adjust__chips {
+  display: flex;
+  gap: 8px;
+}
+
+.adjust__chip {
+  background: var(--fill-dark);
+  color: var(--on-dark-85);
+  font-size: 10px;
+  padding: 5px 10px;
+  border-radius: 999px;
+}
+
+.adjust__sliders {
+  display: flex;
+  flex-direction: column;
+  gap: var(--control-stack-gap-dense);
+}
+
+.adjust__presets {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.adjust__presets .preset-chip {
+  background: var(--fill-dark);
+  border-color: transparent;
+  color: var(--on-dark-85);
+}
+
+.adjust__presets .preset-chip--active {
+  background: #fff;
+  color: var(--ink);
+}
+
+.adjust__locked-row {
+  background: var(--fill-dark);
+  border-radius: var(--radius-swatch);
+  padding: 12px;
+  color: var(--on-dark-60);
+}
+
+.adjust__toggle-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  color: var(--on-dark);
+  padding-top: 4px;
+}
+
+.adjust__coming-soon {
+  color: var(--on-dark-45);
+  padding: 20px 0 8px;
+  text-align: center;
+}

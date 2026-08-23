@@ -1,0 +1,113 @@
+@import './fonts.css';
+@import './tokens.css';
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+html,
+body,
+#root {
+  height: 100%;
+}
+
+body {
+  margin: 0;
+  font-family: var(--font-ui);
+  color: var(--ink);
+  background: var(--paper);
+  -webkit-font-smoothing: antialiased;
+  /* iPhone only for now; iPad breakpoint arrives with the 2a panel (M3). */
+  overscroll-behavior-y: none;
+}
+
+button,
+input,
+textarea {
+  font-family: inherit;
+  color: inherit;
+}
+
+button {
+  -webkit-tap-highlight-color: transparent;
+  touch-action: manipulation;
+}
+
+p {
+  text-wrap: pretty;
+}
+
+/* Typography scale, per the handoff's "Typography" token section. */
+
+.type-eyebrow {
+  font: 600 10px var(--font-ui);
+  letter-spacing: 0.11em;
+  text-transform: uppercase;
+}
+
+.type-caption {
+  font: 400 11px var(--font-ui);
+}
+
+.type-body {
+  font: 400 14px var(--font-ui);
+  line-height: 1.5;
+}
+
+.type-row-label {
+  font: 600 14px var(--font-ui);
+}
+
+.type-card-title {
+  font: 600 16px var(--font-ui);
+}
+
+.type-screen-title {
+  font: 700 28px var(--font-ui);
+  letter-spacing: -0.02em;
+  line-height: 1.1;
+}
+
+.type-numeric-value {
+  font: 600 22px var(--font-mono);
+}
+
+.type-mono {
+  font-family: var(--font-mono);
+}
+
+/* iPhone-only for M1 (design width 402px); the app-shell centers and caps
+   width so it also reads sensibly in a desktop browser during development.
+   iPad's 2a breakpoint arrives in a later round. */
+.app-shell {
+  max-width: 480px;
+  margin: 0 auto;
+  min-height: 100dvh;
+  background: var(--paper);
+  position: relative;
+  padding-top: env(safe-area-inset-top, 0px);
+  padding-bottom: env(safe-area-inset-bottom, 0px);
+}
+
+.screen {
+  min-height: 100dvh;
+  display: flex;
+  flex-direction: column;
+}
+
+.screen--dark {
+  background: var(--shell);
+  color: var(--on-dark);
+}
+
+.screen--light {
+  background: var(--paper);
+  color: var(--ink);
+}
+
+.screen__body {
+  flex: 1;
+  min-height: 0;
+}

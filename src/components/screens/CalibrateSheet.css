@@ -1,0 +1,93 @@
+.calibrate__explain {
+  color: var(--ink-70);
+  margin: 0;
+}
+
+.calibrate__diagram {
+  background: var(--paper);
+  border-radius: var(--radius-card);
+  padding: 14px;
+}
+
+.calibrate__diagram-label {
+  color: var(--ink-45);
+  margin-bottom: 10px;
+}
+
+.calibrate__dots {
+  display: flex;
+  justify-content: space-between;
+}
+
+.calibrate__dot {
+  width: 15px;
+  height: 15px;
+  border-radius: 50%;
+  border: 1.5px solid var(--ink);
+  display: inline-block;
+}
+
+.calibrate__rule {
+  display: flex;
+  align-items: center;
+  margin-top: 10px;
+  gap: 6px;
+}
+
+.calibrate__tick {
+  width: 1.5px;
+  height: 11px;
+  background: var(--ink-40);
+}
+
+.calibrate__rule-line {
+  flex: 1;
+  height: 1.5px;
+  background: var(--ink-40);
+}
+
+.calibrate__rule-label {
+  color: var(--ink-70);
+  font-size: 11px;
+  white-space: nowrap;
+}
+
+.calibrate__input-row {
+  display: flex;
+  gap: 12px;
+  align-items: flex-end;
+}
+
+.calibrate__unit-chip {
+  border: 1.5px solid var(--accent);
+  border-radius: var(--radius-field);
+  width: 76px;
+  height: 56px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  font: 600 14px var(--font-ui);
+}
+
+.calibrate__unit-sub {
+  font-size: 8.5px;
+  color: var(--ink-45);
+}
+
+.calibrate__results {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  font-size: 12px;
+  color: var(--ink-70);
+}
+
+.calibrate__actions {
+  display: flex;
+  gap: 10px;
+}
+
+.calibrate__actions .pill-button {
+  flex: 1;
+}
