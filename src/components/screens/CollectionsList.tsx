@@ -50,7 +50,10 @@ export function CollectionsList() {
   return (
     <div className="screen screen--cream collections__screen">
       <div className="collections__bar">
-        <button type="button" onClick={() => dispatch({ type: 'nav', screen: 'adjust' })}>
+        <button
+          type="button"
+          onClick={() => dispatch({ type: 'nav', screen: state.draft ? 'adjust' : 'library' })}
+        >
           BACK
         </button>
         <span className="type-eyebrow">COLLECTIONS</span>

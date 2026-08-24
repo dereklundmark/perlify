@@ -19,10 +19,12 @@ from-scratch implementation of that spec, not a copy of the reference HTML.
 ## Status
 
 **Pegboard rebuild** (current): the full Pegboard visual system, plus a
-reordered flow — **Photo comes first**, then one combined **Adjust** screen
-holds board size, bead type, and palette mode alongside contrast, all live
-against the real photo (no more choosing a color count blind before ever
-seeing a match). Screens: Library → Photo → Adjust → Final Preview → Export,
+reordered flow — **Photo comes first**, then a big-preview **Adjust**
+screen for palette/color-count/contrast/dithering (all live against the
+real photo), then a separate **Board Setup** screen for pattern name, bead
+type, and board size — splitting the two apart keeps color tuning from
+being buried under a long scrolling form of unrelated structural fields.
+Screens: Library → Photo → Adjust → Board Setup → Final Preview → Export,
 with Manual Edit, a two-step Swap flow, and a step-by-step History timeline
 reachable from the editor. iPad gets a persistent side panel (cream stage,
 yellow tool panel) instead of a bottom sheet. Multi-board seam lines and
@@ -37,8 +39,10 @@ per physical bead set; each pattern remembers which one it's locked to.
 crop — the whole image is kept as-is. The first time a fresh photo reaches
 Adjust, a full-screen framing tool (pinch/zoom, drag, 90° rotate) opens so
 you decide what's kept before anything is matched; it's reachable again any
-time via "CROP PHOTO" in the board-size card, and reopening it starts from
-wherever you last left it rather than resetting.
+time via "CROP PHOTO" on the Adjust screen, and reopening it starts from
+wherever you last left it rather than resetting. Zooming out past the
+image's own edges is allowed — anything the crop window shows beyond the
+photo's actual bounds is padded white in the matched pattern.
 
 Documented scope cuts: no dedicated vertical-flip control on the framing
 tool (rotate three times, or flip the finished grid in Manual Edit instead),

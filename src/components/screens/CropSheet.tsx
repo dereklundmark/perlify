@@ -60,7 +60,7 @@ export function CropSheet({ sourceImage, cropRect, boardAspect, onApply, onClose
       setOffset({ x: 0, y: 0 });
       return;
     }
-    const s = Math.max(1, cropBoxW / cropRect.width / (imageSize.width * baseScale));
+    const s = Math.min(4, Math.max(0.25, cropBoxW / cropRect.width / (imageSize.width * baseScale)));
     const dw = imageSize.width * baseScale * s;
     const dh = imageSize.height * baseScale * s;
     setScale(s);
@@ -118,7 +118,7 @@ export function CropSheet({ sourceImage, cropRect, boardAspect, onApply, onClose
     if (e.touches.length === 2 && pinchState.current && imageSize) {
       e.preventDefault();
       const ratio = touchDist(e.touches) / pinchState.current.dist;
-      const nextScale = Math.min(4, Math.max(1, pinchState.current.scale * ratio));
+      const nextScale = Math.min(4, Math.max(0.25, pinchState.current.scale * ratio));
       setScale(nextScale);
       const dW = imageSize.width * baseScale * nextScale;
       const dH = imageSize.height * baseScale * nextScale;
@@ -131,7 +131,7 @@ export function CropSheet({ sourceImage, cropRect, boardAspect, onApply, onClose
   function onWheel(e: ReactWheelEvent) {
     if (!imageSize) return;
     e.preventDefault();
-    const nextScale = Math.min(4, Math.max(1, scale - e.deltaY * 0.002));
+    const nextScale = Math.min(4, Math.max(0.25, scale - e.deltaY * 0.002));
     setScale(nextScale);
     const dW = imageSize.width * baseScale * nextScale;
     const dH = imageSize.height * baseScale * nextScale;
@@ -143,8 +143,8 @@ export function CropSheet({ sourceImage, cropRect, boardAspect, onApply, onClose
     const relX = displayedW / 2 - cropBoxW / 2 - offset.x;
     const relY = displayedH / 2 - cropBoxH / 2 - offset.y;
     const newCropRect: CropRect = {
-      x: clamp01(relX / displayedW, cropBoxW / displayedW),
-      y: clamp01(relY / displayedH, cropBoxH / displayedH),
+      x: relX / displayedW,
+      y: relY / displayedH,
       width: cropBoxW / displayedW,
       height: cropBoxH / displayedH,
     };
@@ -210,11 +210,7 @@ export function CropSheet({ sourceImage, cropRect, boardAspect, onApply, onClose
           RESET
         </button>
       </div>
-      <p className="type-body crop-sheet__caption">Pinch or scroll to zoom, drag to reposition.</p>
+      <p className="type-body crop-sheet__caption">Pinch or scroll to zoom, drag to reposition. Zoom out past the edge to pad with white space.</p>
     </div>
   );
-}
-
-function clamp01(v: number, size: number): number {
-  return Math.min(Math.max(0, v), 1 - size);
 }

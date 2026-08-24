@@ -70,11 +70,7 @@ export function Library() {
     return (
       <div className="screen screen--yellow library-first-run">
         <div className="screen__body library-first-run__body">
-          <h1 className="type-headline type-headline--shelf">
-            NOTHING
-            <br />
-            YET
-          </h1>
+          <h1 className="type-headline type-headline--shelf">PERLIFY</h1>
           <div className="library-first-run__pegboard" aria-hidden>
             <PegboardIcon />
           </div>
@@ -98,9 +94,14 @@ export function Library() {
           <PillButton onClick={startNew} style={{ width: '100%' }}>
             START NEW PATTERN
           </PillButton>
-          <button type="button" className="library__link" onClick={() => fileInputRef.current?.click()}>
-            RESTORE FROM BACKUP
-          </button>
+          <div className="library__secondary-links">
+            <button type="button" className="library__link" onClick={() => dispatch({ type: 'nav', screen: 'collections' })}>
+              MY COLLECTIONS
+            </button>
+            <button type="button" className="library__link" onClick={() => fileInputRef.current?.click()}>
+              RESTORE FROM BACKUP
+            </button>
+          </div>
           {importMessage && <p className="type-meta library__import-message">{importMessage}</p>}
         </div>
         <input
@@ -182,6 +183,9 @@ export function Library() {
           START NEW PATTERN
         </PillButton>
         <div className="library__secondary-links">
+          <button type="button" className="library__link" onClick={() => dispatch({ type: 'nav', screen: 'collections' })}>
+            MY COLLECTIONS
+          </button>
           <button type="button" className="library__link" onClick={handleBackup}>
             BACK UP
           </button>

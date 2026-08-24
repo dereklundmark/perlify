@@ -4,44 +4,26 @@ import { WizardBar } from '../ui/WizardBar';
 import { SegmentedControl } from '../ui/SegmentedControl';
 import { Slider } from '../ui/Slider';
 import { Toggle } from '../ui/Toggle';
-import { NumberField } from '../ui/NumberField';
-import { UnitChip } from '../ui/UnitChip';
 import { EditorLayout } from '../ui/EditorLayout';
-import { CalibrateSheet } from './CalibrateSheet';
 import { CropSheet } from './CropSheet';
-import { matchImageToGrid } from '../../lib/match';
+import { useLiveMatch } from '../../hooks/useLiveMatch';
 import { catalogBeadById } from '../../lib/catalog';
 import { renderGrid } from '../../lib/renderGrid';
 import { beadUsage, gridStats } from '../../lib/grid';
-import { pegsToUnit, pitchMm, unitToPegs, type BoardUnit } from '../../lib/board';
-import { savePattern } from '../../db/db';
-import type { BeadType, BoardConfig, CropRect, Pattern } from '../../db/schema';
+import type { CropRect, Pattern } from '../../db/schema';
 import './ResultAdjust.css';
 
 const PRESETS = [8, 12, 16, 24, 32, 60];
 const GRID_DISPLAY_SIZE = 261;
-const DEBOUNCE_MS = 80;
-const UNIT_CYCLE: BoardUnit[] = ['pegs', 'in', 'cm'];
 
 export function ResultAdjust() {
   const { state, dispatch } = useApp();
   const draft = state.draft;
   const [tab, setTab] = useState<'adjust' | 'colors'>('adjust');
-  const [unit, setUnit] = useState<BoardUnit>('pegs');
-  const [calibrateOpen, setCalibrateOpen] = useState(false);
   const [cropSheetOpen, setCropSheetOpen] = useState(false);
-  const [imgEl, setImgEl] = useState<HTMLImageElement | null>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
-  const debounceRef = useRef<number | undefined>(undefined);
-  const didInitialMatch = useRef(false);
   const offeredCropPrompt = useRef(false);
-
-  useEffect(() => {
-    if (!draft?.sourceImage) return;
-    const img = new Image();
-    img.onload = () => setImgEl(img);
-    img.src = draft.sourceImage;
-  }, [draft?.sourceImage]);
+  const imgEl = useLiveMatch();
 
   // A fresh photo (never framed yet) prompts the crop tool immediately
   // instead of silently auto-cropping — the user decides the framing.
@@ -54,48 +36,6 @@ export function ResultAdjust() {
       setCropSheetOpen(true);
     }
   }, [draft, imgEl]);
-
-  useEffect(() => {
-    if (!draft || !imgEl) return;
-    // Re-entering this screen (from Manual Edit, or reopening a saved
-    // pattern) shouldn't silently re-run matching and clobber a grid that
-    // already has hand edits on it — only auto-match on a genuinely fresh
-    // pattern (empty grid). Any later dependency change still re-matches.
-    if (!didInitialMatch.current) {
-      didInitialMatch.current = true;
-      if (draft.gridData.length > 0) return;
-    }
-    window.clearTimeout(debounceRef.current);
-    debounceRef.current = window.setTimeout(() => {
-      const collectionBeads = state.collections.find((c) => c.id === draft.collectionId)?.beads ?? [];
-      const result = matchImageToGrid({
-        image: imgEl,
-        cropRect: draft.cropRect,
-        widthPegs: draft.boardConfig.widthPegs,
-        heightPegs: draft.boardConfig.heightPegs,
-        preprocess: draft.preprocessSettings,
-        paletteMode: draft.paletteMode,
-        colorCount: draft.colorCount,
-        collectionBeads,
-        dither: draft.dither,
-      });
-      dispatch({ type: 'draft/update', patch: { gridData: result.gridData } });
-    }, DEBOUNCE_MS);
-    return () => window.clearTimeout(debounceRef.current);
-    // Re-run whenever anything the algorithm depends on changes.
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [
-    imgEl,
-    draft?.cropRect,
-    draft?.boardConfig.widthPegs,
-    draft?.boardConfig.heightPegs,
-    draft?.preprocessSettings,
-    draft?.paletteMode,
-    draft?.colorCount,
-    draft?.dither,
-    draft?.collectionId,
-    state.collections,
-  ]);
 
   useEffect(() => {
     if (!draft || !canvasRef.current || draft.gridData.length === 0) return;
@@ -127,44 +67,16 @@ export function ResultAdjust() {
   const usage = beadUsage(draft.gridData);
   const maxCount = usage[0]?.count ?? 1;
   const { boardConfig } = draft;
-  const override = boardConfig.pegsPerInchOverride;
   const collection = state.collections.find((c) => c.id === draft.collectionId) ?? state.collections[0];
   const isCollectionMode = draft.paletteMode === 'collection';
-
-  function updateBoard(patch: Partial<BoardConfig>) {
-    dispatch({ type: 'draft/update', patch: { boardConfig: { ...boardConfig, ...patch } } });
-  }
-
-  function cycleUnit() {
-    setUnit(UNIT_CYCLE[(UNIT_CYCLE.indexOf(unit) + 1) % UNIT_CYCLE.length]);
-  }
-
-  function handleWidth(value: string) {
-    const n = Number(value);
-    if (!Number.isFinite(n) || n <= 0) return;
-    updateBoard({ widthPegs: unitToPegs(n, unit, boardConfig.beadType, override) });
-  }
-
-  function handleHeight(value: string) {
-    const n = Number(value);
-    if (!Number.isFinite(n) || n <= 0) return;
-    updateBoard({ heightPegs: unitToPegs(n, unit, boardConfig.beadType, override) });
-  }
-
-  function handleBeadType(type: BeadType) {
-    updateBoard({ beadType: type, pegsPerInchOverride: undefined });
-  }
 
   function updatePreprocess(patch: Partial<Pattern['preprocessSettings']>) {
     if (!draft) return;
     dispatch({ type: 'draft/update', patch: { preprocessSettings: { ...draft.preprocessSettings, ...patch } } });
   }
 
-  async function goToPreview() {
-    if (!draft) return;
-    await savePattern(draft);
-    dispatch({ type: 'library/upsert', pattern: draft });
-    dispatch({ type: 'nav', screen: 'preview' });
+  function goToBoard() {
+    dispatch({ type: 'nav', screen: 'board' });
   }
 
   function applyCrop(newCropRect: CropRect, rotatedSourceImage?: string) {
@@ -176,15 +88,6 @@ export function ResultAdjust() {
     });
     setCropSheetOpen(false);
   }
-
-  const widthDisplay = pegsToUnit(boardConfig.widthPegs, unit, boardConfig.beadType, override);
-  const heightDisplay = pegsToUnit(boardConfig.heightPegs, unit, boardConfig.beadType, override);
-  const widthIn = pegsToUnit(boardConfig.widthPegs, 'in', boardConfig.beadType, override);
-  const heightIn = pegsToUnit(boardConfig.heightPegs, 'in', boardConfig.beadType, override);
-  const conversionLabel =
-    boardConfig.widthPegs === boardConfig.heightPegs
-      ? `${widthIn.toFixed(1)} × ${widthIn.toFixed(1)} in`
-      : `${widthIn.toFixed(1)} × ${heightIn.toFixed(1)} in`;
 
   const stage = (
     <div className="adjust__grid-block">
@@ -217,68 +120,6 @@ export function ResultAdjust() {
       {tab === 'adjust' && (
         <div className="adjust__form">
           <div className="adjust-card">
-            <div className="type-eyebrow">PATTERN NAME</div>
-            <input
-              className="adjust__name-input"
-              value={draft.name}
-              onChange={(e) => dispatch({ type: 'draft/update', patch: { name: e.target.value } })}
-              placeholder="Untitled pattern"
-            />
-          </div>
-
-          <div className="adjust-card">
-            <div className="type-eyebrow" style={{ marginBottom: 10 }}>
-              BEAD SIZE
-            </div>
-            <SegmentedControl
-              options={[
-                { value: 'regular', label: 'REGULAR' },
-                { value: 'mini', label: 'MINI' },
-              ]}
-              value={boardConfig.beadType}
-              onChange={handleBeadType}
-            />
-            <div className="adjust__pitch-row">
-              <span className="type-meta">{pitchMm(boardConfig.beadType, override).toFixed(1)} mm pitch</span>
-              <button type="button" className="adjust__link" onClick={() => setCalibrateOpen(true)}>
-                CALIBRATE
-              </button>
-            </div>
-          </div>
-
-          <div className="adjust-card">
-            <div className="adjust__board-header">
-              <span className="type-eyebrow">BOARD SIZE</span>
-              <span className="type-meta">{conversionLabel}</span>
-            </div>
-            <div className="adjust__board-fields">
-              <NumberField label="WIDTH" value={round1(widthDisplay)} onChange={handleWidth} />
-              <span className="adjust__times type-numeric">×</span>
-              <NumberField label="HEIGHT" value={round1(heightDisplay)} onChange={handleHeight} />
-              <UnitChip value={unit.toUpperCase()} onClick={cycleUnit} />
-            </div>
-            <div className="adjust__divider" />
-            <div className="adjust__stepper-row">
-              <span className="type-row-label">BOARDS</span>
-              <div className="adjust__stepper">
-                <button
-                  type="button"
-                  onClick={() => updateBoard({ boardsWide: Math.max(1, boardConfig.boardsWide - 1) })}
-                >
-                  −
-                </button>
-                <span className="type-numeric">
-                  {boardConfig.boardsWide}×{boardConfig.boardsHigh}
-                </span>
-                <button
-                  type="button"
-                  onClick={() => updateBoard({ boardsWide: Math.min(4, boardConfig.boardsWide + 1) })}
-                >
-                  +
-                </button>
-              </div>
-            </div>
-            <div className="adjust__divider" />
             <div className="adjust__stepper-row">
               <span className="type-row-label">PHOTO FRAMING</span>
               <button type="button" className="adjust__link" onClick={() => setCropSheetOpen(true)}>
@@ -415,21 +256,13 @@ export function ResultAdjust() {
         }
         center={<span className="adjust__title-center type-numeric">{draft.name.toUpperCase()}</span>}
         right={
-          <button type="button" className="adjust__next-btn" onClick={goToPreview}>
+          <button type="button" className="adjust__next-btn" onClick={goToBoard}>
             NEXT
           </button>
         }
       />
 
       <EditorLayout stage={stage} panelContent={panelContent} />
-
-      {calibrateOpen && (
-        <CalibrateSheet
-          beadType={boardConfig.beadType}
-          onApply={(ppin) => updateBoard({ pegsPerInchOverride: ppin })}
-          onClose={() => setCalibrateOpen(false)}
-        />
-      )}
 
       {cropSheetOpen && draft.sourceImage && (
         <CropSheet
@@ -442,8 +275,4 @@ export function ResultAdjust() {
       )}
     </div>
   );
-}
-
-function round1(n: number): number {
-  return Math.round(n * 10) / 10;
 }

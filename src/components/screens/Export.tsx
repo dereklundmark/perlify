@@ -63,7 +63,7 @@ export function Export() {
   return (
     <div className="screen screen--yellow export__screen">
       <WizardBar
-        step={4}
+        step={5}
         left={
           <button type="button" onClick={() => dispatch({ type: 'nav', screen: 'preview' })}>
             BACK

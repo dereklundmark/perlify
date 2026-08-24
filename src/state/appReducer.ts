@@ -6,21 +6,23 @@ export type Screen =
   | 'library'
   | 'photo'
   | 'adjust'
+  | 'board'
   | 'preview'
   | 'export'
   | 'edit'
   | 'collections'
   | 'collection';
 
-// Photo -> Adjust -> Preview -> Export: board setup merged into Adjust
-// per the requested flow (see the Pegboard-rebuild plan).
+// Photo -> Adjust (colors/contrast, big live preview) -> Board (size/bead
+// type) -> Preview -> Export. Adjust and Board show no step number (center
+// shows the pattern name / "BOARD SETUP" instead), matching the old merged
+// Adjust screen's treatment.
 export const WIZARD_STEPS: Partial<Record<Screen, number>> = {
   photo: 1,
-  adjust: 2,
-  preview: 3,
-  export: 4,
+  preview: 4,
+  export: 5,
 };
-export const WIZARD_TOTAL_STEPS = 4;
+export const WIZARD_TOTAL_STEPS = 5;
 
 export interface AppState {
   screen: Screen;

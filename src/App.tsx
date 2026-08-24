@@ -3,6 +3,7 @@ import { useIsTablet } from './hooks/useIsTablet';
 import { Library } from './components/screens/Library';
 import { Photo } from './components/screens/Photo';
 import { ResultAdjust } from './components/screens/ResultAdjust';
+import { BoardSetup } from './components/screens/BoardSetup';
 import { FinalPreview } from './components/screens/FinalPreview';
 import { Export } from './components/screens/Export';
 import { ManualEdit } from './components/screens/ManualEdit';
@@ -19,6 +20,8 @@ function Screens() {
       return <Photo />;
     case 'adjust':
       return <ResultAdjust />;
+    case 'board':
+      return <BoardSetup />;
     case 'preview':
       return <FinalPreview />;
     case 'export':

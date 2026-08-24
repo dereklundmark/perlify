@@ -9,6 +9,7 @@ import type { Pattern } from '../../db/schema';
 import './FinalPreview.css';
 
 const GRID_DISPLAY_SIZE = 320;
+const CANVAS_PADDING = 20;
 
 export function FinalPreview() {
   const { state, dispatch } = useApp();
@@ -21,10 +22,17 @@ export function FinalPreview() {
     const rows = draft.boardConfig.heightPegs;
     const cellSize = GRID_DISPLAY_SIZE / Math.max(cols, rows);
     const canvas = canvasRef.current;
-    canvas.width = cols * cellSize;
-    canvas.height = rows * cellSize;
+    canvas.width = cols * cellSize + CANVAS_PADDING * 2;
+    canvas.height = rows * cellSize + CANVAS_PADDING * 2;
     const ctx = canvas.getContext('2d');
     if (!ctx) return;
+    const backgroundFill = draft.previewBackground === 'white' ? '#ffffff' : '#000000';
+    // The grid itself is always fully opaque cell-to-cell, so the toggle
+    // only reads as a visible change via the margin around it.
+    ctx.fillStyle = backgroundFill;
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
+    ctx.save();
+    ctx.translate(CANVAS_PADDING, CANVAS_PADDING);
     renderGrid(ctx, {
       grid: draft.gridData,
       cellSize,
@@ -32,11 +40,12 @@ export function FinalPreview() {
       gridlines: draft.gridlines,
       symbolOverlay: draft.symbolOverlay,
       surface: draft.previewBackground === 'white' ? 'light' : 'dark',
-      background: draft.previewBackground === 'white' ? '#ffffff' : '#000000',
+      background: backgroundFill,
       boardsWide: draft.boardConfig.boardsWide,
       boardsHigh: draft.boardConfig.boardsHigh,
       seamLines: draft.seamLines,
     });
+    ctx.restore();
   }, [draft]);
 
   if (!draft) return null;
@@ -52,9 +61,9 @@ export function FinalPreview() {
   return (
     <div className="screen screen--cream">
       <WizardBar
-        step={3}
+        step={4}
         left={
-          <button type="button" onClick={() => dispatch({ type: 'nav', screen: 'adjust' })}>
+          <button type="button" onClick={() => dispatch({ type: 'nav', screen: 'board' })}>
             BACK
           </button>
         }

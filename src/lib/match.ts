@@ -35,6 +35,11 @@ export function sampleGridRgb(
   canvas.width = widthPegs;
   canvas.height = heightPegs;
   const ctx = canvas.getContext('2d')!;
+  // The crop window can extend past the source image's own bounds (the
+  // user zoomed out to pad a narrower photo) — pre-fill white so drawImage's
+  // spec-mandated clipping to the actual image leaves white in the gaps.
+  ctx.fillStyle = '#ffffff';
+  ctx.fillRect(0, 0, widthPegs, heightPegs);
   ctx.imageSmoothingEnabled = true;
   ctx.imageSmoothingQuality = 'high';
   ctx.drawImage(image, sx, sy, sWidth, sHeight, 0, 0, widthPegs, heightPegs);

@@ -10,7 +10,7 @@ interface WizardBarProps {
 }
 
 /** Progress is N discrete segments, not a continuous bar — per the Pegboard spec. */
-export function WizardBar({ left, center, right, step, totalSteps = 4 }: WizardBarProps) {
+export function WizardBar({ left, center, right, step, totalSteps = 5 }: WizardBarProps) {
   return (
     <div className="wizard-bar">
       <div className="wizard-bar__row">
