@@ -96,7 +96,7 @@ export function Library() {
           </PillButton>
           <div className="library__secondary-links">
             <button type="button" className="library__link" onClick={() => dispatch({ type: 'nav', screen: 'collections' })}>
-              MY COLLECTIONS
+              MY BEAD COLORS
             </button>
             <button type="button" className="library__link" onClick={() => fileInputRef.current?.click()}>
               RESTORE FROM BACKUP
@@ -184,7 +184,7 @@ export function Library() {
         </PillButton>
         <div className="library__secondary-links">
           <button type="button" className="library__link" onClick={() => dispatch({ type: 'nav', screen: 'collections' })}>
-            MY COLLECTIONS
+            MY BEAD COLORS
           </button>
           <button type="button" className="library__link" onClick={handleBackup}>
             BACK UP
