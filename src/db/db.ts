@@ -1,6 +1,6 @@
 import { openDB, type DBSchema, type IDBPDatabase } from 'idb';
 import { DB_NAME, DB_VERSION, type BeadCollection, type Pattern } from './schema';
-import { DEFAULT_OWNED_BEADS } from '../lib/catalog';
+import { DEFAULT_OWNED_BEADS, HAMA_PRESET_BEADS, PERLER_PRESET_BEADS } from '../lib/catalog';
 
 interface PerlifyDBSchema extends DBSchema {
   collections: {
@@ -34,20 +34,36 @@ function getDb(): Promise<IDBPDatabase<PerlifyDBSchema>> {
 }
 
 export const DEFAULT_COLLECTION_ID = 'my-colors';
+export const HAMA_PRESET_COLLECTION_ID = 'preset-hama';
+export const PERLER_PRESET_COLLECTION_ID = 'preset-perler';
 
-export async function ensureDefaultCollection(): Promise<BeadCollection> {
+async function ensureCollection(id: string, name: string, beads: BeadCollection['beads']): Promise<BeadCollection> {
   const db = await getDb();
-  const existing = await db.get('collections', DEFAULT_COLLECTION_ID);
+  const existing = await db.get('collections', id);
   if (existing) return existing;
-
-  const seeded: BeadCollection = {
-    id: DEFAULT_COLLECTION_ID,
-    name: 'My Colors',
-    beads: DEFAULT_OWNED_BEADS.map(({ id, name, hex }) => ({ id, name, hex })),
-    createdAt: Date.now(),
-  };
+  const seeded: BeadCollection = { id, name, beads, createdAt: Date.now() };
   await db.put('collections', seeded);
   return seeded;
+}
+
+export async function ensureDefaultCollection(): Promise<BeadCollection> {
+  return ensureCollection(
+    DEFAULT_COLLECTION_ID,
+    'My Colors',
+    DEFAULT_OWNED_BEADS.map(({ id, name, hex }) => ({ id, name, hex })),
+  );
+}
+
+/** Two preset starting palettes for trying design variations fast — see catalog.ts. */
+export async function ensurePresetCollections(): Promise<void> {
+  await Promise.all([
+    ensureCollection(HAMA_PRESET_COLLECTION_ID, 'Hama', HAMA_PRESET_BEADS.map(({ id, name, hex }) => ({ id, name, hex }))),
+    ensureCollection(
+      PERLER_PRESET_COLLECTION_ID,
+      'Perler',
+      PERLER_PRESET_BEADS.map(({ id, name, hex }) => ({ id, name, hex })),
+    ),
+  ]);
 }
 
 export async function listCollections(): Promise<BeadCollection[]> {

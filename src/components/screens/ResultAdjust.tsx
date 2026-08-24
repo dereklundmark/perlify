@@ -6,7 +6,8 @@ import { Slider } from '../ui/Slider';
 import { Toggle } from '../ui/Toggle';
 import { EditorLayout } from '../ui/EditorLayout';
 import { useLiveMatch } from '../../hooks/useLiveMatch';
-import { catalogBeadById } from '../../lib/catalog';
+import { catalogBeadById, HAMA_PRESET_BEADS, PERLER_PRESET_BEADS } from '../../lib/catalog';
+import { HAMA_PRESET_COLLECTION_ID, PERLER_PRESET_COLLECTION_ID } from '../../db/db';
 import { renderGrid } from '../../lib/renderGrid';
 import { beadUsage, gridStats } from '../../lib/grid';
 import type { Pattern } from '../../db/schema';
@@ -15,7 +16,11 @@ import './ResultAdjust.css';
 const PRESETS = [8, 12, 16, 24, 32, 60];
 const GRID_DISPLAY_SIZE = 336;
 
-type AccordionSection = 'palette' | 'contrast' | null;
+type AccordionSection = 'palette' | 'adjustments' | null;
+
+function formatSigned(v: number): string {
+  return `${v > 0 ? '+' : ''}${v}`;
+}
 
 export function ResultAdjust() {
   const { state, dispatch } = useApp();
@@ -54,9 +59,19 @@ export function ResultAdjust() {
   const stats = gridStats(draft.gridData);
   const usage = beadUsage(draft.gridData);
   const maxCount = usage[0]?.count ?? 1;
-  const collection = state.collections.find((c) => c.id === draft.collectionId) ?? state.collections[0];
   const isCollectionMode = draft.paletteMode === 'collection';
-  const contrast = draft.preprocessSettings.contrast;
+  const isHamaSelected = isCollectionMode && draft.collectionId === HAMA_PRESET_COLLECTION_ID;
+  const isPerlerSelected = isCollectionMode && draft.collectionId === PERLER_PRESET_COLLECTION_ID;
+  const isMyCollectionSelected = isCollectionMode && !isHamaSelected && !isPerlerSelected;
+  const collection = state.collections.find((c) => c.id === draft.collectionId) ?? state.collections[0];
+  // Distinct from `collection` above: MY COLLECTION must resolve to the
+  // user's own collection even while a preset is active, both so tapping
+  // it doesn't just re-select the preset it's currently showing, and so
+  // its own label/swatches don't briefly read "Hama"/"Perler".
+  const myCollection = isMyCollectionSelected
+    ? collection
+    : state.collections.find((c) => c.id !== HAMA_PRESET_COLLECTION_ID && c.id !== PERLER_PRESET_COLLECTION_ID);
+  const { contrast, saturation, brightness } = draft.preprocessSettings;
 
   function updatePreprocess(patch: Partial<Pattern['preprocessSettings']>) {
     if (!draft) return;
@@ -67,13 +82,17 @@ export function ResultAdjust() {
     dispatch({ type: 'nav', screen: 'board' });
   }
 
-  function toggleSection(section: 'palette' | 'contrast') {
+  function toggleSection(section: 'palette' | 'adjustments') {
     setOpenSection((cur) => (cur === section ? null : section));
   }
 
-  const paletteSummary = isCollectionMode
-    ? `${collection?.name ?? 'My Collection'} · ${collection?.beads.length ?? 0}`
-    : `Auto · ${draft.colorCount}`;
+  const paletteSummary = isHamaSelected
+    ? `Hama · ${HAMA_PRESET_BEADS.length}`
+    : isPerlerSelected
+      ? `Perler · ${PERLER_PRESET_BEADS.length}`
+      : isMyCollectionSelected
+        ? `${collection?.name ?? 'My Collection'} · ${collection?.beads.length ?? 0}`
+        : `Auto · ${draft.colorCount}`;
 
   const stage = (
     <div className="adjust__grid-block">
@@ -152,6 +171,40 @@ export function ResultAdjust() {
 
                 <div className="adjust__divider" />
 
+                <button
+                  type="button"
+                  className="radio-card__head"
+                  onClick={() =>
+                    dispatch({
+                      type: 'draft/update',
+                      patch: { paletteMode: 'collection', collectionId: HAMA_PRESET_COLLECTION_ID },
+                    })
+                  }
+                >
+                  <span className={`radio-dot${isHamaSelected ? ' radio-dot--selected radio-dot--filled' : ''}`} />
+                  <span className="type-row-label">HAMA</span>
+                  <span className="type-numeric adjust__count-value">{HAMA_PRESET_BEADS.length}</span>
+                </button>
+
+                <div className="adjust__divider" />
+
+                <button
+                  type="button"
+                  className="radio-card__head"
+                  onClick={() =>
+                    dispatch({
+                      type: 'draft/update',
+                      patch: { paletteMode: 'collection', collectionId: PERLER_PRESET_COLLECTION_ID },
+                    })
+                  }
+                >
+                  <span className={`radio-dot${isPerlerSelected ? ' radio-dot--selected radio-dot--filled' : ''}`} />
+                  <span className="type-row-label">PERLER</span>
+                  <span className="type-numeric adjust__count-value">{PERLER_PRESET_BEADS.length}</span>
+                </button>
+
+                <div className="adjust__divider" />
+
                 <div className="radio-card__head radio-card__head--row">
                   <button
                     type="button"
@@ -159,23 +212,23 @@ export function ResultAdjust() {
                     onClick={() =>
                       dispatch({
                         type: 'draft/update',
-                        patch: { paletteMode: 'collection', collectionId: collection?.id ?? null },
+                        patch: { paletteMode: 'collection', collectionId: myCollection?.id ?? null },
                       })
                     }
                   >
-                    <span className={`radio-dot${isCollectionMode ? ' radio-dot--selected radio-dot--filled' : ''}`} />
-                    <span className="type-row-label">{collection?.name ?? 'MY COLLECTION'}</span>
+                    <span className={`radio-dot${isMyCollectionSelected ? ' radio-dot--selected radio-dot--filled' : ''}`} />
+                    <span className="type-row-label">{myCollection?.name ?? 'MY COLLECTION'}</span>
                   </button>
                   <button
                     type="button"
                     className="adjust__link"
                     onClick={() => dispatch({ type: 'nav', screen: 'collections' })}
                   >
-                    {collection?.beads.length ?? 0} ›
+                    {myCollection?.beads.length ?? 0} ›
                   </button>
                 </div>
                 <div className="adjust__collection-swatch-row">
-                  {collection?.beads.map((bead) => (
+                  {myCollection?.beads.map((bead) => (
                     <span
                       key={bead.id}
                       className="adjust__collection-swatch"
@@ -189,23 +242,41 @@ export function ResultAdjust() {
           </div>
 
           <div className="accordion-section">
-            <button type="button" className="accordion-section__head" onClick={() => toggleSection('contrast')}>
-              <span className="type-row-label">CONTRAST</span>
-              <span className="type-meta accordion-section__summary">{`${contrast > 0 ? '+' : ''}${contrast}`}</span>
+            <button type="button" className="accordion-section__head" onClick={() => toggleSection('adjustments')}>
+              <span className="type-row-label">ADJUSTMENTS</span>
+              <span className="type-meta accordion-section__summary">{`Contrast ${formatSigned(contrast)}`}</span>
               <span
-                className={`accordion-section__chevron${openSection === 'contrast' ? ' accordion-section__chevron--open' : ''}`}
+                className={`accordion-section__chevron${openSection === 'adjustments' ? ' accordion-section__chevron--open' : ''}`}
               />
             </button>
-            {openSection === 'contrast' && (
-              <div className="accordion-section__body accordion-section__body--padded">
+            {openSection === 'adjustments' && (
+              <div className="accordion-section__body accordion-section__body--padded adjust__adjustments-body">
                 <Slider
-                  label=""
+                  label="CONTRAST"
                   value={contrast}
                   min={-100}
                   max={100}
                   fill="red"
-                  formatValue={(v) => `${v > 0 ? '+' : ''}${v}`}
+                  formatValue={formatSigned}
                   onChange={(v) => updatePreprocess({ contrast: v })}
+                />
+                <Slider
+                  label="SATURATION"
+                  value={saturation}
+                  min={-100}
+                  max={100}
+                  fill="red"
+                  formatValue={formatSigned}
+                  onChange={(v) => updatePreprocess({ saturation: v })}
+                />
+                <Slider
+                  label="BRIGHTNESS"
+                  value={brightness}
+                  min={-100}
+                  max={100}
+                  fill="red"
+                  formatValue={formatSigned}
+                  onChange={(v) => updatePreprocess({ brightness: v })}
                 />
               </div>
             )}

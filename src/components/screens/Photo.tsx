@@ -3,6 +3,7 @@ import { useApp } from '../../state/AppContext';
 import { WizardBar } from '../ui/WizardBar';
 import { SegmentedControl } from '../ui/SegmentedControl';
 import { PhotoCropSheet } from './PhotoCropSheet';
+import { computeDefaultBoardSize } from '../../lib/board';
 import './Photo.css';
 
 const MAX_SOURCE_DIM = 1600;
@@ -63,12 +64,26 @@ export function Photo() {
   }
 
   function applyPhotoCrop(newSourceImage: string) {
-    dispatch({
-      type: 'draft/update',
-      patch: { sourceImage: newSourceImage, cropRect: { x: 0, y: 0, width: 1, height: 1 } },
-    });
-    setPhotoCropOpen(false);
-    dispatch({ type: 'nav', screen: 'adjust' });
+    if (!draft) return;
+    const img = new Image();
+    img.onload = () => {
+      // No fixed default board shape — size it to match the trimmed
+      // photo's own aspect ratio, so the Adjust screen's live preview
+      // never opens visibly squished before a real board size is chosen
+      // on Board Setup.
+      const { widthPegs, heightPegs } = computeDefaultBoardSize(img.naturalWidth / img.naturalHeight);
+      dispatch({
+        type: 'draft/update',
+        patch: {
+          sourceImage: newSourceImage,
+          cropRect: { x: 0, y: 0, width: 1, height: 1 },
+          boardConfig: { ...draft.boardConfig, widthPegs, heightPegs },
+        },
+      });
+      setPhotoCropOpen(false);
+      dispatch({ type: 'nav', screen: 'adjust' });
+    };
+    img.src = newSourceImage;
   }
 
   const hasImage = !!draft.sourceImage;

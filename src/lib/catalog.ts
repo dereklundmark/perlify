@@ -56,3 +56,11 @@ export function catalogBeadById(id: string): CatalogBead | undefined {
 const DEFAULT_OWNED_INDICES = [0, 3, 6, 7, 9, 11, 12, 13, 17, 19, 28, 31, 34, 35, 37, 39, 40, 42, 45, 46, 48, 52, 53, 54];
 
 export const DEFAULT_OWNED_BEADS: CatalogBead[] = DEFAULT_OWNED_INDICES.map((i) => CATALOG[i]);
+
+// "Hama" / "Perler" preset palettes — quick starting points for trying
+// design variations fast, not verified real-world brand inventories (see
+// the file header: this catalog itself is placeholder data). Split the
+// 60-color catalog into its even/odd indices: a simple, deterministic way
+// to get two full-spectrum, maximally-different-from-each-other subsets.
+export const HAMA_PRESET_BEADS: CatalogBead[] = CATALOG.filter((_, i) => i % 2 === 0);
+export const PERLER_PRESET_BEADS: CatalogBead[] = CATALOG.filter((_, i) => i % 2 === 1);

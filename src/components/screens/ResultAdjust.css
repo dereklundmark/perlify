@@ -127,6 +127,12 @@
   padding: 0 14px 14px;
 }
 
+.adjust__adjustments-body {
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+}
+
 .adjust__name-input {
   border: none;
   border-bottom: var(--border-thick) solid var(--ink);

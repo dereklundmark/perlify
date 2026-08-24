@@ -1,5 +1,5 @@
 import { createContext, useContext, useEffect, useReducer, type Dispatch, type ReactNode } from 'react';
-import { ensureDefaultCollection, listCollections, listPatterns } from '../db/db';
+import { ensureDefaultCollection, ensurePresetCollections, listCollections, listPatterns } from '../db/db';
 import { appReducer, initialState, type Action, type AppState } from './appReducer';
 
 interface AppContextValue {
@@ -14,7 +14,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
 
   useEffect(() => {
     (async () => {
-      await ensureDefaultCollection(); // seeds one collection on a brand-new install
+      await Promise.all([ensureDefaultCollection(), ensurePresetCollections()]); // seeds "My Colors" + Hama/Perler presets on a brand-new install
       const [patterns, collections] = await Promise.all([listPatterns(), listCollections()]);
       dispatch({ type: 'library/loaded', patterns, collections });
     })();

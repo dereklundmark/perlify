@@ -25,8 +25,13 @@ real photo), then a separate **Board Setup** screen for pattern name, bead
 type, and board size — splitting the two apart keeps color tuning from
 being buried under a long scrolling form of unrelated structural fields.
 The Adjust preview runs edge-to-edge with no border/frame around it, and
-its controls collapse into an accordion (Palette open by default, Contrast
-collapsed) so the live image dominates the screen. Screens: Library →
+its controls collapse into an accordion (Palette open by default,
+Adjustments — contrast/saturation/brightness — collapsed) so the live
+image dominates the screen. There's no fixed default board size either: a
+fresh photo gets a starting board shape matching its own aspect ratio
+(`computeDefaultBoardSize` in `lib/board.ts`), so the live preview never
+opens visibly squished into a square before you've picked a real board
+size on Board Setup. Screens: Library →
 Photo → Adjust → Board Setup → Final Preview → Export,
 with Manual Edit, a two-step Swap flow, and a step-by-step History timeline
 reachable from the editor. iPad gets a persistent side panel (cream stage,
@@ -37,6 +42,12 @@ service worker.
 **Multiple bead collections** are supported — a "My Collections" screen
 (create/rename/duplicate/delete) lets you keep separate named collections
 per physical bead set; each pattern remembers which one it's locked to.
+Two more palette options sit alongside Auto Palette and My Collection for
+trying variations fast: **Hama** and **Perler** presets, seeded as regular
+(editable, deletable) collections the first time the app runs. They're the
+catalog's even/odd-index halves respectively — a simple, deterministic
+split, not verified real-world brand inventories (the catalog itself is
+still placeholder data; see `lib/catalog.ts`).
 
 **Cropping is two separate tools**, matching two separate decisions:
 right after picking a photo, **PhotoCropSheet** is a plain trim tool — drag

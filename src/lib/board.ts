@@ -78,3 +78,19 @@ export function isCalibrationSuspicious(measuredMm: number, beadType: BeadType):
   const { percentOffStandard } = calibrateFromMeasurement(measuredMm, beadType);
   return Math.abs(percentOffStandard) > 15;
 }
+
+const DEFAULT_BOARD_CELLS = 29 * 29;
+const MIN_DEFAULT_PEGS = 4;
+
+/**
+ * A starting board shape matching the photo's own aspect ratio, so the
+ * Adjust screen's live preview never opens visibly squished before the
+ * user has chosen a real board size on Board Setup. Preserves roughly the
+ * same total peg count as the old fixed 29x29 default (so detail level
+ * doesn't change), just distributed to match the photo's proportions.
+ */
+export function computeDefaultBoardSize(imageAspect: number): { widthPegs: number; heightPegs: number } {
+  const heightPegs = Math.max(MIN_DEFAULT_PEGS, Math.round(Math.sqrt(DEFAULT_BOARD_CELLS / imageAspect)));
+  const widthPegs = Math.max(MIN_DEFAULT_PEGS, Math.round(Math.sqrt(DEFAULT_BOARD_CELLS * imageAspect)));
+  return { widthPegs, heightPegs };
+}

@@ -18,7 +18,8 @@ import { paintCell, clearCell, swapColor, rotate90, flipHorizontal } from '../..
 import { savePattern } from '../../db/db';
 import './ManualEdit.css';
 
-const BASE_CELL_SIZE = 26;
+const BASE_CELL_SIZE = 26; // "100%" — actual bead size, the pinch-zoom reference point
+const FIT_WIDTH = 336; // matches the Adjust screen's live-preview width
 const MAX_HISTORY = 50;
 type Tool = 'paint' | 'clear' | 'swap';
 type View = 'edit' | 'swap-find' | 'swap-choose';
@@ -44,7 +45,15 @@ export function ManualEdit() {
   const [tool, setTool] = useState<Tool>('paint');
   const [currentColor, setCurrentColor] = useState<string | null>(null);
   const [extraPaletteIds, setExtraPaletteIds] = useState<string[]>([]);
-  const [cellSize, setCellSize] = useState(BASE_CELL_SIZE);
+  const [cellSize, setCellSize] = useState(() => {
+    const g = draft?.gridData ?? [];
+    const cols = g[0]?.length ?? 0;
+    const rows = g.length;
+    // Start fit-to-width like the Adjust screen's preview, not at "actual
+    // size" — a board with more pegs than fit across the screen at 26px
+    // each would otherwise open zoomed into the middle of the board.
+    return cols && rows ? Math.min(BASE_CELL_SIZE, FIT_WIDTH / Math.max(cols, rows)) : BASE_CELL_SIZE;
+  });
   const [lastCell, setLastCell] = useState<{ row: number; col: number } | null>(null);
   const [catalogOpen, setCatalogOpen] = useState(false);
   const [hoverPointer, setHoverPointer] = useState<{ x: number; y: number; row: number; col: number } | null>(null);
