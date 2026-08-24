@@ -4,6 +4,7 @@ import { listPatterns, deletePattern, duplicatePattern, savePattern } from '../.
 import { exportBackup, importBackup } from '../../lib/backup';
 import { gridStats } from '../../lib/grid';
 import { PillButton } from '../ui/PillButton';
+import { MenuDots } from '../ui/MenuDots';
 import { PatternThumbnail } from '../PatternThumbnail';
 import type { Pattern } from '../../db/schema';
 import './Library.css';
@@ -152,7 +153,7 @@ export function Library() {
                     onClick={() => setOpenMenuId(openMenuId === pattern.id ? null : pattern.id)}
                     aria-label="Pattern options"
                   >
-                    ⋯
+                    <MenuDots />
                   </button>
                 </div>
                 {openMenuId === pattern.id && (

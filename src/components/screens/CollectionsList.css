@@ -35,14 +35,22 @@
   position: relative;
 }
 
-.collection-card__main {
+.collection-card__thumb-wrap {
   appearance: none;
   border: none;
   background: none;
   padding: 0;
   width: 100%;
   cursor: pointer;
-  text-align: left;
+  display: block;
+}
+
+.collection-card__meta-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-top: 8px;
+  gap: 4px;
 }
 
 .collection-card__swatch-grid {
@@ -75,7 +83,6 @@
 
 .collection-card__name {
   font: 700 15px var(--font-ui);
-  margin-top: 8px;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
@@ -88,23 +95,19 @@
 }
 
 .collection-card__menu-btn {
-  position: absolute;
-  top: 8px;
-  right: 8px;
   appearance: none;
   border: none;
-  background: var(--white);
+  background: transparent;
   color: var(--muted);
-  font-size: 16px;
   cursor: pointer;
-  padding: 2px 6px;
+  padding: 2px 4px;
   line-height: 1;
-  border-radius: 6px;
+  flex-shrink: 0;
 }
 
 .collection-card__menu {
   position: absolute;
-  top: 32px;
+  top: 8px;
   right: 8px;
   background: var(--ink);
   border-radius: 10px;

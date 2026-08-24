@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { useApp } from '../../state/AppContext';
 import { createCollection, deleteCollection, duplicateCollection, saveCollection } from '../../db/db';
+import { MenuDots } from '../ui/MenuDots';
 import type { BeadCollection } from '../../db/schema';
 import './CollectionsList.css';
 
@@ -70,24 +71,28 @@ export function CollectionsList() {
         <div className="collections__grid">
           {state.collections.map((collection) => (
             <div key={collection.id} className="collection-card">
-              <button type="button" className="collection-card__main" onClick={() => selectAndEdit(collection)}>
+              <button type="button" className="collection-card__thumb-wrap" onClick={() => selectAndEdit(collection)}>
                 <div className="collection-card__swatch-grid">
                   {collection.beads.slice(0, 9).map((bead) => (
                     <span key={bead.id} style={{ background: bead.hex }} />
                   ))}
                   {collection.beads.length === 0 && <span className="collection-card__empty">No colors yet</span>}
                 </div>
-                <div className="collection-card__name">{collection.name}</div>
-                <div className="collection-card__meta">{collection.beads.length} BEADS</div>
               </button>
-              <button
-                type="button"
-                className="collection-card__menu-btn"
-                onClick={() => setOpenMenuId(openMenuId === collection.id ? null : collection.id)}
-                aria-label="Collection options"
-              >
-                ⋯
-              </button>
+              <div className="collection-card__meta-row">
+                <div>
+                  <div className="collection-card__name">{collection.name}</div>
+                  <div className="collection-card__meta">{collection.beads.length} BEADS</div>
+                </div>
+                <button
+                  type="button"
+                  className="collection-card__menu-btn"
+                  onClick={() => setOpenMenuId(openMenuId === collection.id ? null : collection.id)}
+                  aria-label="Collection options"
+                >
+                  <MenuDots />
+                </button>
+              </div>
               {openMenuId === collection.id && (
                 <div className="collection-card__menu">
                   <button type="button" onClick={() => handleRename(collection)}>

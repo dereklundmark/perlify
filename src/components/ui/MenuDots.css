@@ -1,0 +1,12 @@
+.menu-dots {
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+}
+
+.menu-dots span {
+  width: 3.5px;
+  height: 3.5px;
+  border-radius: 50%;
+  background: currentColor;
+}
