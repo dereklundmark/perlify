@@ -36,7 +36,11 @@ export interface PreprocessSettings {
 
 export type PaletteMode = 'auto' | 'collection';
 
-/** Normalized (0-1) crop rect against the original sourceImage. Reflowed (see lib/crop.ts) whenever the board's peg aspect ratio changes. */
+/**
+ * Normalized (0-1) crop rect against the original sourceImage.
+ * `{x:0,y:0,width:1,height:1}` is the sentinel "not framed yet" value —
+ * Adjust prompts the crop tool (CropSheet) the first time it sees this.
+ */
 export interface CropRect {
   x: number;
   y: number;

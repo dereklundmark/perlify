@@ -78,10 +78,7 @@ export function Library() {
           <div className="library-first-run__pegboard" aria-hidden>
             <PegboardIcon />
           </div>
-          <p className="type-body">
-            Turn any photo into a bead blueprint sized to your own pegboard. Everything happens on this phone — no
-            account, no upload.
-          </p>
+          <p className="type-body">Turn any photo into a bead blueprint sized to your own pegboard.</p>
           <ol className="library-first-run__steps">
             <li>
               <span className="library-first-run__index">1</span>

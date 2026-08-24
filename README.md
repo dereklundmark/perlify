@@ -33,11 +33,18 @@ service worker.
 (create/rename/duplicate/delete) lets you keep separate named collections
 per physical bead set; each pattern remembers which one it's locked to.
 
-Documented scope cuts: no dedicated vertical-flip control (compose Flip +
-Rotate instead), "Catalog +" in the editor adds a color to that pattern's
-working palette rather than to a saved collection, and the custom-color
-picker is a single hue rail at fixed saturation/brightness (matching the
-actual Pegboard mock).
+**Photo framing is never automatic.** Picking a photo no longer forces a
+crop — the whole image is kept as-is. The first time a fresh photo reaches
+Adjust, a full-screen framing tool (pinch/zoom, drag, 90° rotate) opens so
+you decide what's kept before anything is matched; it's reachable again any
+time via "CROP PHOTO" in the board-size card, and reopening it starts from
+wherever you last left it rather than resetting.
+
+Documented scope cuts: no dedicated vertical-flip control on the framing
+tool (rotate three times, or flip the finished grid in Manual Edit instead),
+"Catalog +" in the editor adds a color to that pattern's working palette
+rather than to a saved collection, and the custom-color picker is a single
+hue rail at fixed saturation/brightness (matching the actual Pegboard mock).
 
 ## Stack
 
@@ -51,7 +58,7 @@ service worker. No router, no UI framework — see `src/lib/`, `src/db/`,
 ```bash
 npm install
 npm run dev      # start the dev server
-npm run test     # run the unit tests (color engine, grid transforms, crop math)
+npm run test     # run the unit tests (color engine, grid transforms, HSB)
 npm run build    # type-check + production build
 ```
 

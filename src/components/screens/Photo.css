@@ -14,44 +14,22 @@
   width: 100%;
   aspect-ratio: 1;
   background: var(--ink);
-  border-top: var(--border-thick) solid var(--ink);
-  border-bottom: var(--border-thick) solid var(--ink);
+  border: var(--border-thick) solid var(--ink);
+  border-radius: 16px;
   position: relative;
   overflow: hidden;
-  touch-action: none;
   display: flex;
   align-items: center;
   justify-content: center;
 }
 
 .photo__image {
-  position: absolute;
-  top: 50%;
-  left: 50%;
-  max-width: none;
-  user-select: none;
-  -webkit-user-drag: none;
-}
-
-.photo__scrim {
-  position: absolute;
-  inset: 0;
-  background: var(--photo-scrim);
-  pointer-events: none;
-}
-
-.photo__crop-window {
-  position: relative;
-  border: 3px solid var(--ink);
-  pointer-events: none;
-}
-
-.photo__thirds {
-  position: absolute;
-  inset: 0;
-  background-image:
-    linear-gradient(to right, transparent 33.3%, var(--crop-thirds-line) 33.3%, var(--crop-thirds-line) calc(33.3% + 1px), transparent calc(33.3% + 1px), transparent 66.6%, var(--crop-thirds-line) 66.6%, var(--crop-thirds-line) calc(66.6% + 1px), transparent calc(66.6% + 1px)),
-    linear-gradient(to bottom, transparent 33.3%, var(--crop-thirds-line) 33.3%, var(--crop-thirds-line) calc(33.3% + 1px), transparent calc(33.3% + 1px), transparent 66.6%, var(--crop-thirds-line) 66.6%, var(--crop-thirds-line) calc(66.6% + 1px), transparent calc(66.6% + 1px));
+  max-width: 100%;
+  max-height: 100%;
+  width: auto;
+  height: auto;
+  object-fit: contain;
+  display: block;
 }
 
 .photo__bracket {
@@ -88,8 +66,5 @@
 .photo__placeholder {
   color: var(--white);
   opacity: 0.6;
-}
-
-.photo__caption {
   text-align: center;
 }

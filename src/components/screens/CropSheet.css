@@ -1,0 +1,126 @@
+.crop-sheet {
+  position: fixed;
+  inset: 0;
+  z-index: 40;
+  background: var(--ink);
+  display: flex;
+  flex-direction: column;
+  padding-top: env(safe-area-inset-top, 0px);
+}
+
+.crop-sheet__bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 14px var(--gutter);
+}
+
+.crop-sheet__bar button {
+  appearance: none;
+  border: none;
+  background: none;
+  font: 700 14px var(--font-ui);
+  color: rgba(255, 255, 255, 0.85);
+  cursor: pointer;
+  padding: 4px;
+}
+
+.crop-sheet__done {
+  color: var(--red) !important;
+}
+
+.crop-sheet__stage {
+  flex: 1;
+  min-height: 0;
+  position: relative;
+  overflow: hidden;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  touch-action: none;
+}
+
+.crop-sheet__image {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  max-width: none;
+  user-select: none;
+  -webkit-user-drag: none;
+}
+
+.crop-sheet__scrim {
+  position: absolute;
+  inset: 0;
+  background: var(--photo-scrim);
+  pointer-events: none;
+}
+
+.crop-sheet__window {
+  position: relative;
+  border: 3px solid var(--ink);
+  pointer-events: none;
+}
+
+.crop-sheet__thirds {
+  position: absolute;
+  inset: 0;
+  background-image:
+    linear-gradient(to right, transparent 33.3%, var(--crop-thirds-line) 33.3%, var(--crop-thirds-line) calc(33.3% + 1px), transparent calc(33.3% + 1px), transparent 66.6%, var(--crop-thirds-line) 66.6%, var(--crop-thirds-line) calc(66.6% + 1px), transparent calc(66.6% + 1px)),
+    linear-gradient(to bottom, transparent 33.3%, var(--crop-thirds-line) 33.3%, var(--crop-thirds-line) calc(33.3% + 1px), transparent calc(33.3% + 1px), transparent 66.6%, var(--crop-thirds-line) 66.6%, var(--crop-thirds-line) calc(66.6% + 1px), transparent calc(66.6% + 1px));
+}
+
+.crop-sheet__bracket {
+  position: absolute;
+  width: 22px;
+  height: 22px;
+}
+.crop-sheet__bracket--tl {
+  top: -3px;
+  left: -3px;
+  border-top: 6px solid var(--yellow);
+  border-left: 6px solid var(--yellow);
+}
+.crop-sheet__bracket--tr {
+  top: -3px;
+  right: -3px;
+  border-top: 6px solid var(--yellow);
+  border-right: 6px solid var(--yellow);
+}
+.crop-sheet__bracket--bl {
+  bottom: -3px;
+  left: -3px;
+  border-bottom: 6px solid var(--yellow);
+  border-left: 6px solid var(--yellow);
+}
+.crop-sheet__bracket--br {
+  bottom: -3px;
+  right: -3px;
+  border-bottom: 6px solid var(--yellow);
+  border-right: 6px solid var(--yellow);
+}
+
+.crop-sheet__controls {
+  display: flex;
+  justify-content: center;
+  gap: 20px;
+  padding: 16px var(--gutter) 0;
+}
+
+.crop-sheet__control-btn {
+  appearance: none;
+  border: var(--border-thick) solid var(--yellow);
+  background: transparent;
+  color: var(--yellow);
+  border-radius: 20px;
+  height: 40px;
+  padding: 0 18px;
+  font: 700 13px var(--font-ui);
+  cursor: pointer;
+}
+
+.crop-sheet__caption {
+  text-align: center;
+  color: rgba(255, 255, 255, 0.45);
+  padding: 10px var(--gutter) calc(24px + env(safe-area-inset-bottom, 0px));
+}

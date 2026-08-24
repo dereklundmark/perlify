@@ -8,14 +8,14 @@ import { NumberField } from '../ui/NumberField';
 import { UnitChip } from '../ui/UnitChip';
 import { EditorLayout } from '../ui/EditorLayout';
 import { CalibrateSheet } from './CalibrateSheet';
+import { CropSheet } from './CropSheet';
 import { matchImageToGrid } from '../../lib/match';
 import { catalogBeadById } from '../../lib/catalog';
 import { renderGrid } from '../../lib/renderGrid';
 import { beadUsage, gridStats } from '../../lib/grid';
-import { reflowCropRect } from '../../lib/crop';
 import { pegsToUnit, pitchMm, unitToPegs, type BoardUnit } from '../../lib/board';
 import { savePattern } from '../../db/db';
-import type { BeadType, BoardConfig, Pattern } from '../../db/schema';
+import type { BeadType, BoardConfig, CropRect, Pattern } from '../../db/schema';
 import './ResultAdjust.css';
 
 const PRESETS = [8, 12, 16, 24, 32, 60];
@@ -29,11 +29,12 @@ export function ResultAdjust() {
   const [tab, setTab] = useState<'adjust' | 'colors'>('adjust');
   const [unit, setUnit] = useState<BoardUnit>('pegs');
   const [calibrateOpen, setCalibrateOpen] = useState(false);
+  const [cropSheetOpen, setCropSheetOpen] = useState(false);
   const [imgEl, setImgEl] = useState<HTMLImageElement | null>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const debounceRef = useRef<number | undefined>(undefined);
-  const prevAspectRef = useRef<number | null>(null);
   const didInitialMatch = useRef(false);
+  const offeredCropPrompt = useRef(false);
 
   useEffect(() => {
     if (!draft?.sourceImage) return;
@@ -42,24 +43,17 @@ export function ResultAdjust() {
     img.src = draft.sourceImage;
   }, [draft?.sourceImage]);
 
-  // Reflow the crop whenever the board's peg aspect changes, so the live
-  // preview always samples a sensible region of the original photo — see
-  // lib/crop.ts. Skipped on first mount (whatever crop already exists —
-  // from Photo, or from a previously-saved pattern — is trusted as-is).
+  // A fresh photo (never framed yet) prompts the crop tool immediately
+  // instead of silently auto-cropping — the user decides the framing.
   useEffect(() => {
-    if (!draft || !imgEl) return;
-    const targetAspect = draft.boardConfig.widthPegs / draft.boardConfig.heightPegs;
-    if (prevAspectRef.current === null) {
-      prevAspectRef.current = targetAspect;
-      return;
+    if (!draft || !imgEl || offeredCropPrompt.current) return;
+    const c = draft.cropRect;
+    const isFreshPhoto = c.x === 0 && c.y === 0 && c.width === 1 && c.height === 1;
+    if (isFreshPhoto) {
+      offeredCropPrompt.current = true;
+      setCropSheetOpen(true);
     }
-    if (prevAspectRef.current === targetAspect) return;
-    prevAspectRef.current = targetAspect;
-    const imageAspect = imgEl.naturalWidth / imgEl.naturalHeight;
-    const newCropRect = reflowCropRect(draft.cropRect, targetAspect / imageAspect);
-    dispatch({ type: 'draft/update', patch: { cropRect: newCropRect } });
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [imgEl, draft?.boardConfig.widthPegs, draft?.boardConfig.heightPegs]);
+  }, [draft, imgEl]);
 
   useEffect(() => {
     if (!draft || !imgEl) return;
@@ -173,6 +167,16 @@ export function ResultAdjust() {
     dispatch({ type: 'nav', screen: 'preview' });
   }
 
+  function applyCrop(newCropRect: CropRect, rotatedSourceImage?: string) {
+    dispatch({
+      type: 'draft/update',
+      patch: rotatedSourceImage
+        ? { cropRect: newCropRect, sourceImage: rotatedSourceImage }
+        : { cropRect: newCropRect },
+    });
+    setCropSheetOpen(false);
+  }
+
   const widthDisplay = pegsToUnit(boardConfig.widthPegs, unit, boardConfig.beadType, override);
   const heightDisplay = pegsToUnit(boardConfig.heightPegs, unit, boardConfig.beadType, override);
   const widthIn = pegsToUnit(boardConfig.widthPegs, 'in', boardConfig.beadType, override);
@@ -273,6 +277,13 @@ export function ResultAdjust() {
                   +
                 </button>
               </div>
+            </div>
+            <div className="adjust__divider" />
+            <div className="adjust__stepper-row">
+              <span className="type-row-label">PHOTO FRAMING</span>
+              <button type="button" className="adjust__link" onClick={() => setCropSheetOpen(true)}>
+                CROP PHOTO ›
+              </button>
             </div>
           </div>
 
@@ -417,6 +428,16 @@ export function ResultAdjust() {
           beadType={boardConfig.beadType}
           onApply={(ppin) => updateBoard({ pegsPerInchOverride: ppin })}
           onClose={() => setCalibrateOpen(false)}
+        />
+      )}
+
+      {cropSheetOpen && draft.sourceImage && (
+        <CropSheet
+          sourceImage={draft.sourceImage}
+          cropRect={draft.cropRect}
+          boardAspect={boardConfig.widthPegs / boardConfig.heightPegs}
+          onApply={applyCrop}
+          onClose={() => setCropSheetOpen(false)}
         />
       )}
     </div>
