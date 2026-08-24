@@ -2,7 +2,7 @@ import {
   useEffect,
   useRef,
   useState,
-  type PointerEvent as ReactPointerEvent,
+  type MouseEvent as ReactMouseEvent,
   type TouchEvent as ReactTouchEvent,
   type WheelEvent as ReactWheelEvent,
 } from 'react';
@@ -106,15 +106,16 @@ export function CropSheet({ sourceImage, cropRect, boardAspect, onApply, onClose
     setOffset({ x: 0, y: 0 });
   }
 
-  function onPointerDown(e: ReactPointerEvent) {
+  // Mouse drag — desktop convenience only; touch (below) drives real devices.
+  function onMouseDown(e: ReactMouseEvent) {
     dragState.current = { x: e.clientX - offset.x, y: e.clientY - offset.y };
   }
-  function onPointerMove(e: ReactPointerEvent) {
+  function onMouseMove(e: ReactMouseEvent) {
     if (!dragState.current || !imageSize) return;
     const next = { x: e.clientX - dragState.current.x, y: e.clientY - dragState.current.y };
     setOffset(clampOffset(next, displayedW, displayedH));
   }
-  function onPointerUp() {
+  function onMouseUp() {
     dragState.current = null;
   }
 
@@ -123,21 +124,38 @@ export function CropSheet({ sourceImage, cropRect, boardAspect, onApply, onClose
     return Math.hypot(a.clientX - b.clientX, a.clientY - b.clientY);
   }
   function onTouchStart(e: ReactTouchEvent) {
-    if (e.touches.length === 2) pinchState.current = { dist: touchDist(e.touches), scale };
+    if (e.touches.length === 2) {
+      pinchState.current = { dist: touchDist(e.touches), scale };
+      dragState.current = null;
+    } else if (e.touches.length === 1) {
+      const t = e.touches[0];
+      dragState.current = { x: t.clientX - offset.x, y: t.clientY - offset.y };
+      pinchState.current = null;
+    }
   }
   function onTouchMove(e: ReactTouchEvent) {
-    if (e.touches.length === 2 && pinchState.current && imageSize) {
+    if (e.touches.length === 2 && imageSize) {
       e.preventDefault();
+      if (!pinchState.current) pinchState.current = { dist: touchDist(e.touches), scale };
       const ratio = touchDist(e.touches) / pinchState.current.dist;
       const nextScale = Math.min(4, Math.max(MIN_SCALE, pinchState.current.scale * ratio));
       setScale(nextScale);
       const dW = imageSize.width * baseScale * nextScale;
       const dH = imageSize.height * baseScale * nextScale;
       setOffset((o) => clampOffset(o, dW, dH));
+    } else if (e.touches.length === 1 && imageSize) {
+      e.preventDefault();
+      const t = e.touches[0];
+      // Lazily (re)start the drag here too — covers lifting one finger
+      // mid-pinch, which doesn't fire a fresh touchstart.
+      if (!dragState.current) dragState.current = { x: t.clientX - offset.x, y: t.clientY - offset.y };
+      const next = { x: t.clientX - dragState.current.x, y: t.clientY - dragState.current.y };
+      setOffset(clampOffset(next, displayedW, displayedH));
     }
   }
   function onTouchEnd(e: ReactTouchEvent) {
     if (e.touches.length < 2) pinchState.current = null;
+    if (e.touches.length < 1) dragState.current = null;
   }
   function onWheel(e: ReactWheelEvent) {
     if (!imageSize) return;
@@ -176,10 +194,10 @@ export function CropSheet({ sourceImage, cropRect, boardAspect, onApply, onClose
 
       <div
         className="crop-sheet__stage"
-        onPointerDown={onPointerDown}
-        onPointerMove={onPointerMove}
-        onPointerUp={onPointerUp}
-        onPointerLeave={onPointerUp}
+        onMouseDown={onMouseDown}
+        onMouseMove={onMouseMove}
+        onMouseUp={onMouseUp}
+        onMouseLeave={onMouseUp}
         onTouchStart={onTouchStart}
         onTouchMove={onTouchMove}
         onTouchEnd={onTouchEnd}

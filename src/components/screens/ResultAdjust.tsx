@@ -14,7 +14,7 @@ import type { CropRect, Pattern } from '../../db/schema';
 import './ResultAdjust.css';
 
 const PRESETS = [8, 12, 16, 24, 32, 60];
-const GRID_DISPLAY_SIZE = 320;
+const GRID_DISPLAY_SIZE = 336;
 
 export function ResultAdjust() {
   const { state, dispatch } = useApp();
@@ -119,15 +119,6 @@ export function ResultAdjust() {
 
       {tab === 'adjust' && (
         <div className="adjust__form">
-          <div className="adjust-card">
-            <div className="adjust__stepper-row">
-              <span className="type-row-label">PHOTO FRAMING</span>
-              <button type="button" className="adjust__link" onClick={() => setCropSheetOpen(true)}>
-                CROP PHOTO ›
-              </button>
-            </div>
-          </div>
-
           <div className={`radio-card${!isCollectionMode ? ' radio-card--selected' : ''}`}>
             <button
               type="button"
@@ -192,6 +183,15 @@ export function ResultAdjust() {
               {collection?.beads.map((bead) => (
                 <span key={bead.id} className="adjust__collection-swatch" style={{ background: bead.hex }} title={bead.name} />
               ))}
+            </div>
+          </div>
+
+          <div className="adjust-card">
+            <div className="adjust__stepper-row">
+              <span className="type-row-label">PHOTO FRAMING</span>
+              <button type="button" className="adjust__link" onClick={() => setCropSheetOpen(true)}>
+                CROP PHOTO ›
+              </button>
             </div>
           </div>
 
