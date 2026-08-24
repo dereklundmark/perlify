@@ -1,0 +1,7 @@
+{
+  "permissions": {
+    "allow": [
+      "PowerShell(& \"C:\\\\Program Files\\\\nodejs\\\\node.exe\" \"node_modules/typescript/bin/tsc\" -b --noEmit 2>&1)"
+    ]
+  }
+}
