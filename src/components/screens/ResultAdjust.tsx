@@ -14,7 +14,7 @@ import type { CropRect, Pattern } from '../../db/schema';
 import './ResultAdjust.css';
 
 const PRESETS = [8, 12, 16, 24, 32, 60];
-const GRID_DISPLAY_SIZE = 261;
+const GRID_DISPLAY_SIZE = 320;
 
 export function ResultAdjust() {
   const { state, dispatch } = useApp();

@@ -45,6 +45,17 @@ export function CropSheet({ sourceImage, cropRect, boardAspect, onApply, onClose
   const displayedW = imageSize ? imageSize.width * baseScale * scale : 0;
   const displayedH = imageSize ? imageSize.height * baseScale * scale : 0;
 
+  // baseScale ("cover") always touches the box on the tighter dimension
+  // while overflowing the other — a photo and board with mismatched
+  // aspect ratios can need to shrink well past that before the looser
+  // dimension also drops below the box (revealing padding there too).
+  // A fixed zoom-out floor isn't always low enough to reach that point,
+  // so derive it from how far this particular photo/board pairing needs.
+  const containRelScale = imageSize
+    ? Math.min(cropBoxW / imageSize.width, cropBoxH / imageSize.height) / baseScale
+    : 1;
+  const MIN_SCALE = imageSize ? Math.min(0.25, containRelScale * 0.5) : 0.25;
+
   function clampOffset(o: { x: number; y: number }, dW: number, dH: number) {
     const maxX = Math.max(0, (dW - cropBoxW) / 2);
     const maxY = Math.max(0, (dH - cropBoxH) / 2);
@@ -60,7 +71,7 @@ export function CropSheet({ sourceImage, cropRect, boardAspect, onApply, onClose
       setOffset({ x: 0, y: 0 });
       return;
     }
-    const s = Math.min(4, Math.max(0.25, cropBoxW / cropRect.width / (imageSize.width * baseScale)));
+    const s = Math.min(4, Math.max(MIN_SCALE, cropBoxW / cropRect.width / (imageSize.width * baseScale)));
     const dw = imageSize.width * baseScale * s;
     const dh = imageSize.height * baseScale * s;
     setScale(s);
@@ -118,7 +129,7 @@ export function CropSheet({ sourceImage, cropRect, boardAspect, onApply, onClose
     if (e.touches.length === 2 && pinchState.current && imageSize) {
       e.preventDefault();
       const ratio = touchDist(e.touches) / pinchState.current.dist;
-      const nextScale = Math.min(4, Math.max(0.25, pinchState.current.scale * ratio));
+      const nextScale = Math.min(4, Math.max(MIN_SCALE, pinchState.current.scale * ratio));
       setScale(nextScale);
       const dW = imageSize.width * baseScale * nextScale;
       const dH = imageSize.height * baseScale * nextScale;
@@ -131,7 +142,7 @@ export function CropSheet({ sourceImage, cropRect, boardAspect, onApply, onClose
   function onWheel(e: ReactWheelEvent) {
     if (!imageSize) return;
     e.preventDefault();
-    const nextScale = Math.min(4, Math.max(0.25, scale - e.deltaY * 0.002));
+    const nextScale = Math.min(4, Math.max(MIN_SCALE, scale - e.deltaY * 0.002));
     setScale(nextScale);
     const dW = imageSize.width * baseScale * nextScale;
     const dH = imageSize.height * baseScale * nextScale;

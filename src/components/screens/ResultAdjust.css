@@ -22,8 +22,14 @@
 }
 
 .adjust__canvas {
-  width: 261px;
-  height: 261px;
+  /* No fixed width/height: an explicit CSS size would stretch the canvas
+     to that box regardless of the board's actual aspect ratio (a 2:1
+     board would get squished into a square). Leaving it unset renders
+     the canvas at its own drawing-buffer resolution, which already
+     preserves the board's proportions. */
+  max-width: 100%;
+  height: auto;
+  display: block;
   border-radius: var(--radius-thumbnail);
   background: var(--white);
   border: var(--border-thick) solid var(--ink);
