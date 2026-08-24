@@ -29,12 +29,15 @@ yellow tool panel) instead of a bottom sheet. Multi-board seam lines and
 per-board PDF pages carry over from before. Fully offline via a precaching
 service worker.
 
-Documented scope cuts from this pass: no dedicated vertical-flip control
-(compose Flip + Rotate instead), "Catalog +" in the editor adds a color to
-that pattern's working palette rather than your permanent collection, the
-custom-color picker is a single hue rail at fixed saturation/brightness
-(matching the actual Pegboard mock), and only one collection ("My Colors")
-is supported rather than multiple named ones.
+**Multiple bead collections** are supported — a "My Collections" screen
+(create/rename/duplicate/delete) lets you keep separate named collections
+per physical bead set; each pattern remembers which one it's locked to.
+
+Documented scope cuts: no dedicated vertical-flip control (compose Flip +
+Rotate instead), "Catalog +" in the editor adds a color to that pattern's
+working palette rather than to a saved collection, and the custom-color
+picker is a single hue rail at fixed saturation/brightness (matching the
+actual Pegboard mock).
 
 ## Stack
 

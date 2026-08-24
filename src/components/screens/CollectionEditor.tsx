@@ -14,20 +14,22 @@ const CUSTOM_VALUE = 0.85;
 
 export function CollectionEditor() {
   const { state, dispatch } = useApp();
-  const [beads, setBeads] = useState<Bead[]>(state.collection?.beads ?? []);
+  const editing = state.collections.find((c) => c.id === state.editingCollectionId);
+  const [name, setName] = useState(editing?.name ?? '');
+  const [beads, setBeads] = useState<Bead[]>(editing?.beads ?? []);
   const [search, setSearch] = useState('');
   const [hue, setHue] = useState(220);
   const [customName, setCustomName] = useState('');
 
   const ownedIds = useMemo(() => new Set(beads.map((b) => b.id)), [beads]);
 
-  if (!state.collection) return null;
+  if (!editing) return null;
 
   const results = search.trim()
     ? CATALOG.filter((c) => c.name.toLowerCase().includes(search.trim().toLowerCase()))
     : CATALOG;
 
-  const usedByCount = state.patterns.filter((p) => p.collectionId === state.collection?.id).length;
+  const usedByCount = state.patterns.filter((p) => p.collectionId === editing.id).length;
 
   function toggleOwned(catalogId: string) {
     const catalogBead = catalogBeadById(catalogId);
@@ -56,17 +58,17 @@ export function CollectionEditor() {
   }
 
   async function handleSave() {
-    if (!state.collection) return;
-    const updated = { ...state.collection, beads };
+    if (!editing) return;
+    const updated = { ...editing, name: name.trim() || editing.name, beads };
     await saveCollection(updated);
-    dispatch({ type: 'collection/update', collection: updated });
+    dispatch({ type: 'collection/upsert', collection: updated });
     dispatch({ type: 'nav', screen: 'adjust' });
   }
 
   return (
     <div className="screen screen--cream collection__screen">
       <div className="collection__bar">
-        <button type="button" onClick={() => dispatch({ type: 'nav', screen: 'adjust' })}>
+        <button type="button" onClick={() => dispatch({ type: 'nav', screen: 'collections' })}>
           COLLECTIONS
         </button>
         <button type="button" className="collection__save" onClick={handleSave}>
@@ -75,12 +77,15 @@ export function CollectionEditor() {
       </div>
 
       <div className="screen__body collection__body">
-        <h1 className="type-headline">
-          MY {beads.length}
-          <br />
-          COLORS
-        </h1>
-        <div className="type-meta">USED BY {usedByCount} PATTERN{usedByCount === 1 ? '' : 'S'}</div>
+        <input
+          className="collection__name-input"
+          value={name}
+          onChange={(e) => setName(e.target.value)}
+          placeholder="Collection name"
+        />
+        <div className="type-meta">
+          {beads.length} BEADS · USED BY {usedByCount} PATTERN{usedByCount === 1 ? '' : 'S'}
+        </div>
 
         <div className="collection__search">
           <span className="collection__search-icon" aria-hidden>

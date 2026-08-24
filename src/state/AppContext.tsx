@@ -1,5 +1,5 @@
 import { createContext, useContext, useEffect, useReducer, type Dispatch, type ReactNode } from 'react';
-import { ensureDefaultCollection, listPatterns } from '../db/db';
+import { ensureDefaultCollection, listCollections, listPatterns } from '../db/db';
 import { appReducer, initialState, type Action, type AppState } from './appReducer';
 
 interface AppContextValue {
@@ -14,8 +14,9 @@ export function AppProvider({ children }: { children: ReactNode }) {
 
   useEffect(() => {
     (async () => {
-      const [patterns, collection] = await Promise.all([listPatterns(), ensureDefaultCollection()]);
-      dispatch({ type: 'library/loaded', patterns, collection });
+      await ensureDefaultCollection(); // seeds one collection on a brand-new install
+      const [patterns, collections] = await Promise.all([listPatterns(), listCollections()]);
+      dispatch({ type: 'library/loaded', patterns, collections });
     })();
   }, []);
 

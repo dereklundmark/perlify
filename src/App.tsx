@@ -7,6 +7,7 @@ import { FinalPreview } from './components/screens/FinalPreview';
 import { Export } from './components/screens/Export';
 import { ManualEdit } from './components/screens/ManualEdit';
 import { CollectionEditor } from './components/screens/CollectionEditor';
+import { CollectionsList } from './components/screens/CollectionsList';
 
 function Screens() {
   const { state } = useApp();
@@ -24,6 +25,8 @@ function Screens() {
       return <Export />;
     case 'edit':
       return <ManualEdit />;
+    case 'collections':
+      return <CollectionsList />;
     case 'collection':
       return <CollectionEditor />;
     default:

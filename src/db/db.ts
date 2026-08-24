@@ -65,6 +65,30 @@ export async function saveCollection(collection: BeadCollection): Promise<void> 
   await db.put('collections', collection);
 }
 
+export async function deleteCollection(id: string): Promise<void> {
+  const db = await getDb();
+  await db.delete('collections', id);
+}
+
+export async function duplicateCollection(id: string): Promise<BeadCollection | undefined> {
+  const original = await getCollection(id);
+  if (!original) return undefined;
+  const copy: BeadCollection = {
+    ...original,
+    id: crypto.randomUUID(),
+    name: `${original.name} copy`,
+    createdAt: Date.now(),
+  };
+  await saveCollection(copy);
+  return copy;
+}
+
+export async function createCollection(name: string): Promise<BeadCollection> {
+  const collection: BeadCollection = { id: crypto.randomUUID(), name, beads: [], createdAt: Date.now() };
+  await saveCollection(collection);
+  return collection;
+}
+
 export async function listPatterns(): Promise<Pattern[]> {
   const db = await getDb();
   const all = await db.getAllFromIndex('patterns', 'by-updatedAt');

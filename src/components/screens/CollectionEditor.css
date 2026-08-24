@@ -19,6 +19,22 @@
   color: var(--red) !important;
 }
 
+.collection__name-input {
+  appearance: none;
+  border: none;
+  border-bottom: var(--border-thick) solid var(--ink);
+  background: transparent;
+  font: 400 30px/1.1 var(--font-display);
+  letter-spacing: -0.02em;
+  text-transform: uppercase;
+  color: var(--ink);
+  padding: 4px 0 8px;
+  width: 100%;
+}
+.collection__name-input:focus {
+  outline: none;
+}
+
 .collection__body {
   padding: 12px var(--gutter) 60px;
   display: flex;

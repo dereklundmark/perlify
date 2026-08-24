@@ -16,7 +16,7 @@ export function Library() {
 
   async function refresh() {
     const patterns = await listPatterns();
-    if (state.collection) dispatch({ type: 'library/loaded', patterns, collection: state.collection });
+    dispatch({ type: 'library/loaded', patterns, collections: state.collections });
   }
 
   async function handleBackup() {

@@ -73,7 +73,7 @@ export function ResultAdjust() {
     }
     window.clearTimeout(debounceRef.current);
     debounceRef.current = window.setTimeout(() => {
-      const collectionBeads = state.collection?.beads ?? [];
+      const collectionBeads = state.collections.find((c) => c.id === draft.collectionId)?.beads ?? [];
       const result = matchImageToGrid({
         image: imgEl,
         cropRect: draft.cropRect,
@@ -99,7 +99,8 @@ export function ResultAdjust() {
     draft?.paletteMode,
     draft?.colorCount,
     draft?.dither,
-    state.collection,
+    draft?.collectionId,
+    state.collections,
   ]);
 
   useEffect(() => {
@@ -133,7 +134,7 @@ export function ResultAdjust() {
   const maxCount = usage[0]?.count ?? 1;
   const { boardConfig } = draft;
   const override = boardConfig.pegsPerInchOverride;
-  const collection = state.collection;
+  const collection = state.collections.find((c) => c.id === draft.collectionId) ?? state.collections[0];
   const isCollectionMode = draft.paletteMode === 'collection';
 
   function updateBoard(patch: Partial<BoardConfig>) {
@@ -325,12 +326,12 @@ export function ResultAdjust() {
                 }
               >
                 <span className={`radio-dot${isCollectionMode ? ' radio-dot--selected radio-dot--filled' : ''}`} />
-                <span className="type-row-label">MY COLLECTION</span>
+                <span className="type-row-label">{collection?.name ?? 'MY COLLECTION'}</span>
               </button>
               <button
                 type="button"
                 className="adjust__link"
-                onClick={() => dispatch({ type: 'nav', screen: 'collection' })}
+                onClick={() => dispatch({ type: 'nav', screen: 'collections' })}
               >
                 {collection?.beads.length ?? 0} ›
               </button>

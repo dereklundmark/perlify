@@ -381,9 +381,11 @@ export function ManualEdit() {
             </span>
             <span className="type-numeric">{sourceCount}</span>
           </div>
-          <div className="type-eyebrow">SWAP IN — FROM MY COLLECTION</div>
+          <div className="type-eyebrow">
+            SWAP IN — FROM {(state.collections.find((c) => c.id === draft.collectionId) ?? state.collections[0])?.name?.toUpperCase() ?? 'MY COLLECTION'}
+          </div>
           <div className="edit__palette-grid">
-            {(state.collection?.beads ?? []).map((bead) => (
+            {(state.collections.find((c) => c.id === draft.collectionId)?.beads ?? state.collections[0]?.beads ?? []).map((bead) => (
               <button
                 key={bead.id}
                 type="button"
