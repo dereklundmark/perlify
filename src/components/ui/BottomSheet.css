@@ -1,7 +1,7 @@
 .bottom-sheet-backdrop {
   position: fixed;
   inset: 0;
-  background: rgba(25, 23, 19, 0.45);
+  background: var(--scrim);
   z-index: 20;
 }
 
@@ -12,7 +12,9 @@
   display: flex;
   flex-direction: column;
   gap: var(--control-stack-gap);
-  box-shadow: var(--shadow-sheet);
+  border-top: var(--border-thick) solid var(--ink);
+  border-radius: var(--radius-sheet) var(--radius-sheet) 0 0;
+  box-sizing: border-box;
 }
 
 .bottom-sheet--modal {
@@ -21,27 +23,22 @@
   right: 0;
   bottom: 0;
   z-index: 21;
+  border-radius: var(--radius-sheet-modal) var(--radius-sheet-modal) 0 0;
 }
 
-.bottom-sheet--light {
-  background: var(--card);
-  border-radius: var(--radius-sheet-light) var(--radius-sheet-light) 0 0;
+.bottom-sheet--white {
+  background: var(--white);
 }
 
-.bottom-sheet--dark {
-  background: var(--sheet-dark);
-  border-radius: var(--radius-sheet-dark) var(--radius-sheet-dark) 0 0;
+.bottom-sheet--cream {
+  background: var(--cream);
 }
 
 .bottom-sheet__handle {
-  width: 38px;
-  height: 4px;
-  border-radius: 2px;
-  background: var(--ink-25);
+  width: 46px;
+  height: 5px;
+  border-radius: 3px;
+  background: var(--ink);
   align-self: center;
-  margin-bottom: 4px;
-}
-
-.bottom-sheet--dark .bottom-sheet__handle {
-  background: var(--fill-dark);
+  margin-bottom: 2px;
 }

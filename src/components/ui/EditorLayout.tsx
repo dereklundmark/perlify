@@ -29,7 +29,7 @@ export function EditorLayout({ stage, panelContent }: EditorLayoutProps) {
   return (
     <>
       <div className="screen__body editor-layout__stage-region-phone">{stage}</div>
-      <BottomSheet variant="dark">{panelContent}</BottomSheet>
+      <BottomSheet variant="white">{panelContent}</BottomSheet>
     </>
   );
 }

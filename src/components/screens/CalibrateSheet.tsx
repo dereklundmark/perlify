@@ -18,28 +18,27 @@ export function CalibrateSheet({ beadType, onApply, onClose }: CalibrateSheetPro
   const standardPitch = pitchMm(beadType);
 
   return (
-    <BottomSheet variant="light" modal onBackdropClick={onClose}>
-      <h2 className="type-card-title">Calibrate my board</h2>
-      <p className="type-body calibrate__explain">
-        Pegboards vary by brand. Measure once and every board size you enter in inches or centimeters converts
-        correctly.
+    <BottomSheet variant="cream" modal onBackdropClick={onClose}>
+      <h2 className="type-headline">
+        CALIBRATE
+        <br />
+        MY BOARD
+      </h2>
+      <p className="type-body">
+        Pegboards vary by brand. Measure once and every size you enter in inches or cm converts correctly.
       </p>
 
       <div className="calibrate__diagram">
         <div className="type-eyebrow calibrate__diagram-label">MEASURE ACROSS 10 SPACINGS</div>
         <div className="calibrate__dots">
           {Array.from({ length: 11 }, (_, i) => (
-            <span
-              key={i}
-              className="calibrate__dot"
-              style={{ opacity: i === 0 || i === 10 ? 0.55 : 0.22 }}
-            />
+            <span key={i} className={`calibrate__dot${i === 0 || i === 10 ? ' calibrate__dot--end' : ''}`} />
           ))}
         </div>
         <div className="calibrate__rule">
           <span className="calibrate__tick" />
           <span className="calibrate__rule-line" />
-          <span className="type-mono calibrate__rule-label">{measuredNum.toFixed(1)} MM</span>
+          <span className="type-numeric calibrate__rule-label">{measuredNum.toFixed(1)} MM</span>
           <span className="calibrate__rule-line" />
           <span className="calibrate__tick" />
         </div>
@@ -47,18 +46,17 @@ export function CalibrateSheet({ beadType, onApply, onClose }: CalibrateSheetPro
 
       <div className="calibrate__input-row">
         <NumberField label="MEASURED" value={measured} onChange={setMeasured} />
-        <div className="calibrate__unit-chip">
-          <span>mm</span>
-          <span className="type-mono calibrate__unit-sub">mm · in</span>
-        </div>
+        <div className="calibrate__unit-chip">MM</div>
       </div>
 
-      <div className="calibrate__results type-mono">
-        <div>
-          Your pitch → {result.pitchMm.toFixed(2)} mm · {result.pegsPerIn.toFixed(2)} pegs/in
+      <div className="calibrate__results">
+        <div className="calibrate__result-row calibrate__result-row--primary">
+          <span>YOUR PITCH</span>
+          <span>{result.pitchMm.toFixed(2)} mm</span>
         </div>
-        <div>
-          Standard {beadType === 'regular' ? 'midi' : 'mini'} → {standardPitch.toFixed(2)} mm · {result.percentOffStandard.toFixed(1)}% off
+        <div className="calibrate__result-row">
+          <span>STANDARD {beadType === 'regular' ? 'MIDI' : 'MINI'}</span>
+          <span>{result.percentOffStandard.toFixed(1)}% OFF</span>
         </div>
       </div>
 
@@ -68,8 +66,9 @@ export function CalibrateSheet({ beadType, onApply, onClose }: CalibrateSheetPro
             onApply(result.pegsPerIn);
             onClose();
           }}
+          style={{ flex: 1 }}
         >
-          Use my measurement
+          USE MINE
         </PillButton>
         <PillButton
           variant="secondary"
@@ -78,7 +77,7 @@ export function CalibrateSheet({ beadType, onApply, onClose }: CalibrateSheetPro
             setMeasured((standardPitch * 10).toFixed(1));
           }}
         >
-          Standard
+          STANDARD
         </PillButton>
       </div>
     </BottomSheet>

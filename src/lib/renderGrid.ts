@@ -1,4 +1,4 @@
-import { relativeLuminance, hexToRgb } from './color';
+import { relativeLuminance, hexToRgb, rgbToHex, type RGB } from './color';
 import type { GridData } from './grid';
 
 export interface BeadLookupEntry {
@@ -12,7 +12,7 @@ export interface RenderGridOptions {
   getBead: (beadId: string) => BeadLookupEntry | undefined;
   gridlines: boolean;
   symbolOverlay: boolean;
-  /** Which surface the grid sits on — decides gridline/empty-cell stroke color. */
+  /** Which surface the grid sits on — almost always 'light' now (the grid always sits in a white/cream frame); 'dark' remains for the few contexts that still go dark. */
   surface: 'dark' | 'light';
   heavyLineEvery?: number;
   background?: string;
@@ -20,9 +20,23 @@ export interface RenderGridOptions {
   boardsWide?: number;
   boardsHigh?: number;
   seamLines?: boolean;
+  /** Swap-Find "isolate" mode: one color at full strength, everything else faded toward a background color. */
+  isolate?: { beadId: string; fadeToward: string; fadePct: number };
+  /** Bead ids to outline in red (Swap-Choose's live preview of changed cells). */
+  outlineChanged?: Set<string>;
 }
 
 const SYMBOL_LUMINANCE_THRESHOLD = 0.55;
+
+function mix(hex: string, toward: string, pct: number): RGB {
+  const a = hexToRgb(hex);
+  const b = hexToRgb(toward);
+  return {
+    r: a.r + (b.r - a.r) * pct,
+    g: a.g + (b.g - a.g) * pct,
+    b: a.b + (b.b - a.b) * pct,
+  };
+}
 
 /**
  * Bead rendering recipe per perlify-design-handoff/README.md "Assets":
@@ -31,7 +45,7 @@ const SYMBOL_LUMINANCE_THRESHOLD = 0.55;
  * an optional symbol glyph colored for contrast against its own bead.
  */
 export function renderGrid(ctx: CanvasRenderingContext2D, options: RenderGridOptions): void {
-  const { grid, cellSize, getBead, gridlines, symbolOverlay, surface, background } = options;
+  const { grid, cellSize, getBead, gridlines, symbolOverlay, surface, background, isolate, outlineChanged } = options;
   const heavyEvery = options.heavyLineEvery ?? 10;
   const rows = grid.length;
   const cols = grid[0]?.length ?? 0;
@@ -44,7 +58,7 @@ export function renderGrid(ctx: CanvasRenderingContext2D, options: RenderGridOpt
     ctx.fillRect(0, 0, width, height);
   }
 
-  const emptyStroke = surface === 'dark' ? 'rgba(255,255,255,0.22)' : 'rgba(25,23,19,0.17)';
+  const emptyStroke = surface === 'dark' ? 'rgba(255,255,255,0.22)' : 'rgba(18,16,12,0.17)';
   const holeFill = 'rgba(0,0,0,0.14)';
 
   for (let row = 0; row < rows; row++) {
@@ -66,7 +80,13 @@ export function renderGrid(ctx: CanvasRenderingContext2D, options: RenderGridOpt
       const bead = getBead(beadId);
       if (!bead) continue;
 
-      ctx.fillStyle = bead.hex;
+      let fillHex = bead.hex;
+      if (isolate && beadId !== isolate.beadId) {
+        const { r, g, b } = mix(bead.hex, isolate.fadeToward, isolate.fadePct);
+        fillHex = rgbToHex({ r, g, b });
+      }
+
+      ctx.fillStyle = fillHex;
       ctx.fillRect(x, y, cellSize, cellSize);
 
       if (cellSize >= 9) {
@@ -76,10 +96,16 @@ export function renderGrid(ctx: CanvasRenderingContext2D, options: RenderGridOpt
         ctx.fill();
       }
 
+      if (outlineChanged?.has(`${row},${col}`)) {
+        ctx.strokeStyle = '#e8533f';
+        ctx.lineWidth = 1.5;
+        ctx.strokeRect(x + 0.75, y + 0.75, cellSize - 1.5, cellSize - 1.5);
+      }
+
       if (symbolOverlay && bead.symbol) {
-        const luminance = relativeLuminance(hexToRgb(bead.hex));
+        const luminance = relativeLuminance(hexToRgb(fillHex));
         ctx.fillStyle = luminance > SYMBOL_LUMINANCE_THRESHOLD ? 'rgba(0,0,0,0.72)' : 'rgba(255,255,255,0.85)';
-        ctx.font = `600 ${Math.round(cellSize * 0.56)}px 'IBM Plex Mono', monospace`;
+        ctx.font = `600 ${Math.round(cellSize * 0.56)}px Archivo, sans-serif`;
         ctx.textAlign = 'center';
         ctx.textBaseline = 'middle';
         ctx.fillText(bead.symbol, x + cellSize / 2, y + cellSize / 2 + cellSize * 0.02);
@@ -90,8 +116,8 @@ export function renderGrid(ctx: CanvasRenderingContext2D, options: RenderGridOpt
   if (gridlines) {
     const lightColor = 'rgba(0,0,0,0.13)';
     const darkColor = 'rgba(255,255,255,0.13)';
-    const lightHeavy = 'rgba(0,0,0,0.37)';
-    const darkHeavy = 'rgba(255,255,255,0.37)';
+    const lightHeavy = 'rgba(0,0,0,0.32)';
+    const darkHeavy = 'rgba(255,255,255,0.32)';
     const normal = surface === 'dark' ? darkColor : lightColor;
     const heavy = surface === 'dark' ? darkHeavy : lightHeavy;
 
@@ -118,7 +144,7 @@ export function renderGrid(ctx: CanvasRenderingContext2D, options: RenderGridOpt
   const boardsWide = options.boardsWide ?? 1;
   const boardsHigh = options.boardsHigh ?? 1;
   if (options.seamLines && (boardsWide > 1 || boardsHigh > 1)) {
-    ctx.strokeStyle = surface === 'dark' ? '#ffffff' : '#191713';
+    ctx.strokeStyle = surface === 'dark' ? '#ffffff' : '#12100c';
     ctx.lineWidth = 3;
     for (let b = 1; b < boardsWide; b++) {
       const x = Math.round((cols / boardsWide) * b * cellSize);

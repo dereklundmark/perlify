@@ -1,8 +1,8 @@
 import type { ReactNode } from 'react';
 import './GroupedList.css';
 
-export function GroupedList({ children, variant = 'light' }: { children: ReactNode; variant?: 'light' | 'dark' }) {
-  return <div className={`grouped-list grouped-list--${variant}`}>{children}</div>;
+export function GroupedList({ children }: { children: ReactNode }) {
+  return <div className="grouped-list">{children}</div>;
 }
 
 interface GroupedListRowProps {
@@ -21,7 +21,7 @@ export function GroupedListRow({ label, value, caption, onClick, trailing }: Gro
         <span className="grouped-list__label">{label}</span>
         {caption && <span className="grouped-list__caption">{caption}</span>}
       </div>
-      {value !== undefined && <span className="grouped-list__value type-mono">{value}</span>}
+      {value !== undefined && <span className="grouped-list__value type-numeric">{value}</span>}
       {trailing}
     </Comp>
   );

@@ -1,92 +1,81 @@
-/* Design tokens, transcribed verbatim from the design handoff
-   (perlify-design-handoff/README.md, "Design Tokens" section).
-   One accent only — every other color on screen is a bead color. */
+/* Design tokens — Pegboard direction, transcribed verbatim from the design
+   handoff (perlify-design-handoff/README.md, "Design Tokens — Pegboard").
+   No other hues — every remaining color on screen is a bead. */
 
 :root {
-  /* Color — light (paper) surfaces */
-  --paper: #f4f1ea;
-  --card: #fffdf8;
-  --ink: #191713;
-  --ink-70: rgba(25, 23, 19, 0.7);
-  --ink-50: rgba(25, 23, 19, 0.5);
-  --ink-45: rgba(25, 23, 19, 0.45);
-  --hairline: rgba(25, 23, 19, 0.09);
-  --divider: rgba(25, 23, 19, 0.08);
-  --fill-light: rgba(25, 23, 19, 0.06);
+  /* Color */
+  --yellow: #ffd23f;
+  --cream: #fff8e7;
+  --white: #ffffff;
+  --ink: #12100c;
+  --body: #3d3830;
+  --muted: #6b6659;
+  --disabled: #c9c2ae;
+  --track: #f0ebdd;
+  --red: #e8533f;
 
-  /* Additional ink-alpha steps used by specific screens (not in the main
-     token table, but named the same way as the ones that are). */
-  --ink-17: rgba(25, 23, 19, 0.17);
-  --ink-22: rgba(25, 23, 19, 0.22);
-  --ink-25: rgba(25, 23, 19, 0.25);
-  --ink-40: rgba(25, 23, 19, 0.4);
-  --ink-55: rgba(25, 23, 19, 0.55);
-
-  /* Color — dark (editor) surfaces */
-  --shell: #0e0e11;
-  --stage: #08080a;
-  --sheet-dark: #1a1a1e;
-  --panel: #17171a;
-  --preview-black: #000000;
-  --preview-white: #ffffff;
-
-  /* Accent — the one UI hue */
-  --accent: oklch(0.62 0.17 32);
-  --accent-fallback: #c2542f;
-  --accent-light: oklch(0.7 0.15 32);
-  --accent-light-fallback: #df6f47;
-  --accent-hi: oklch(0.75 0.13 32);
-  --accent-tint-bg: rgba(190, 80, 45, 0.09);
-  --accent-tint-text: #7a3418;
-
-  /* Text on dark */
-  --on-dark: #fff;
-  --on-dark-85: rgba(255, 255, 255, 0.85);
-  --on-dark-60: rgba(255, 255, 255, 0.6);
-  --on-dark-45: rgba(255, 255, 255, 0.45);
-  --on-dark-40: rgba(255, 255, 255, 0.4);
-  --fill-dark: rgba(255, 255, 255, 0.08);
+  /* Extras observed in the reference canvas, named the same way */
+  --undone-bg: #f7f3e6;
+  --undone-border: #c9c2ae;
+  --undone-text: #9c9689;
+  --scrim: rgba(18, 16, 12, 0.5);
+  --photo-scrim: rgba(255, 248, 231, 0.66);
+  --crop-thirds-line: rgba(18, 16, 12, 0.3);
 
   /* Type */
-  --font-ui: 'Space Grotesk', system-ui, -apple-system, sans-serif;
-  --font-mono: 'IBM Plex Mono', ui-monospace, 'SF Mono', monospace;
+  --font-ui: 'Archivo', system-ui, -apple-system, sans-serif;
+  --font-display: 'Archivo Black', 'Archivo', system-ui, sans-serif;
 
-  /* Geometry — radii */
-  --radius-pill: 27px;
-  --radius-sheet-light: 24px;
-  --radius-sheet-dark: 22px;
-  --radius-chip: 17px;
+  /* Borders — load-bearing, not decorative */
+  --border-thick: 2.5px;
+  --border-mid: 2px;
+  --border-thin: 1.5px;
+
+  /* Offset hard shadows — never blurred */
+  --shadow-card: 4px 4px 0 var(--ink);
+  --shadow-frame: 5px 5px 0 var(--ink);
+  --shadow-preview-frame: 6px 6px 0 var(--ink);
+  --shadow-ipad-frame: 8px 8px 0 var(--ink);
+  --shadow-badge: 3px 3px 0 var(--ink);
+  --shadow-thumb: 2px 2px 0 var(--ink);
+  --shadow-primary-on-yellow: 5px 5px 0 rgba(18, 16, 12, 0.25);
+
+  /* Radii */
+  --radius-pill-primary: 30px; /* h 60 */
+  --radius-pill: 28px; /* h 56 */
+  --radius-segmented: 22px; /* h 44-46 */
+  --radius-field-lg: 20px; /* h 40-42 */
+  --radius-tool-pill: 18px; /* h 36-38 */
+  --radius-chip: 16px; /* h 32 */
   --radius-card: 14px;
   --radius-list: 12px;
-  --radius-segmented: 11px;
   --radius-field: 10px;
-  --radius-segmented-thumb: 9px;
   --radius-swatch: 8px;
-  --radius-legend-swatch: 6px;
-  --radius-grid: 3px;
+  --radius-thumbnail: 7px;
 
-  /* Geometry — spacing rhythm */
+  /* Sheets */
+  --radius-sheet: 24px;
+  --radius-sheet-modal: 26px;
+  --sheet-padding: 16px 20px 44px;
+
+  /* Spacing */
   --gutter: 20px;
   --card-padding: 14px;
   --section-gap: 16px;
   --control-stack-gap: 17px;
-  --control-stack-gap-dense: 12px;
-  --sheet-padding: 12px 18px 44px;
   --touch-target-min: 44px;
 
-  /* Shadows */
-  --shadow-button: 0 8px 20px rgba(190, 80, 45, 0.28);
-  --shadow-grid: 0 18px 40px rgba(0, 0, 0, 0.55);
-  --shadow-sheet: 0 -12px 30px rgba(0, 0, 0, 0.4);
-  --shadow-thumb-dark: 0 2px 8px rgba(0, 0, 0, 0.5);
-  --shadow-thumb-light: 0 2px 6px rgba(0, 0, 0, 0.18);
-
-  /* Toggle dimensions */
-  --toggle-light-w: 51px;
-  --toggle-light-h: 31px;
-  --toggle-dark-w: 47px;
-  --toggle-dark-h: 29px;
-  --toggle-panel-w: 42px;
-  --toggle-panel-h: 26px;
+  /* Toggle */
+  --toggle-w: 60px;
+  --toggle-h: 32px;
+  --toggle-knob: 24px;
   --toggle-knob-inset: 2px;
+
+  /* Slider */
+  --slider-track-h: 14px;
+  --slider-thumb: 28px;
+
+  /* Progress: N discrete segments, not a continuous bar */
+  --progress-segment-h: 9px;
+  --progress-segment-radius: 5px;
 }

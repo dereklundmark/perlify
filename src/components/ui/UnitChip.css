@@ -1,24 +1,15 @@
 .unit-chip {
   appearance: none;
-  border: 1px solid var(--hairline);
-  background: var(--card);
+  border: var(--border-thick) solid var(--ink);
+  background: var(--yellow);
   border-radius: var(--radius-field);
-  width: 76px;
-  height: 56px;
+  width: 72px;
+  height: 58px;
   display: flex;
-  flex-direction: column;
   align-items: center;
   justify-content: center;
-  gap: 2px;
-  cursor: pointer;
-}
-
-.unit-chip__value {
-  font: 600 14px var(--font-ui);
+  font: 700 14px var(--font-ui);
   color: var(--ink);
-}
-
-.unit-chip__sub {
-  font-size: 8.5px;
-  color: var(--ink-45);
+  cursor: pointer;
+  flex-shrink: 0;
 }

@@ -1,51 +1,24 @@
 .segmented {
   display: flex;
-  padding: 3px;
-  border-radius: var(--radius-segmented);
-  gap: 2px;
-}
-
-.segmented--light {
-  background: var(--fill-light);
-}
-
-.segmented--dark {
-  background: var(--fill-dark);
+  gap: 6px;
 }
 
 .segmented__option {
   flex: 1;
   appearance: none;
-  border: none;
   background: transparent;
-  border-radius: var(--radius-segmented-thumb);
-  font: 600 13px var(--font-ui);
+  border-radius: var(--radius-segmented);
+  font: 700 13.5px var(--font-ui);
   padding: 8px 10px;
-  min-height: 34px;
+  min-height: 40px;
   cursor: pointer;
-  color: inherit;
-  opacity: 0.6;
-  transition: background 0.15s ease, opacity 0.15s ease, color 0.15s ease;
-}
-
-.segmented--light .segmented__option {
   color: var(--ink);
-}
-
-.segmented--dark .segmented__option {
-  color: var(--on-dark);
+  border: var(--border-mid) solid var(--ink);
+  transition: background 0.15s ease, color 0.15s ease;
 }
 
 .segmented__option--active {
-  opacity: 1;
-}
-
-.segmented--light .segmented__option--active {
   background: var(--ink);
-  color: #fff;
-}
-
-.segmented--dark .segmented__option--active {
-  background: var(--on-dark);
-  color: var(--ink);
+  color: var(--yellow);
+  border-color: var(--ink);
 }

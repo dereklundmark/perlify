@@ -1,4 +1,4 @@
-import { useMemo, useState, type CSSProperties } from 'react';
+import { useMemo, useState } from 'react';
 import { useApp } from '../../state/AppContext';
 import { CATALOG, catalogBeadById } from '../../lib/catalog';
 import { hsbToRgb } from '../../lib/hsb';
@@ -7,14 +7,16 @@ import { saveCollection } from '../../db/db';
 import type { Bead } from '../../db/schema';
 import './CollectionEditor.css';
 
-const CUSTOM_VALUE = 0.9; // fixed brightness — see plan's scope note (two rails only)
+// Pegboard's custom-color control is a single hue rail (see the `4a` canvas
+// markup) — saturation/value are fixed rather than a second rail.
+const CUSTOM_SAT = 0.65;
+const CUSTOM_VALUE = 0.85;
 
 export function CollectionEditor() {
   const { state, dispatch } = useApp();
   const [beads, setBeads] = useState<Bead[]>(state.collection?.beads ?? []);
   const [search, setSearch] = useState('');
   const [hue, setHue] = useState(220);
-  const [sat, setSat] = useState(60);
   const [customName, setCustomName] = useState('');
 
   const ownedIds = useMemo(() => new Set(beads.map((b) => b.id)), [beads]);
@@ -41,7 +43,7 @@ export function CollectionEditor() {
     setBeads((prev) => prev.filter((b) => b.id !== id));
   }
 
-  const customHex = rgbToHex(hsbToRgb({ h: hue, s: sat / 100, v: CUSTOM_VALUE }));
+  const customHex = rgbToHex(hsbToRgb({ h: hue, s: CUSTOM_SAT, v: CUSTOM_VALUE }));
 
   function addCustomColor() {
     const bead: Bead = {
@@ -58,25 +60,27 @@ export function CollectionEditor() {
     const updated = { ...state.collection, beads };
     await saveCollection(updated);
     dispatch({ type: 'collection/update', collection: updated });
-    dispatch({ type: 'nav', screen: 'setup' });
+    dispatch({ type: 'nav', screen: 'adjust' });
   }
 
   return (
-    <div className="screen screen--light collection__screen">
+    <div className="screen screen--cream collection__screen">
       <div className="collection__bar">
-        <button type="button" onClick={() => dispatch({ type: 'nav', screen: 'setup' })}>
-          Collections
+        <button type="button" onClick={() => dispatch({ type: 'nav', screen: 'adjust' })}>
+          COLLECTIONS
         </button>
         <button type="button" className="collection__save" onClick={handleSave}>
-          Save
+          SAVE
         </button>
       </div>
 
       <div className="screen__body collection__body">
-        <h1 className="type-screen-title collection__title">{state.collection.name}</h1>
-        <div className="type-mono collection__meta">
-          {beads.length} BEADS OWNED · USED BY {usedByCount} PATTERN{usedByCount === 1 ? '' : 'S'}
-        </div>
+        <h1 className="type-headline">
+          MY {beads.length}
+          <br />
+          COLORS
+        </h1>
+        <div className="type-meta">USED BY {usedByCount} PATTERN{usedByCount === 1 ? '' : 'S'}</div>
 
         <div className="collection__search">
           <span className="collection__search-icon" aria-hidden>
@@ -85,10 +89,10 @@ export function CollectionEditor() {
           <input
             value={search}
             onChange={(e) => setSearch(e.target.value)}
-            placeholder="Search the catalog…"
+            placeholder="Search…"
             className="collection__search-input"
           />
-          <span className="type-mono collection__search-hits">CATALOG · {results.length} HITS</span>
+          <span className="type-meta collection__search-hits">{results.length} HITS</span>
         </div>
 
         <div className="collection__results">
@@ -99,7 +103,6 @@ export function CollectionEditor() {
                 <span className="collection__swatch" style={{ background: c.hex }} />
                 <div className="collection__result-main">
                   <div className="collection__result-name">{c.name}</div>
-                  <div className="type-mono collection__result-hex">{c.hex.toUpperCase()}</div>
                 </div>
                 <button
                   type="button"
@@ -114,8 +117,8 @@ export function CollectionEditor() {
           })}
         </div>
 
-        <div className="type-eyebrow collection__owned-eyebrow">
-          OWNED · {beads.length} OF {CATALOG.length} CATALOG
+        <div className="type-eyebrow">
+          OWNED · {beads.length} OF {CATALOG.length}
         </div>
         <div className="collection__owned-grid">
           {beads.map((bead) => {
@@ -129,17 +132,16 @@ export function CollectionEditor() {
                 onClick={() => removeBead(bead.id)}
                 title={`Remove ${bead.name}`}
               >
-                {catalogBead?.symbol && <span className="type-mono">{catalogBead.symbol}</span>}
+                {catalogBead?.symbol && <span>{catalogBead.symbol}</span>}
               </button>
             );
           })}
         </div>
 
         <div className="collection__custom-card">
-          <div className="type-row-label">Custom color</div>
-          <div className="type-mono collection__custom-hex">
-            HSB · {customHex.toUpperCase()}
-            <span className="collection__custom-preview" style={{ background: customHex }} />
+          <div className="collection__custom-head">
+            <span className="type-row-label">CUSTOM COLOR</span>
+            <span className="type-meta">{customHex.toUpperCase()}</span>
           </div>
 
           <input
@@ -150,15 +152,6 @@ export function CollectionEditor() {
             onChange={(e) => setHue(Number(e.target.value))}
             className="collection__hue-rail"
           />
-          <input
-            type="range"
-            min={0}
-            max={100}
-            value={sat}
-            onChange={(e) => setSat(Number(e.target.value))}
-            className="collection__sat-rail"
-            style={{ '--sat-color': `hsl(${hue}, 100%, 45%)` } as CSSProperties}
-          />
 
           <div className="collection__custom-add-row">
             <input
@@ -168,7 +161,7 @@ export function CollectionEditor() {
               className="collection__custom-name-input"
             />
             <button type="button" className="collection__custom-add" onClick={addCustomColor}>
-              Add
+              ADD
             </button>
           </div>
         </div>

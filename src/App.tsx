@@ -1,7 +1,6 @@
 import { AppProvider, useApp } from './state/AppContext';
 import { useIsTablet } from './hooks/useIsTablet';
 import { Library } from './components/screens/Library';
-import { Setup } from './components/screens/Setup';
 import { Photo } from './components/screens/Photo';
 import { ResultAdjust } from './components/screens/ResultAdjust';
 import { FinalPreview } from './components/screens/FinalPreview';
@@ -15,8 +14,6 @@ function Screens() {
   switch (state.screen) {
     case 'library':
       return <Library />;
-    case 'setup':
-      return <Setup />;
     case 'photo':
       return <Photo />;
     case 'adjust':

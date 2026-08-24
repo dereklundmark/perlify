@@ -17,9 +17,8 @@ body {
   margin: 0;
   font-family: var(--font-ui);
   color: var(--ink);
-  background: var(--paper);
+  background: var(--cream);
   -webkit-font-smoothing: antialiased;
-  /* iPhone only for now; iPad breakpoint arrives with the 2a panel (M3). */
   overscroll-behavior-y: none;
 }
 
@@ -39,53 +38,58 @@ p {
   text-wrap: pretty;
 }
 
-/* Typography scale, per the handoff's "Typography" token section. */
+/* Typography scale, per the handoff's "Typography — no monospace anywhere". */
 
 .type-eyebrow {
-  font: 600 10px var(--font-ui);
-  letter-spacing: 0.11em;
+  font: 700 11px var(--font-ui);
+  letter-spacing: 0.1em;
   text-transform: uppercase;
+  color: var(--muted);
 }
 
-.type-caption {
-  font: 400 11px var(--font-ui);
+.type-meta {
+  font: 600 12px var(--font-ui);
+  color: var(--muted);
 }
 
 .type-body {
-  font: 400 14px var(--font-ui);
+  font: 500 13px var(--font-ui);
   line-height: 1.5;
+  color: var(--body);
 }
 
 .type-row-label {
-  font: 600 14px var(--font-ui);
+  font: 700 14px var(--font-ui);
+  color: var(--ink);
 }
 
-.type-card-title {
-  font: 600 16px var(--font-ui);
-}
-
-.type-screen-title {
-  font: 700 28px var(--font-ui);
+/* Two-line caps headline, e.g. "SET UP<br>THE BOARD". Use the --shelf
+   modifier on yellow "shelf" screens (first run, library, export). */
+.type-headline {
+  font: 400 30px/1 var(--font-display);
   letter-spacing: -0.02em;
-  line-height: 1.1;
+  color: var(--ink);
+  text-transform: uppercase;
 }
 
-.type-numeric-value {
-  font: 600 22px var(--font-mono);
+.type-headline--shelf {
+  font-size: 46px;
+  line-height: 0.92;
+  letter-spacing: -0.03em;
 }
 
-.type-mono {
-  font-family: var(--font-mono);
+.type-numeric {
+  font-family: var(--font-display);
+  font-weight: 400;
 }
 
-/* iPhone-only for M1 (design width 402px); the app-shell centers and caps
-   width so it also reads sensibly in a desktop browser during development.
-   iPad's 2a breakpoint arrives in a later round. */
+/* iPhone-first (design width 402px); the app-shell centers and caps width
+   so it also reads sensibly in a desktop browser during development. */
 .app-shell {
   max-width: 480px;
   margin: 0 auto;
   min-height: 100dvh;
-  background: var(--paper);
+  background: var(--cream);
   position: relative;
   padding-top: env(safe-area-inset-top, 0px);
   padding-bottom: env(safe-area-inset-bottom, 0px);
@@ -104,13 +108,13 @@ p {
   flex-direction: column;
 }
 
-.screen--dark {
-  background: var(--shell);
-  color: var(--on-dark);
+.screen--cream {
+  background: var(--cream);
+  color: var(--ink);
 }
 
-.screen--light {
-  background: var(--paper);
+.screen--yellow {
+  background: var(--yellow);
   color: var(--ink);
 }
 

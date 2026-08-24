@@ -35,6 +35,11 @@ function downsizeToDataUrl(file: File, maxDim: number): Promise<{ dataUrl: strin
   });
 }
 
+/**
+ * Photo comes before board setup now, so there's no peg aspect to lock the
+ * crop to yet — this starts as a plain square working frame. The Adjust
+ * screen reflows it (see lib/crop.ts) once a board size is chosen.
+ */
 export function Photo() {
   const { state, dispatch } = useApp();
   const draft = state.draft;
@@ -49,9 +54,8 @@ export function Photo() {
 
   if (!draft) return null;
 
-  const aspect = draft.boardConfig.widthPegs / draft.boardConfig.heightPegs;
-  const cropBoxW = aspect >= 1 ? STAGE_SIZE : STAGE_SIZE * aspect;
-  const cropBoxH = aspect >= 1 ? STAGE_SIZE / aspect : STAGE_SIZE;
+  const cropBoxW = STAGE_SIZE;
+  const cropBoxH = STAGE_SIZE;
 
   const baseScale = imageSize ? Math.max(cropBoxW / imageSize.width, cropBoxH / imageSize.height) : 1;
   const displayedW = imageSize ? imageSize.width * baseScale * scale : 0;
@@ -134,18 +138,17 @@ export function Photo() {
   const hasImage = !!draft.sourceImage && !!imageSize;
 
   return (
-    <div className="screen screen--dark">
+    <div className="screen screen--cream">
       <WizardBar
-        variant="dark"
-        step={2}
+        step={1}
         left={
-          <button type="button" onClick={() => dispatch({ type: 'nav', screen: 'setup' })}>
+          <button type="button" onClick={() => dispatch({ type: 'draft/discard' })}>
             Back
           </button>
         }
         right={
-          <button type="button" disabled={!hasImage} onClick={confirmCrop}>
-            Perlify
+          <button type="button" className="photo__perlify-btn" disabled={!hasImage} onClick={confirmCrop}>
+            PERLIFY
           </button>
         }
       />
@@ -184,30 +187,24 @@ export function Photo() {
           <div className="photo__scrim" />
           <div className="photo__crop-window" style={{ width: cropBoxW, height: cropBoxH }}>
             <div className="photo__thirds" />
-            {['tl', 'tr', 'bl', 'br'].map((corner) => (
-              <span key={corner} className={`photo__bracket photo__bracket--${corner}`} />
-            ))}
           </div>
-          {hasImage && (
-            <div className="photo__lock-pill type-mono">
-              CROP LOCKED {draft.boardConfig.widthPegs}:{draft.boardConfig.heightPegs} · PINCH TO ZOOM
-            </div>
-          )}
-          {!draft.sourceImage && <div className="photo__placeholder type-caption">Choose a photo to begin</div>}
+          {['tl', 'tr', 'bl', 'br'].map((corner) => (
+            <span key={corner} className={`photo__bracket photo__bracket--${corner}`} />
+          ))}
+          {!draft.sourceImage && <div className="photo__placeholder type-body">Choose a photo to begin</div>}
         </div>
 
         <SegmentedControl
-          variant="dark"
           options={[
-            { value: 'roll', label: 'Camera roll' },
-            { value: 'camera', label: 'Take photo' },
+            { value: 'roll', label: 'CAMERA ROLL' },
+            { value: 'camera', label: 'TAKE PHOTO' },
           ]}
           value="roll"
           onChange={(v) => (v === 'roll' ? libraryInputRef.current?.click() : cameraInputRef.current?.click())}
         />
 
-        <p className="type-caption photo__caption">
-          Nothing leaves the phone — matching runs on-device, so this works in airplane mode.
+        <p className="type-body photo__caption">
+          Nothing leaves the phone — you'll size this to your board next.
         </p>
       </div>
 

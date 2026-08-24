@@ -1,8 +1,8 @@
 .pill-button {
   appearance: none;
-  border: none;
-  border-radius: var(--radius-pill);
-  font: 600 15px var(--font-ui);
+  border: var(--border-thick) solid var(--ink);
+  border-radius: var(--radius-pill-primary);
+  font: 400 15px var(--font-display);
   cursor: pointer;
   display: inline-flex;
   align-items: center;
@@ -11,10 +11,11 @@
   min-height: var(--touch-target-min);
   padding: 0 22px;
   transition: opacity 0.15s ease, transform 0.1s ease;
+  box-sizing: border-box;
 }
 
 .pill-button:disabled {
-  opacity: 0.4;
+  opacity: 0.5;
   cursor: default;
 }
 
@@ -23,33 +24,37 @@
 }
 
 .pill-button--md {
-  height: 54px;
+  height: 56px;
 }
 
 .pill-button--sm {
-  height: 34px;
+  height: 40px;
   padding: 0 16px;
   font-size: 13px;
+  border-width: var(--border-mid);
 }
 
 .pill-button--primary {
-  background: var(--accent-fallback);
-  background: var(--accent);
-  color: #fff;
-  box-shadow: var(--shadow-button);
+  background: var(--ink);
+  color: var(--yellow);
+  box-shadow: var(--shadow-frame);
 }
 
 .pill-button--secondary {
-  background: var(--fill-light);
+  background: var(--white);
   color: var(--ink);
+  box-shadow: var(--shadow-card);
 }
 
 .pill-button--ghost {
   background: transparent;
-  color: var(--accent-fallback);
-  color: var(--accent);
+  border: none;
+  color: var(--red);
   padding: 0 4px;
   box-shadow: none;
   min-height: auto;
   height: auto;
+  font-family: var(--font-ui);
+  font-weight: 700;
+  font-size: 14px;
 }

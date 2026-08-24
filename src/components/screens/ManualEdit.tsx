@@ -1,10 +1,19 @@
-import { useEffect, useMemo, useRef, useState, type PointerEvent as ReactPointerEvent, type TouchEvent as ReactTouchEvent } from 'react';
+import {
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+  type PointerEvent as ReactPointerEvent,
+  type TouchEvent as ReactTouchEvent,
+} from 'react';
 import { useApp } from '../../state/AppContext';
 import { WizardBar } from '../ui/WizardBar';
 import { EditorLayout } from '../ui/EditorLayout';
+import { BottomSheet } from '../ui/BottomSheet';
+import { PillButton } from '../ui/PillButton';
 import { catalogBeadById, CATALOG } from '../../lib/catalog';
 import { renderGrid } from '../../lib/renderGrid';
-import { beadUsage, type GridData } from '../../lib/grid';
+import { beadUsage, gridStats, type GridData } from '../../lib/grid';
 import { paintCell, clearCell, swapColor, rotate90, flipHorizontal } from '../../lib/gridTransform';
 import { savePattern } from '../../db/db';
 import './ManualEdit.css';
@@ -12,25 +21,41 @@ import './ManualEdit.css';
 const BASE_CELL_SIZE = 26;
 const MAX_HISTORY = 50;
 type Tool = 'paint' | 'clear' | 'swap';
+type View = 'edit' | 'swap-find' | 'swap-choose';
+
+interface HistoryStep {
+  id: string;
+  label: string;
+  affectedCount: number;
+  grid: GridData;
+  swatch?: string;
+  swatchFrom?: string;
+  swatchTo?: string;
+}
 
 export function ManualEdit() {
   const { state, dispatch } = useApp();
   const draft = state.draft;
 
   const [grid, setGrid] = useState<GridData>(draft?.gridData ?? []);
-  const [undoStack, setUndoStack] = useState<GridData[]>([]);
-  const [redoStack, setRedoStack] = useState<GridData[]>([]);
+  const [history, setHistory] = useState<HistoryStep[]>([]);
+  const [pointer, setPointer] = useState(0);
+  const [historyOpen, setHistoryOpen] = useState(false);
   const [tool, setTool] = useState<Tool>('paint');
-  const [swapFrom, setSwapFrom] = useState<string | null>(null);
   const [currentColor, setCurrentColor] = useState<string | null>(null);
   const [extraPaletteIds, setExtraPaletteIds] = useState<string[]>([]);
   const [cellSize, setCellSize] = useState(BASE_CELL_SIZE);
   const [lastCell, setLastCell] = useState<{ row: number; col: number } | null>(null);
   const [catalogOpen, setCatalogOpen] = useState(false);
   const [hoverPointer, setHoverPointer] = useState<{ x: number; y: number; row: number; col: number } | null>(null);
+  const [view, setView] = useState<View>('edit');
+  const [swapSourceId, setSwapSourceId] = useState<string | null>(null);
+  const [swapTargetId, setSwapTargetId] = useState<string | null>(null);
 
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const pinchState = useRef<{ dist: number; cellSize: number } | null>(null);
+  const activeBatchRef = useRef<string | null>(null);
+  const seeded = useRef(false);
 
   const usage = useMemo(() => beadUsage(grid), [grid]);
   const paletteIds = useMemo(() => {
@@ -38,6 +63,22 @@ export function ManualEdit() {
     extraPaletteIds.forEach((id) => ids.add(id));
     return [...ids];
   }, [usage, extraPaletteIds]);
+
+  // Seed step 0 ("Perlified · N colors") once, from the grid Adjust handed off.
+  useEffect(() => {
+    if (seeded.current || !draft) return;
+    seeded.current = true;
+    const stats = gridStats(draft.gridData);
+    const seed: HistoryStep = {
+      id: 'seed',
+      label: `Perlified · ${stats.colorCount} colors`,
+      affectedCount: stats.beadCount,
+      grid: draft.gridData,
+    };
+    setHistory([seed]);
+    setPointer(0);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [draft]);
 
   useEffect(() => {
     if (!currentColor && paletteIds.length > 0) setCurrentColor(paletteIds[0]);
@@ -52,47 +93,67 @@ export function ManualEdit() {
     canvas.height = rows * cellSize;
     const ctx = canvas.getContext('2d');
     if (!ctx) return;
+
+    let outlineChanged: Set<string> | undefined;
+    let isolate: { beadId: string; fadeToward: string; fadePct: number } | undefined;
+    let displayGrid = grid;
+
+    if (view === 'swap-find' && swapSourceId) {
+      isolate = { beadId: swapSourceId, fadeToward: '#fff8e7', fadePct: 0.88 };
+    } else if (view === 'swap-choose' && swapSourceId && swapTargetId) {
+      displayGrid = swapColor(grid, swapSourceId, swapTargetId);
+      outlineChanged = new Set();
+      for (let r = 0; r < grid.length; r++) {
+        for (let c = 0; c < grid[0].length; c++) {
+          if (grid[r][c] === swapSourceId) outlineChanged.add(`${r},${c}`);
+        }
+      }
+    }
+
     renderGrid(ctx, {
-      grid,
+      grid: displayGrid,
       cellSize,
       getBead: catalogBeadById,
       gridlines: true,
       symbolOverlay: false,
-      surface: 'dark',
-      background: '#08080a',
+      surface: 'light',
+      background: '#ffffff',
+      isolate,
+      outlineChanged,
     });
-    if (lastCell) {
-      ctx.strokeStyle = '#ffffff';
-      ctx.lineWidth = 2.5;
-      ctx.shadowColor = 'rgba(0,0,0,0.6)';
-      ctx.shadowBlur = 4;
-      ctx.strokeRect(lastCell.col * cellSize + 1, lastCell.row * cellSize + 1, cellSize - 2, cellSize - 2);
-      ctx.shadowBlur = 0;
+    if (lastCell && view === 'edit') {
+      ctx.strokeStyle = '#e8533f';
+      ctx.lineWidth = 3;
+      ctx.strokeRect(lastCell.col * cellSize + 1.5, lastCell.row * cellSize + 1.5, cellSize - 3, cellSize - 3);
     }
-  }, [grid, cellSize, lastCell]);
+  }, [grid, cellSize, lastCell, view, swapSourceId, swapTargetId]);
 
   if (!draft) return null;
 
-  function commit(next: GridData) {
-    setUndoStack((prev) => [...prev.slice(-(MAX_HISTORY - 1)), grid]);
-    setRedoStack([]);
-    setGrid(next);
+  function pushStep(newGrid: GridData, label: string, affectedCount: number, extra: Partial<HistoryStep> = {}) {
+    const truncated = history.slice(0, pointer + 1);
+    const step: HistoryStep = { id: crypto.randomUUID(), label, affectedCount, grid: newGrid, ...extra };
+    const next = [...truncated, step].slice(-MAX_HISTORY);
+    setHistory(next);
+    setPointer(next.length - 1);
+    setGrid(newGrid);
+  }
+
+  function jumpTo(index: number) {
+    activeBatchRef.current = null;
+    setPointer(index);
+    setGrid(history[index].grid);
   }
 
   function undo() {
-    if (undoStack.length === 0) return;
-    const popped = undoStack[undoStack.length - 1];
-    setUndoStack((prev) => prev.slice(0, -1));
-    setRedoStack((prev) => [...prev, grid]);
-    setGrid(popped);
+    if (pointer <= 0) return;
+    activeBatchRef.current = null;
+    jumpTo(pointer - 1);
   }
-
   function redo() {
-    if (redoStack.length === 0) return;
-    const popped = redoStack[redoStack.length - 1];
-    setRedoStack((prev) => prev.slice(0, -1));
-    setUndoStack((prev) => [...prev, grid]);
-    setGrid(popped);
+    if (pointer >= history.length - 1) return;
+    activeBatchRef.current = null;
+    jumpTo(pointer + 1);
   }
 
   function cellFromEvent(e: { clientX: number; clientY: number }): { row: number; col: number } | null {
@@ -106,13 +167,36 @@ export function ManualEdit() {
   }
 
   function handleCanvasClick(e: ReactPointerEvent) {
+    if (view !== 'edit') return;
     const cell = cellFromEvent(e);
     if (!cell) return;
     setLastCell(cell);
+
     if (tool === 'paint' && currentColor) {
-      commit(paintCell(grid, cell.row, cell.col, currentColor));
+      const newGrid = paintCell(grid, cell.row, cell.col, currentColor);
+      const batchKey = `paint:${currentColor}`;
+      if (activeBatchRef.current === batchKey && pointer === history.length - 1) {
+        const count = history[pointer].affectedCount + 1;
+        const updated = { ...history[pointer], grid: newGrid, affectedCount: count, label: `Painted ${count} bead${count === 1 ? '' : 's'}` };
+        setHistory((prev) => [...prev.slice(0, -1), updated]);
+        setGrid(newGrid);
+      } else {
+        activeBatchRef.current = batchKey;
+        const bead = catalogBeadById(currentColor);
+        pushStep(newGrid, 'Painted 1 bead', 1, { swatch: bead?.hex });
+      }
     } else if (tool === 'clear') {
-      commit(clearCell(grid, cell.row, cell.col));
+      const newGrid = clearCell(grid, cell.row, cell.col);
+      const batchKey = 'clear';
+      if (activeBatchRef.current === batchKey && pointer === history.length - 1) {
+        const count = history[pointer].affectedCount + 1;
+        const updated = { ...history[pointer], grid: newGrid, affectedCount: count, label: `Cleared ${count} bead${count === 1 ? '' : 's'}` };
+        setHistory((prev) => [...prev.slice(0, -1), updated]);
+        setGrid(newGrid);
+      } else {
+        activeBatchRef.current = batchKey;
+        pushStep(newGrid, 'Cleared 1 bead', 1);
+      }
     }
   }
 
@@ -146,25 +230,21 @@ export function ManualEdit() {
     if (e.touches.length < 2) pinchState.current = null;
   }
 
-  function handleSwatchTap(beadId: string) {
-    if (tool === 'swap') {
-      if (swapFrom === null) {
-        setSwapFrom(beadId);
-      } else {
-        commit(swapColor(grid, swapFrom, beadId));
-        setSwapFrom(null);
-        setTool('paint');
-      }
-    } else {
-      setCurrentColor(beadId);
-    }
+  function handlePaletteSwatchTap(beadId: string) {
+    activeBatchRef.current = null;
+    setCurrentColor(beadId);
+    setTool('paint');
   }
 
   function handleRotate() {
-    commit(rotate90(grid));
+    activeBatchRef.current = null;
+    const stats = gridStats(grid);
+    pushStep(rotate90(grid), 'Rotated 90°', stats.beadCount);
   }
   function handleFlip() {
-    commit(flipHorizontal(grid));
+    activeBatchRef.current = null;
+    const stats = gridStats(grid);
+    pushStep(flipHorizontal(grid), 'Flipped', stats.beadCount);
   }
 
   function addFromCatalog(id: string) {
@@ -172,6 +252,27 @@ export function ManualEdit() {
     setCurrentColor(id);
     setCatalogOpen(false);
     setTool('paint');
+  }
+
+  function openSwapFind() {
+    activeBatchRef.current = null;
+    setSwapSourceId(null);
+    setSwapTargetId(null);
+    setView('swap-find');
+  }
+
+  function applySwap() {
+    if (!swapSourceId || !swapTargetId) return;
+    const affected = usage.find((u) => u.beadId === swapSourceId)?.count ?? 0;
+    const fromBead = catalogBeadById(swapSourceId);
+    const toBead = catalogBeadById(swapTargetId);
+    pushStep(swapColor(grid, swapSourceId, swapTargetId), `${fromBead?.name ?? 'Color'} → ${toBead?.name ?? 'color'}`, affected, {
+      swatchFrom: fromBead?.hex,
+      swatchTo: toBead?.hex,
+    });
+    setView('edit');
+    setSwapSourceId(null);
+    setSwapTargetId(null);
   }
 
   async function handleDone() {
@@ -189,6 +290,125 @@ export function ManualEdit() {
   const currentColorBead = currentColor ? catalogBeadById(currentColor) : undefined;
   const currentColorCount = usage.find((u) => u.beadId === currentColor)?.count ?? 0;
 
+  // ---- Swap-Find view ----
+  if (view === 'swap-find') {
+    const sourceBead = swapSourceId ? catalogBeadById(swapSourceId) : undefined;
+    const sourceCount = swapSourceId ? usage.find((u) => u.beadId === swapSourceId)?.count ?? 0 : 0;
+    return (
+      <div className="screen screen--cream edit__screen">
+        <WizardBar
+          left={
+            <button type="button" onClick={() => setView('edit')}>
+              CANCEL
+            </button>
+          }
+          center={<span className="type-eyebrow">SWAP · 1 OF 2</span>}
+          right={
+            <button type="button" disabled={!swapSourceId} onClick={() => setView('swap-choose')}>
+              NEXT
+            </button>
+          }
+        />
+        <div className="screen__body edit__swap-body">
+          <canvas ref={canvasRef} className="edit__swap-canvas" />
+          <p className="type-body edit__swap-caption">Everything else fades so you can see exactly what moves.</p>
+        </div>
+        <BottomSheet variant="white">
+          <div className="type-eyebrow">TAP A COLOR TO FIND IT</div>
+          <div className="edit__palette-grid">
+            {paletteIds.map((id) => {
+              const bead = catalogBeadById(id);
+              if (!bead) return null;
+              return (
+                <button
+                  key={id}
+                  type="button"
+                  className={`edit__swatch${id === swapSourceId ? ' edit__swatch--selected' : ''}`}
+                  style={{ background: bead.hex }}
+                  onClick={() => setSwapSourceId(id)}
+                >
+                  <span>{bead.symbol}</span>
+                </button>
+              );
+            })}
+          </div>
+          {sourceBead && (
+            <div className="edit__swap-selected-row">
+              <span className="edit__swap-selected-swatch" style={{ background: sourceBead.hex }} />
+              <span className="type-row-label" style={{ flex: 1 }}>
+                {sourceBead.name}
+              </span>
+              <span className="type-numeric">{sourceCount}</span>
+            </div>
+          )}
+        </BottomSheet>
+      </div>
+    );
+  }
+
+  // ---- Swap-Choose view ----
+  if (view === 'swap-choose') {
+    const sourceBead = swapSourceId ? catalogBeadById(swapSourceId) : undefined;
+    const targetBead = swapTargetId ? catalogBeadById(swapTargetId) : undefined;
+    const sourceCount = swapSourceId ? usage.find((u) => u.beadId === swapSourceId)?.count ?? 0 : 0;
+    return (
+      <div className="screen screen--cream edit__screen">
+        <WizardBar
+          left={
+            <button type="button" onClick={() => setView('swap-find')}>
+              BACK
+            </button>
+          }
+          center={<span className="type-eyebrow">SWAP · 2 OF 2</span>}
+          right={
+            <button type="button" onClick={() => setView('swap-find')}>
+              UNDO
+            </button>
+          }
+        />
+        <div className="screen__body edit__swap-body">
+          <canvas ref={canvasRef} className="edit__swap-canvas" />
+          <p className="type-body edit__swap-caption">Live preview — outlined cells are the ones changing.</p>
+        </div>
+        <BottomSheet variant="white">
+          <div className="edit__swap-decision-row">
+            <span className="edit__swap-selected-swatch" style={{ background: sourceBead?.hex }} />
+            <span className="type-row-label">{sourceBead?.name}</span>
+            <span className="edit__swap-arrow">→</span>
+            <span className="edit__swap-selected-swatch" style={{ background: targetBead?.hex ?? '#fff' }} />
+            <span className="type-row-label" style={{ flex: 1 }}>
+              {targetBead?.name ?? '—'}
+            </span>
+            <span className="type-numeric">{sourceCount}</span>
+          </div>
+          <div className="type-eyebrow">SWAP IN — FROM MY COLLECTION</div>
+          <div className="edit__palette-grid">
+            {(state.collection?.beads ?? []).map((bead) => (
+              <button
+                key={bead.id}
+                type="button"
+                className={`edit__swatch${bead.id === swapTargetId ? ' edit__swatch--selected' : ''}`}
+                style={{ background: bead.hex }}
+                onClick={() => setSwapTargetId(bead.id)}
+              >
+                <span>{catalogBeadById(bead.id)?.symbol ?? ''}</span>
+              </button>
+            ))}
+          </div>
+          <div className="edit__swap-actions">
+            <PillButton variant="secondary" onClick={() => setView('edit')} style={{ width: 112 }}>
+              CANCEL
+            </PillButton>
+            <PillButton onClick={applySwap} disabled={!swapTargetId} style={{ flex: 1 }}>
+              APPLY SWAP
+            </PillButton>
+          </div>
+        </BottomSheet>
+      </div>
+    );
+  }
+
+  // ---- Edit view ----
   const stage = (
     <div className="edit__stage-wrap">
       <div className="edit__tool-row">
@@ -200,39 +420,27 @@ export function ManualEdit() {
           {tool === 'paint' && currentColorBead && (
             <span className="edit__tool-swatch" style={{ background: currentColorBead.hex }} />
           )}
-          Paint
+          PAINT
         </button>
         <button
           type="button"
           className={`edit__tool-pill${tool === 'clear' ? ' edit__tool-pill--active' : ''}`}
           onClick={() => setTool('clear')}
         >
-          Clear
+          CLEAR
         </button>
-        <button
-          type="button"
-          className={`edit__tool-pill${tool === 'swap' ? ' edit__tool-pill--active' : ''}`}
-          onClick={() => {
-            setTool('swap');
-            setSwapFrom(null);
-          }}
-        >
-          {tool === 'swap' ? (swapFrom ? 'Pick target…' : 'Pick source…') : 'Swap'}
+        <button type="button" className="edit__tool-pill" onClick={openSwapFind}>
+          SWAP
         </button>
-        <button type="button" className="edit__tool-pill" onClick={handleRotate}>
-          Rotate
+        <button type="button" className="edit__glyph-btn" onClick={handleRotate} aria-label="Rotate">
+          ⟳
         </button>
-        <button type="button" className="edit__tool-pill" onClick={handleFlip}>
-          Flip
+        <button type="button" className="edit__glyph-btn" onClick={handleFlip} aria-label="Flip">
+          ⇄
         </button>
       </div>
 
-      <div
-        className="edit__viewport"
-        onTouchStart={onTouchStart}
-        onTouchMove={onTouchMove}
-        onTouchEnd={onTouchEnd}
-      >
+      <div className="edit__viewport" onTouchStart={onTouchStart} onTouchMove={onTouchMove} onTouchEnd={onTouchEnd}>
         <canvas
           ref={canvasRef}
           className="edit__canvas"
@@ -243,10 +451,7 @@ export function ManualEdit() {
       </div>
 
       {hoverPointer && (
-        <div
-          className="edit__hover-readout type-mono"
-          style={{ left: hoverPointer.x + 16, top: hoverPointer.y - 10 }}
-        >
+        <div className="edit__hover-readout" style={{ left: hoverPointer.x + 16, top: hoverPointer.y - 10 }}>
           <span
             className="edit__hover-swatch"
             style={{ background: catalogBeadById(grid[hoverPointer.row]?.[hoverPointer.col] ?? '')?.hex ?? 'transparent' }}
@@ -261,58 +466,58 @@ export function ManualEdit() {
   const panelContent = (
     <>
       <div className="edit__palette-header">
-        <span className="type-eyebrow">ACTIVE PALETTE · {paletteIds.length} COLORS</span>
-        <button type="button" className="edit__catalog-btn" onClick={() => setCatalogOpen(true)}>
-          Catalog +
+        <span className="type-eyebrow">ACTIVE PALETTE · {paletteIds.length}</span>
+        <button type="button" className="adjust__link" onClick={() => setCatalogOpen(true)}>
+          CATALOG +
         </button>
       </div>
       <div className="edit__palette-grid">
         {paletteIds.map((id) => {
           const bead = catalogBeadById(id);
           if (!bead) return null;
-          const selected = tool === 'swap' ? id === swapFrom : id === currentColor;
           return (
             <button
               key={id}
               type="button"
-              className={`edit__swatch${selected ? ' edit__swatch--selected' : ''}`}
+              className={`edit__swatch${id === currentColor ? ' edit__swatch--selected' : ''}`}
               style={{ background: bead.hex }}
-              onClick={() => handleSwatchTap(id)}
+              onClick={() => handlePaletteSwatchTap(id)}
             >
-              <span className="type-mono">{bead.symbol}</span>
+              <span>{bead.symbol}</span>
             </button>
           );
         })}
       </div>
       <div className="edit__palette-footer">
-        <span>{currentColorBead?.name ?? '—'}</span>
-        <span className="type-mono">{currentColorCount} placed</span>
+        <span className="type-row-label">{currentColorBead?.name ?? '—'}</span>
+        <span className="type-numeric">{currentColorCount} PLACED</span>
       </div>
     </>
   );
 
   return (
-    <div className="screen screen--dark edit__screen">
+    <div className="screen screen--cream edit__screen">
       <WizardBar
-        variant="dark"
         left={
-          <button type="button" disabled={undoStack.length === 0} onClick={undo}>
-            Undo
+          <button type="button" disabled={pointer <= 0} onClick={undo}>
+            ↶
           </button>
         }
         center={
-          <span className="type-mono">
-            ZOOM {Math.round((cellSize / BASE_CELL_SIZE) * 100)}%
-            {lastCell ? ` · CELL ${lastCell.row},${lastCell.col}` : ''}
+          <span className="edit__bar-center">
+            <button type="button" className="edit__step-chip" onClick={() => setHistoryOpen(true)}>
+              <span className="type-numeric">{history.length}</span> STEPS
+            </button>
+            <span className="type-eyebrow">{Math.round((cellSize / BASE_CELL_SIZE) * 100)}%</span>
           </span>
         }
         right={
           <>
-            <button type="button" disabled={redoStack.length === 0} onClick={redo} style={{ marginRight: 16 }}>
-              Redo
+            <button type="button" disabled={pointer >= history.length - 1} onClick={redo} style={{ marginRight: 16 }}>
+              ↷
             </button>
             <button type="button" onClick={handleDone}>
-              Done
+              DONE
             </button>
           </>
         }
@@ -323,8 +528,10 @@ export function ManualEdit() {
       {catalogOpen && (
         <div className="edit__catalog-modal-backdrop" onClick={() => setCatalogOpen(false)}>
           <div className="edit__catalog-modal" onClick={(e) => e.stopPropagation()}>
-            <div className="type-card-title edit__catalog-modal-title">Add a catalog color</div>
-            <div className="edit__catalog-modal-grid">
+            <div className="type-headline" style={{ fontSize: 22 }}>
+              Add a catalog color
+            </div>
+            <div className="edit__palette-grid edit__catalog-modal-grid">
               {CATALOG.map((bead) => (
                 <button
                   key={bead.id}
@@ -334,12 +541,81 @@ export function ManualEdit() {
                   onClick={() => addFromCatalog(bead.id)}
                   title={bead.name}
                 >
-                  <span className="type-mono">{bead.symbol}</span>
+                  <span>{bead.symbol}</span>
                 </button>
               ))}
             </div>
           </div>
         </div>
+      )}
+
+      {historyOpen && (
+        <BottomSheet variant="cream" modal onBackdropClick={() => setHistoryOpen(false)}>
+          <div className="edit__history-preview-wrap">
+            <canvas
+              className="edit__history-preview"
+              ref={(el) => {
+                if (!el) return;
+                const g = history[pointer]?.grid ?? grid;
+                const cols = g[0]?.length ?? 1;
+                const rows = g.length || 1;
+                const cs = 145 / Math.max(cols, rows);
+                el.width = cols * cs;
+                el.height = rows * cs;
+                const ctx = el.getContext('2d');
+                if (ctx) renderGrid(ctx, { grid: g, cellSize: cs, getBead: catalogBeadById, gridlines: false, symbolOverlay: false, surface: 'light' });
+              }}
+            />
+          </div>
+          <div className="edit__history-header">
+            <h2 className="type-headline" style={{ fontSize: 26 }}>
+              HISTORY
+            </h2>
+            <span className="type-meta">{history.length} STEPS</span>
+          </div>
+          <div className="edit__history-list">
+            {history.map((step, i) => {
+              const applied = i <= pointer;
+              return (
+                <div key={step.id}>
+                  <button
+                    type="button"
+                    className={`edit__history-row${applied ? '' : ' edit__history-row--undone'}`}
+                    onClick={() => jumpTo(i)}
+                  >
+                    {step.swatchFrom ? (
+                      <span className="edit__history-swatch-pair">
+                        <span className="edit__history-swatch" style={{ background: step.swatchFrom }} />
+                        <span>→</span>
+                        <span className="edit__history-swatch" style={{ background: step.swatchTo }} />
+                      </span>
+                    ) : step.swatch ? (
+                      <span className="edit__history-swatch" style={{ background: step.swatch }} />
+                    ) : null}
+                    <span className="edit__history-label">{step.label}</span>
+                    <span className="edit__history-count">{i === 0 ? 'START' : `+${step.affectedCount}`}</span>
+                  </button>
+                  {i === pointer && history.length > 1 && (
+                    <div className="edit__history-here">
+                      <span />
+                      <span className="type-eyebrow">YOU ARE HERE</span>
+                      <span />
+                    </div>
+                  )}
+                </div>
+              );
+            })}
+          </div>
+          <div className="edit__swap-actions">
+            <PillButton variant="secondary" onClick={() => jumpTo(history.length - 1)} style={{ flex: 1 }}>
+              REDO ALL {history.length - 1 - pointer}
+            </PillButton>
+            <PillButton onClick={() => setHistoryOpen(false)} style={{ flex: 1 }}>
+              KEEP THIS
+            </PillButton>
+          </div>
+          <p className="type-body">Tap any step to jump there. Nothing is discarded until you make a new change.</p>
+        </BottomSheet>
       )}
     </div>
   );

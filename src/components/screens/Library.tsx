@@ -63,48 +63,48 @@ export function Library() {
   }
 
   if (state.libraryLoading) {
-    return <div className="screen screen--light" />;
+    return <div className="screen screen--yellow" />;
   }
 
   if (state.patterns.length === 0) {
     return (
-      <div className="screen screen--light library-first-run">
+      <div className="screen screen--yellow library-first-run">
         <div className="screen__body library-first-run__body">
-          <h1 className="type-screen-title">Nothing yet</h1>
+          <h1 className="type-headline type-headline--shelf">
+            NOTHING
+            <br />
+            YET
+          </h1>
           <div className="library-first-run__pegboard" aria-hidden>
             <PegboardIcon />
           </div>
-          <p className="type-body library-first-run__pitch">
+          <p className="type-body">
             Turn any photo into a bead blueprint sized to your own pegboard. Everything happens on this phone — no
             account, no upload.
           </p>
           <ol className="library-first-run__steps">
             <li>
-              <span className="type-mono library-first-run__index">01</span>
+              <span className="library-first-run__index">1</span>
               <span className="type-body">Set your board size and bead type</span>
             </li>
             <li>
-              <span className="type-mono library-first-run__index">02</span>
+              <span className="library-first-run__index">2</span>
               <span className="type-body">Pick a photo and perlify it</span>
             </li>
             <li>
-              <span className="type-mono library-first-run__index">03</span>
-              <span className="type-body">Print the blueprint and start beading</span>
+              <span className="library-first-run__index">3</span>
+              <span className="type-body">Print it and start beading</span>
             </li>
           </ol>
         </div>
         <div className="library__cta">
           <PillButton onClick={startNew} style={{ width: '100%' }}>
-            Start new pattern
+            START NEW PATTERN
           </PillButton>
-          <div className="library-first-run__secondary">
-            <button type="button" className="library__link" onClick={() => fileInputRef.current?.click()}>
-              Restore from backup
-            </button>
-            <span className="library-first-run__divider" />
-            <span className="type-mono library-first-run__hint">ADD TO HOME SCREEN</span>
-          </div>
-          {importMessage && <p className="type-caption library__import-message">{importMessage}</p>}
+          <button type="button" className="library__link" onClick={() => fileInputRef.current?.click()}>
+            RESTORE FROM BACKUP
+          </button>
+          {importMessage && <p className="type-meta library__import-message">{importMessage}</p>}
         </div>
         <input
           ref={fileInputRef}
@@ -122,16 +122,15 @@ export function Library() {
   }
 
   return (
-    <div className="screen screen--light">
+    <div className="screen screen--yellow">
       <div className="screen__body library__body">
         <div className="library__header">
-          <div>
-            <div className="type-eyebrow">MY PATTERNS</div>
-            <h1 className="type-screen-title">{state.patterns.length} saved</h1>
-          </div>
-          <PillButton size="sm" variant="secondary" onClick={handleBackup}>
-            Back up
-          </PillButton>
+          <h1 className="type-headline">
+            MY
+            <br />
+            PATTERNS
+          </h1>
+          <div className="library__count-badge">{state.patterns.length}</div>
         </div>
 
         <div className="library__grid">
@@ -145,9 +144,8 @@ export function Library() {
                 <div className="pattern-card__meta-row">
                   <div>
                     <div className="pattern-card__name">{pattern.name}</div>
-                    <div className="type-mono pattern-card__meta">
-                      {pattern.boardConfig.widthPegs}×{pattern.boardConfig.heightPegs} ·{' '}
-                      {pattern.boardConfig.beadType === 'regular' ? 'midi' : 'mini'} · {stats.colorCount} col
+                    <div className="pattern-card__meta">
+                      {pattern.boardConfig.widthPegs}×{pattern.boardConfig.heightPegs} · {stats.colorCount} COLORS
                     </div>
                   </div>
                   <button
@@ -175,20 +173,26 @@ export function Library() {
               </div>
             );
           })}
-          <div className="pattern-card pattern-card--hint">
-            <span className="type-caption">Long-press a pattern to duplicate, rename or delete.</span>
-          </div>
+          <button type="button" className="pattern-card pattern-card--new" onClick={startNew}>
+            <span className="pattern-card__new-circle">+</span>
+            <span className="pattern-card__new-label">NEW</span>
+          </button>
         </div>
       </div>
 
       <div className="library__cta">
         <PillButton onClick={startNew} style={{ width: '100%' }}>
-          Start new pattern
+          START NEW PATTERN
         </PillButton>
-        <button type="button" className="library__link library__restore-link" onClick={() => fileInputRef.current?.click()}>
-          Restore from backup
-        </button>
-        {importMessage && <p className="type-caption library__import-message">{importMessage}</p>}
+        <div className="library__secondary-links">
+          <button type="button" className="library__link" onClick={handleBackup}>
+            BACK UP
+          </button>
+          <button type="button" className="library__link" onClick={() => fileInputRef.current?.click()}>
+            RESTORE
+          </button>
+        </div>
+        {importMessage && <p className="type-meta library__import-message">{importMessage}</p>}
       </div>
       <input
         ref={fileInputRef}
@@ -215,8 +219,8 @@ function PegboardIcon() {
   }
   return (
     <svg viewBox="0 0 232 232" width="100%" height="100%">
-      <rect x="0.5" y="0.5" width="231" height="231" rx="10" fill="#efece4" stroke="var(--hairline)" />
-      <g fill="none" stroke="rgba(25,23,19,0.17)" strokeWidth="1.4">
+      <rect x="1.25" y="1.25" width="229.5" height="229.5" rx="12" fill="#efece4" stroke="#12100c" strokeWidth="2.5" />
+      <g fill="none" stroke="rgba(18,16,12,0.17)" strokeWidth="1.4">
         {dots}
       </g>
     </svg>

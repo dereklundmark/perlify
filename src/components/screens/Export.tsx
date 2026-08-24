@@ -2,21 +2,19 @@ import { useEffect, useRef, useState } from 'react';
 import { useApp } from '../../state/AppContext';
 import { WizardBar } from '../ui/WizardBar';
 import { PillButton } from '../ui/PillButton';
-import { GroupedList, GroupedListRow } from '../ui/GroupedList';
 import { catalogBeadById } from '../../lib/catalog';
 import { renderGrid } from '../../lib/renderGrid';
 import { beadUsage, gridStats } from '../../lib/grid';
 import { exportPatternPdf } from '../../lib/pdf';
-import { exportPatternJson } from '../../lib/backup';
 import './Export.css';
 
-const GRID_DISPLAY_SIZE = 174;
+const GRID_DISPLAY_SIZE = 150;
 
 export function Export() {
   const { state, dispatch } = useApp();
   const draft = state.draft;
   const canvasRef = useRef<HTMLCanvasElement>(null);
-  const [busy, setBusy] = useState<'pdf' | 'json' | null>(null);
+  const [busy, setBusy] = useState(false);
 
   useEffect(() => {
     if (!draft || !canvasRef.current || draft.gridData.length === 0) return;
@@ -34,8 +32,8 @@ export function Export() {
       getBead: catalogBeadById,
       gridlines: draft.gridlines,
       symbolOverlay: draft.symbolOverlay,
-      surface: 'dark',
-      background: '#000000',
+      surface: 'light',
+      background: '#ffffff',
       boardsWide: draft.boardConfig.boardsWide,
       boardsHigh: draft.boardConfig.boardsHigh,
       seamLines: draft.seamLines,
@@ -47,38 +45,35 @@ export function Export() {
   const stats = gridStats(draft.gridData);
   const usage = beadUsage(draft.gridData);
   const maxCount = usage[0]?.count ?? 1;
+  const pageCount =
+    draft.boardConfig.boardsWide * draft.boardConfig.boardsHigh > 1
+      ? 1 + draft.boardConfig.boardsWide * draft.boardConfig.boardsHigh
+      : 1;
 
-  async function handleSavePdf() {
+  async function handlePrint() {
     if (!draft) return;
-    setBusy('pdf');
+    setBusy(true);
     try {
       await exportPatternPdf(draft);
     } finally {
-      setBusy(null);
-    }
-  }
-
-  async function handleSaveJson() {
-    if (!draft) return;
-    setBusy('json');
-    try {
-      await exportPatternJson(draft);
-    } finally {
-      setBusy(null);
+      setBusy(false);
     }
   }
 
   return (
-    <div className="screen screen--dark export__screen">
+    <div className="screen screen--yellow export__screen">
       <WizardBar
-        variant="dark"
-        step={5}
+        step={4}
         left={
           <button type="button" onClick={() => dispatch({ type: 'nav', screen: 'preview' })}>
-            Back
+            BACK
           </button>
         }
-        right={<button type="button" onClick={() => dispatch({ type: 'draft/discard' })}>Done</button>}
+        right={
+          <button type="button" onClick={() => dispatch({ type: 'draft/discard' })}>
+            DONE
+          </button>
+        }
       />
 
       <div className="export__grid-backdrop">
@@ -87,28 +82,14 @@ export function Export() {
 
       <div className="export__sheet">
         <div className="bottom-sheet__handle" />
-        <h2 className="type-card-title">Export blueprint</h2>
-        <div className="type-mono export__meta">
-          {draft.boardConfig.boardsWide * draft.boardConfig.boardsHigh > 1
-            ? `${1 + draft.boardConfig.boardsWide * draft.boardConfig.boardsHigh} PAGES`
-            : '1 PAGE'}{' '}
-          · A4 · 1:1 SCALE
-        </div>
-
-        <GroupedList>
-          <GroupedListRow label="Include symbol overlay" value={draft.symbolOverlay ? 'ON' : 'OFF'} />
-          <GroupedListRow label="Gridlines" value="EVERY CELL" />
-          <GroupedListRow label="Heavier line every 10 pegs" value="ON" />
-          <GroupedListRow
-            label="Split across pages"
-            value={draft.boardConfig.boardsWide * draft.boardConfig.boardsHigh > 1 ? 'PER BOARD' : 'AUTO'}
-          />
-        </GroupedList>
-
-        <div className="export__legend-header">
-          <span className="type-eyebrow">BEAD LEGEND</span>
-          <span className="type-mono export__legend-total">
-            {stats.beadCount} TOTAL{stats.emptyCount ? ` · ${stats.emptyCount} EMPTY` : ''}
+        <div className="export__header">
+          <h2 className="type-headline">
+            SHOPPING
+            <br />
+            LIST
+          </h2>
+          <span className="type-meta">
+            {pageCount} PAGE{pageCount === 1 ? '' : 'S'} · A4
           </span>
         </div>
 
@@ -118,31 +99,24 @@ export function Export() {
             return (
               <div key={beadId} className="export__legend-row">
                 <span className="export__legend-swatch" style={{ background: bead?.hex }} />
-                <span className="type-mono export__legend-symbol">{bead?.symbol ?? '?'}</span>
                 <span className="export__legend-name">{bead?.name ?? beadId}</span>
                 <span className="export__legend-bar">
                   <span className="export__legend-bar-fill" style={{ width: `${(count / maxCount) * 100}%` }} />
                 </span>
-                <span className="type-mono export__legend-count">{count}</span>
+                <span className="type-numeric export__legend-count">{count}</span>
               </div>
             );
           })}
         </div>
 
-        <div className="export__actions">
-          <PillButton onClick={handleSavePdf} disabled={busy !== null} style={{ flex: 1 }}>
-            {busy === 'pdf' ? 'Saving…' : 'Save PDF'}
-          </PillButton>
-          <PillButton
-            variant="secondary"
-            onClick={handleSaveJson}
-            disabled={busy !== null}
-            className="export__json-button"
-            aria-label="Export JSON"
-          >
-            JSON
-          </PillButton>
-        </div>
+        <p className="type-body export__note">
+          {stats.beadCount} beads{stats.emptyCount ? `, ${stats.emptyCount} empty pegs` : ''}. The printed PDF also
+          carries the full legend with symbols.
+        </p>
+
+        <PillButton onClick={handlePrint} disabled={busy}>
+          {busy ? 'PRINTING…' : 'PRINT BLUEPRINT'}
+        </PillButton>
       </div>
     </div>
   );

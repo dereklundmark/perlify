@@ -28,7 +28,7 @@ export function PatternThumbnail({ grid, size = 160 }: PatternThumbnailProps) {
       gridlines: false,
       symbolOverlay: false,
       surface: 'light',
-      background: '#fffdf8',
+      background: '#fff8e7',
     });
   }, [grid, size]);
 

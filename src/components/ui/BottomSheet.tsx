@@ -3,12 +3,12 @@ import './BottomSheet.css';
 
 interface BottomSheetProps {
   children: ReactNode;
-  variant?: 'light' | 'dark';
+  variant?: 'white' | 'cream';
   onBackdropClick?: () => void;
   modal?: boolean;
 }
 
-export function BottomSheet({ children, variant = 'dark', onBackdropClick, modal }: BottomSheetProps) {
+export function BottomSheet({ children, variant = 'white', onBackdropClick, modal }: BottomSheetProps) {
   return (
     <>
       {modal && <div className="bottom-sheet-backdrop" onClick={onBackdropClick} />}

@@ -10,12 +10,12 @@ interface NumberFieldProps extends Omit<InputHTMLAttributes<HTMLInputElement>, '
 export function NumberField({ label, value, onChange, ...rest }: NumberFieldProps) {
   return (
     <label className="number-field">
-      {label && <span className="number-field__label type-eyebrow">{label}</span>}
+      {label && <span className="number-field__label">{label}</span>}
       <input
         {...rest}
         type="text"
         inputMode="decimal"
-        className="number-field__input type-mono"
+        className="number-field__input"
         value={value}
         onChange={(e) => onChange(e.target.value)}
       />

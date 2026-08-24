@@ -36,7 +36,7 @@ export interface PreprocessSettings {
 
 export type PaletteMode = 'auto' | 'collection';
 
-/** Normalized (0-1) crop rect against the original sourceImage, aspect-locked to the board's peg ratio. */
+/** Normalized (0-1) crop rect against the original sourceImage. Reflowed (see lib/crop.ts) whenever the board's peg aspect ratio changes. */
 export interface CropRect {
   x: number;
   y: number;
@@ -66,6 +66,8 @@ export interface Pattern {
   symbolOverlay: boolean;
   previewBackground: 'white' | 'black';
   seamLines: boolean;
+  /** Apple Pencil / mouse hover preview in the iPad panel (2a). */
+  pencilHover: boolean;
 }
 
 export const DB_VERSION = 1;

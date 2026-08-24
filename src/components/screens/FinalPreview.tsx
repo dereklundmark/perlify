@@ -1,7 +1,6 @@
 import { useEffect, useRef } from 'react';
 import { useApp } from '../../state/AppContext';
 import { WizardBar } from '../ui/WizardBar';
-import { SegmentedControl } from '../ui/SegmentedControl';
 import { Toggle } from '../ui/Toggle';
 import { catalogBeadById } from '../../lib/catalog';
 import { renderGrid } from '../../lib/renderGrid';
@@ -9,7 +8,7 @@ import { savePattern } from '../../db/db';
 import type { Pattern } from '../../db/schema';
 import './FinalPreview.css';
 
-const GRID_DISPLAY_SIZE = 300;
+const GRID_DISPLAY_SIZE = 320;
 
 export function FinalPreview() {
   const { state, dispatch } = useApp();
@@ -51,18 +50,17 @@ export function FinalPreview() {
   }
 
   return (
-    <div className="screen screen--dark preview__screen">
+    <div className="screen screen--cream">
       <WizardBar
-        variant="dark"
-        step={4}
+        step={3}
         left={
           <button type="button" onClick={() => dispatch({ type: 'nav', screen: 'adjust' })}>
-            Back
+            BACK
           </button>
         }
         right={
           <button type="button" onClick={() => dispatch({ type: 'nav', screen: 'export' })}>
-            Export
+            EXPORT
           </button>
         }
       />
@@ -75,44 +73,53 @@ export function FinalPreview() {
         <div className="preview__controls">
           <div>
             <div className="type-eyebrow preview__eyebrow">BACKGROUND BEHIND PATTERN</div>
-            <SegmentedControl
-              variant="dark"
-              options={[
-                { value: 'white', label: 'White' },
-                { value: 'black', label: 'Black' },
-              ]}
-              value={draft.previewBackground}
-              onChange={(v) => persist({ previewBackground: v })}
-            />
+            <div className="preview__bg-row">
+              <button
+                type="button"
+                className={`preview__bg-pill${draft.previewBackground === 'white' ? ' preview__bg-pill--active' : ''}`}
+                onClick={() => persist({ previewBackground: 'white' })}
+              >
+                <span className="preview__bg-chip" style={{ background: '#fff' }} />
+                WHITE
+              </button>
+              <button
+                type="button"
+                className={`preview__bg-pill${draft.previewBackground === 'black' ? ' preview__bg-pill--active' : ''}`}
+                onClick={() => persist({ previewBackground: 'black' })}
+              >
+                <span className="preview__bg-chip" style={{ background: '#000' }} />
+                BLACK
+              </button>
+            </div>
           </div>
 
           <div className="preview__row">
             <div>
-              <div className="type-row-label">Symbol overlay</div>
-              <div className="type-caption preview__caption">Letter per color — for B&W printing</div>
+              <div className="type-row-label">SYMBOL OVERLAY</div>
+              <div className="type-meta">For B&W printing</div>
             </div>
-            <Toggle variant="dark" checked={draft.symbolOverlay} onChange={(v) => persist({ symbolOverlay: v })} />
+            <Toggle checked={draft.symbolOverlay} onChange={(v) => persist({ symbolOverlay: v })} />
           </div>
 
           <div className="preview__row">
             <div>
-              <div className="type-row-label">Gridlines</div>
-              <div className="type-caption preview__caption">Off shows the finished piece as beaded</div>
+              <div className="type-row-label">GRIDLINES</div>
+              <div className="type-meta">Off = as beaded</div>
             </div>
-            <Toggle variant="dark" checked={draft.gridlines} onChange={(v) => persist({ gridlines: v })} />
+            <Toggle checked={draft.gridlines} onChange={(v) => persist({ gridlines: v })} />
           </div>
 
           {draft.boardConfig.boardsWide * draft.boardConfig.boardsHigh > 1 && (
             <div className="preview__row">
               <div>
-                <div className="type-row-label">Board seam lines</div>
-                <div className="type-caption preview__caption">Marks where each physical board meets the next</div>
+                <div className="type-row-label">SEAM LINES</div>
+                <div className="type-meta">Marks where boards meet</div>
               </div>
-              <Toggle variant="dark" checked={draft.seamLines} onChange={(v) => persist({ seamLines: v })} />
+              <Toggle checked={draft.seamLines} onChange={(v) => persist({ seamLines: v })} />
             </div>
           )}
 
-          <p className="type-caption preview__footnote">Display only — toggling these never changes a bead.</p>
+          <p className="type-body preview__footnote">Display only — toggling these never changes a bead.</p>
         </div>
       </div>
     </div>

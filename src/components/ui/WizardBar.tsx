@@ -5,24 +5,26 @@ interface WizardBarProps {
   left: ReactNode;
   center?: ReactNode;
   right: ReactNode;
-  variant?: 'light' | 'dark';
   step?: number;
   totalSteps?: number;
 }
 
-export function WizardBar({ left, center, right, variant = 'light', step, totalSteps = 5 }: WizardBarProps) {
+/** Progress is N discrete segments, not a continuous bar — per the Pegboard spec. */
+export function WizardBar({ left, center, right, step, totalSteps = 4 }: WizardBarProps) {
   return (
-    <div className={`wizard-bar wizard-bar--${variant}`}>
+    <div className="wizard-bar">
       <div className="wizard-bar__row">
         <div className="wizard-bar__side">{left}</div>
-        <div className="wizard-bar__center type-mono">
+        <div className="wizard-bar__center type-eyebrow">
           {center ?? (step !== undefined ? `STEP ${step} OF ${totalSteps}` : null)}
         </div>
         <div className="wizard-bar__side wizard-bar__side--right">{right}</div>
       </div>
       {step !== undefined && (
-        <div className="wizard-bar__track">
-          <div className="wizard-bar__fill" style={{ width: `${(step / totalSteps) * 100}%` }} />
+        <div className="wizard-bar__segments">
+          {Array.from({ length: totalSteps }, (_, i) => (
+            <div key={i} className={`wizard-bar__segment${i < step ? ' wizard-bar__segment--done' : ''}`} />
+          ))}
         </div>
       )}
     </div>

@@ -1,83 +1,64 @@
-.slider {
-  display: block;
-}
-
 .slider__row {
   display: flex;
   justify-content: space-between;
   align-items: baseline;
-  margin-bottom: 8px;
-}
-
-.slider__label {
-  font: 500 13px var(--font-ui);
-}
-
-.slider--dark .slider__label {
-  color: var(--on-dark-85);
-}
-.slider--light .slider__label {
-  color: var(--ink);
+  margin-bottom: 10px;
 }
 
 .slider__value {
-  font: 600 13px var(--font-mono);
-}
-.slider--dark .slider__value {
-  color: var(--accent-hi);
-}
-.slider--light .slider__value {
-  color: var(--accent);
-  color: var(--accent-fallback);
+  font-size: 22px;
 }
 
 .slider__input {
   -webkit-appearance: none;
   appearance: none;
   width: 100%;
-  height: 4px;
-  border-radius: 2px;
-  background: linear-gradient(
-    to right,
-    var(--accent-fallback) 0%,
-    var(--accent) var(--slider-fill),
-    var(--fill-dark) var(--slider-fill),
-    var(--fill-dark) 100%
-  );
+  height: var(--slider-track-h);
+  border-radius: 7px;
+  background: var(--track);
+  border: var(--border-mid) solid var(--ink);
+  box-sizing: border-box;
   margin: 0;
 }
 
-.slider--light .slider__input {
+.slider__input--yellow {
   background: linear-gradient(
     to right,
-    var(--accent-fallback) 0%,
-    var(--accent) var(--slider-fill),
-    var(--fill-light) var(--slider-fill),
-    var(--fill-light) 100%
+    var(--yellow) 0%,
+    var(--yellow) var(--slider-fill),
+    var(--track) var(--slider-fill),
+    var(--track) 100%
+  );
+}
+
+.slider__input--red {
+  background: linear-gradient(
+    to right,
+    var(--red) 0%,
+    var(--red) var(--slider-fill),
+    var(--track) var(--slider-fill),
+    var(--track) 100%
   );
 }
 
 .slider__input::-webkit-slider-thumb {
   -webkit-appearance: none;
   appearance: none;
-  width: 26px;
-  height: 26px;
+  width: var(--slider-thumb);
+  height: var(--slider-thumb);
   border-radius: 50%;
-  background: #fff;
-  box-shadow: var(--shadow-thumb-dark);
+  background: var(--white);
+  border: var(--border-thick) solid var(--ink);
+  box-shadow: var(--shadow-thumb);
   cursor: pointer;
 }
 
-.slider--light .slider__input::-webkit-slider-thumb {
-  box-shadow: var(--shadow-thumb-light);
-}
-
 .slider__input::-moz-range-thumb {
-  width: 26px;
-  height: 26px;
+  width: var(--slider-thumb);
+  height: var(--slider-thumb);
   border-radius: 50%;
-  background: #fff;
-  border: none;
-  box-shadow: var(--shadow-thumb-dark);
+  background: var(--white);
+  border: var(--border-thick) solid var(--ink);
+  box-shadow: var(--shadow-thumb);
   cursor: pointer;
 }

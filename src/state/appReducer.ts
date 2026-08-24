@@ -1,14 +1,18 @@
 import type { BeadCollection, Pattern } from '../db/schema';
 
-export type Screen = 'library' | 'setup' | 'photo' | 'adjust' | 'preview' | 'export' | 'edit' | 'collection';
+// Swap's two steps and History are views *within* the edit screen (they
+// share its in-progress grid + history state), not separate routes.
+export type Screen = 'library' | 'photo' | 'adjust' | 'preview' | 'export' | 'edit' | 'collection';
 
+// Photo -> Adjust -> Preview -> Export: board setup merged into Adjust
+// per the requested flow (see the Pegboard-rebuild plan).
 export const WIZARD_STEPS: Partial<Record<Screen, number>> = {
-  setup: 1,
-  photo: 2,
-  adjust: 3,
-  preview: 4,
-  export: 5,
+  photo: 1,
+  adjust: 2,
+  preview: 3,
+  export: 4,
 };
+export const WIZARD_TOTAL_STEPS = 4;
 
 export interface AppState {
   screen: Screen;
@@ -46,6 +50,7 @@ export function createBlankPattern(collectionId: string | null): Pattern {
     symbolOverlay: true,
     previewBackground: 'black',
     seamLines: true,
+    pencilHover: true,
   };
 }
 
@@ -82,7 +87,7 @@ export function appReducer(state: AppState, action: Action): AppState {
       return {
         ...state,
         draft: createBlankPattern(state.collection?.id ?? null),
-        screen: 'setup',
+        screen: 'photo',
       };
 
     case 'draft/open':
