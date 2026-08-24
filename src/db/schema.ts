@@ -29,12 +29,17 @@ export interface BoardConfig {
 }
 
 export interface PreprocessSettings {
-  contrast: number;
-  saturation: number;
-  brightness: number;
+  contrast: number; // -100..100
+  saturation: number; // -100..100
+  brightness: number; // -100..100
+  duotone: boolean;
+  duotoneHue: number; // 0-360
 }
 
 export type PaletteMode = 'auto' | 'collection';
+
+/** Discrete dithering styles offered in the Adjust screen's palette. */
+export type DitherMode = 'none' | 'floyd-steinberg' | 'atkinson' | 'ordered';
 
 /**
  * Normalized (0-1) crop rect against sourceImage, used to fit the photo to
@@ -64,7 +69,7 @@ export interface Pattern {
   collectionId: string | null; // null when paletteMode is 'auto'
   paletteMode: PaletteMode;
   colorCount: number; // 2-60, auto mode only
-  dither: boolean;
+  ditherMode: DitherMode;
   preprocessSettings: PreprocessSettings;
 
   gridData: (string | null)[][]; // beadId | null, [row][col]

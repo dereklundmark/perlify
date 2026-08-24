@@ -66,25 +66,40 @@ describe('nearestIndex vs naive RGB distance — the "not RGB distance" regressi
   });
 });
 
+const NEUTRAL = { contrast: 0, saturation: 0, brightness: 0, duotone: false, duotoneHue: 0 };
+
 describe('applyPreprocess', () => {
   it('is a no-op at neutral settings', () => {
     const rgb: RGB = { r: 120, g: 80, b: 200 };
-    const out = applyPreprocess(rgb, { contrast: 0, saturation: 0, brightness: 0 });
+    const out = applyPreprocess(rgb, NEUTRAL);
     expect(out.r).toBeCloseTo(rgb.r, 5);
     expect(out.g).toBeCloseTo(rgb.g, 5);
     expect(out.b).toBeCloseTo(rgb.b, 5);
   });
 
   it('brightness shifts channels up and clamps at 255', () => {
-    const out = applyPreprocess({ r: 250, g: 10, b: 10 }, { contrast: 0, saturation: 0, brightness: 100 });
+    const out = applyPreprocess({ r: 250, g: 10, b: 10 }, { ...NEUTRAL, brightness: 100 });
     expect(out.r).toBe(255);
     expect(out.g).toBeGreaterThan(10);
   });
 
   it('saturation -100 desaturates to a gray (a == b == r channel-wise)', () => {
-    const out = applyPreprocess({ r: 200, g: 50, b: 50 }, { contrast: 0, saturation: -100, brightness: 0 });
+    const out = applyPreprocess({ r: 200, g: 50, b: 50 }, { ...NEUTRAL, saturation: -100 });
     expect(out.r).toBeCloseTo(out.g, 0);
     expect(out.g).toBeCloseTo(out.b, 0);
+  });
+
+  it('duotone replaces the color with a shade of the chosen hue', () => {
+    const out = applyPreprocess({ r: 200, g: 50, b: 50 }, { ...NEUTRAL, duotone: true, duotoneHue: 200 });
+    const { h } = rgbToHsb(out);
+    expect(h).toBeCloseTo(200, 0);
+  });
+
+  it('a bright and a dark pixel map to different points on the same duotone gradient', () => {
+    const settings = { ...NEUTRAL, duotone: true, duotoneHue: 120 };
+    const dark = applyPreprocess({ r: 10, g: 10, b: 10 }, settings);
+    const bright = applyPreprocess({ r: 240, g: 240, b: 240 }, settings);
+    expect(relativeLuminance(bright)).toBeGreaterThan(relativeLuminance(dark));
   });
 });
 

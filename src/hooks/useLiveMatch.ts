@@ -44,7 +44,7 @@ export function useLiveMatch(): HTMLImageElement | null {
         paletteMode: draft.paletteMode,
         colorCount: draft.colorCount,
         collectionBeads,
-        dither: draft.dither,
+        ditherMode: draft.ditherMode,
       });
       dispatch({ type: 'draft/update', patch: { gridData: result.gridData } });
     }, DEBOUNCE_MS);
@@ -59,7 +59,7 @@ export function useLiveMatch(): HTMLImageElement | null {
     draft?.preprocessSettings,
     draft?.paletteMode,
     draft?.colorCount,
-    draft?.dither,
+    draft?.ditherMode,
     draft?.collectionId,
     state.collections,
   ]);

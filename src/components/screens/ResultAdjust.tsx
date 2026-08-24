@@ -10,11 +10,18 @@ import { catalogBeadById, HAMA_PRESET_BEADS, PERLER_PRESET_BEADS } from '../../l
 import { HAMA_PRESET_COLLECTION_ID, PERLER_PRESET_COLLECTION_ID } from '../../db/db';
 import { renderGrid } from '../../lib/renderGrid';
 import { beadUsage, gridStats } from '../../lib/grid';
-import type { Pattern } from '../../db/schema';
+import type { DitherMode, Pattern } from '../../db/schema';
 import './ResultAdjust.css';
 
 const PRESETS = [8, 12, 16, 24, 32, 60];
 const GRID_DISPLAY_SIZE = 336;
+
+const DITHER_OPTIONS: { value: DitherMode; label: string }[] = [
+  { value: 'none', label: 'NONE' },
+  { value: 'floyd-steinberg', label: 'FLOYD' },
+  { value: 'atkinson', label: 'ATKINSON' },
+  { value: 'ordered', label: 'ORDERED' },
+];
 
 type AccordionSection = 'palette' | 'adjustments' | null;
 
@@ -278,16 +285,43 @@ export function ResultAdjust() {
                   formatValue={formatSigned}
                   onChange={(v) => updatePreprocess({ brightness: v })}
                 />
+
+                <div className="adjust__divider" />
+
+                <div className="adjust__inline-toggle-row">
+                  <span className="type-row-label">DUOTONE</span>
+                  <Toggle checked={draft.preprocessSettings.duotone} onChange={(v) => updatePreprocess({ duotone: v })} />
+                </div>
+                {draft.preprocessSettings.duotone && (
+                  <input
+                    type="range"
+                    min={0}
+                    max={360}
+                    value={draft.preprocessSettings.duotoneHue}
+                    onChange={(e) => updatePreprocess({ duotoneHue: Number(e.target.value) })}
+                    className="adjust__hue-rail"
+                  />
+                )}
               </div>
             )}
           </div>
 
-          <div className="adjust-card adjust__toggle-card">
-            <div>
-              <div className="type-row-label">DITHERING</div>
-              <div className="type-meta">Smoother, noisier</div>
+          <div className="adjust-card">
+            <div className="type-row-label" style={{ marginBottom: 10 }}>
+              DITHERING
             </div>
-            <Toggle checked={draft.dither} onChange={(v) => dispatch({ type: 'draft/update', patch: { dither: v } })} />
+            <div className="adjust__presets">
+              {DITHER_OPTIONS.map((opt) => (
+                <button
+                  key={opt.value}
+                  type="button"
+                  className={`preset-chip${draft.ditherMode === opt.value ? ' preset-chip--active' : ''}`}
+                  onClick={() => dispatch({ type: 'draft/update', patch: { ditherMode: opt.value } })}
+                >
+                  {opt.label}
+                </button>
+              ))}
+            </div>
           </div>
 
           <div className="adjust-card adjust__toggle-card">

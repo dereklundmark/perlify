@@ -8,6 +8,11 @@
 // spec is based on mismatched a sunset's orange glow to browns; Lab is what
 // fixes that, because it approximates perceived color difference.
 
+import type { PreprocessSettings } from '../db/schema';
+import { hsbToRgb } from './hsb';
+
+export type { PreprocessSettings };
+
 export interface RGB {
   r: number;
   g: number;
@@ -18,12 +23,6 @@ export interface Lab {
   l: number;
   a: number;
   b: number;
-}
-
-export interface PreprocessSettings {
-  contrast: number; // -100..100
-  saturation: number; // -100..100
-  brightness: number; // -100..100
 }
 
 export function hexToRgb(hex: string): RGB {
@@ -117,10 +116,24 @@ export function applyPreprocess(rgb: RGB, settings: PreprocessSettings): RGB {
   g = gray + satFactor * (g - gray);
   b = gray + satFactor * (b - gray);
 
+  let result: RGB = { r: clamp(r, 0, 255), g: clamp(g, 0, 255), b: clamp(b, 0, 255) };
+  if (settings.duotone) result = applyDuotone(result, settings.duotoneHue);
+  return result;
+}
+
+/**
+ * Classic two-tone effect: remap each pixel's own luminance onto a
+ * gradient between a dark and a light shade of one hue, replacing its
+ * original color entirely.
+ */
+function applyDuotone(rgb: RGB, hue: number): RGB {
+  const luminance = relativeLuminance(rgb);
+  const dark = hsbToRgb({ h: hue, s: 0.65, v: 0.22 });
+  const light = hsbToRgb({ h: hue, s: 0.3, v: 0.96 });
   return {
-    r: clamp(r, 0, 255),
-    g: clamp(g, 0, 255),
-    b: clamp(b, 0, 255),
+    r: dark.r + (light.r - dark.r) * luminance,
+    g: dark.g + (light.g - dark.g) * luminance,
+    b: dark.b + (light.b - dark.b) * luminance,
   };
 }
 
@@ -165,29 +178,49 @@ export function pickAutoPaletteIndices(
     .sort((a, b) => a - b);
 }
 
+interface DiffusionStep {
+  dr: number;
+  dc: number;
+  factor: number;
+}
+
+// 100% of the match error is pushed onto unprocessed neighbors — the
+// classic, most "organic-noise" looking diffusion pattern.
+const FLOYD_STEINBERG_PATTERN: DiffusionStep[] = [
+  { dr: 0, dc: 1, factor: 7 / 16 },
+  { dr: 1, dc: -1, factor: 3 / 16 },
+  { dr: 1, dc: 0, factor: 5 / 16 },
+  { dr: 1, dc: 1, factor: 1 / 16 },
+];
+
+// Only 75% of the error is diffused (6 of 8 shares) — the rest is simply
+// dropped, giving a lighter, higher-contrast result than Floyd-Steinberg
+// (this is the dithering Apple used on the original Mac).
+const ATKINSON_PATTERN: DiffusionStep[] = [
+  { dr: 0, dc: 1, factor: 1 / 8 },
+  { dr: 0, dc: 2, factor: 1 / 8 },
+  { dr: 1, dc: -1, factor: 1 / 8 },
+  { dr: 1, dc: 0, factor: 1 / 8 },
+  { dr: 1, dc: 1, factor: 1 / 8 },
+  { dr: 2, dc: 0, factor: 1 / 8 },
+];
+
 /**
- * Floyd-Steinberg error diffusion over a raster of adjusted RGB cells,
- * matching each pixel against `palette` in Lab space and diffusing the
- * RGB match error to unprocessed neighbors.
+ * Error-diffusion dithering over a raster of adjusted RGB cells, matching
+ * each pixel against `palette` in Lab space and diffusing the RGB match
+ * error to unprocessed neighbors per `pattern`.
  */
-export function floydSteinbergMatch(
+function errorDiffusionMatch(
   cells: RGB[][], // [row][col], already preprocessed
-  palette: PaletteEntry[] & { rgb?: RGB[] },
+  palette: PaletteEntry[],
   paletteRgb: RGB[],
+  pattern: DiffusionStep[],
 ): number[][] {
   const h = cells.length;
   const w = cells[0]?.length ?? 0;
   // Work on a mutable copy so error diffusion doesn't corrupt the caller's data.
   const work: RGB[][] = cells.map((row) => row.map((c) => ({ ...c })));
   const result: number[][] = Array.from({ length: h }, () => new Array(w).fill(0));
-
-  const diffuse = (row: number, col: number, er: number, eg: number, eb: number, factor: number) => {
-    if (row < 0 || row >= h || col < 0 || col >= w) return;
-    const cell = work[row][col];
-    cell.r = clamp(cell.r + er * factor, 0, 255);
-    cell.g = clamp(cell.g + eg * factor, 0, 255);
-    cell.b = clamp(cell.b + eb * factor, 0, 255);
-  };
 
   for (let row = 0; row < h; row++) {
     for (let col = 0; col < w; col++) {
@@ -201,10 +234,60 @@ export function floydSteinbergMatch(
       const eg = cell.g - matched.g;
       const eb = cell.b - matched.b;
 
-      diffuse(row, col + 1, er, eg, eb, 7 / 16);
-      diffuse(row + 1, col - 1, er, eg, eb, 3 / 16);
-      diffuse(row + 1, col, er, eg, eb, 5 / 16);
-      diffuse(row + 1, col + 1, er, eg, eb, 1 / 16);
+      for (const { dr, dc, factor } of pattern) {
+        const r = row + dr;
+        const c = col + dc;
+        if (r < 0 || r >= h || c < 0 || c >= w) continue;
+        const target = work[r][c];
+        target.r = clamp(target.r + er * factor, 0, 255);
+        target.g = clamp(target.g + eg * factor, 0, 255);
+        target.b = clamp(target.b + eb * factor, 0, 255);
+      }
+    }
+  }
+
+  return result;
+}
+
+export function floydSteinbergMatch(cells: RGB[][], palette: PaletteEntry[], paletteRgb: RGB[]): number[][] {
+  return errorDiffusionMatch(cells, palette, paletteRgb, FLOYD_STEINBERG_PATTERN);
+}
+
+export function atkinsonMatch(cells: RGB[][], palette: PaletteEntry[], paletteRgb: RGB[]): number[][] {
+  return errorDiffusionMatch(cells, palette, paletteRgb, ATKINSON_PATTERN);
+}
+
+// Values 0-15 arranged so that thresholding against them (scaled) spreads
+// evenly across a 4x4 tile — the standard Bayer matrix.
+const BAYER_4X4 = [
+  [0, 8, 2, 10],
+  [12, 4, 14, 6],
+  [3, 11, 1, 9],
+  [15, 7, 13, 5],
+];
+const ORDERED_STRENGTH = 24; // RGB offset amplitude at the matrix's extremes
+
+/**
+ * Ordered (Bayer) dithering: nudges each cell's color by a fixed,
+ * position-dependent offset before matching — no error accumulation, so
+ * every cell is independent, giving a regular crosshatch texture instead
+ * of Floyd-Steinberg/Atkinson's organic noise.
+ */
+export function orderedDitherMatch(cells: RGB[][], palette: PaletteEntry[]): number[][] {
+  const h = cells.length;
+  const w = cells[0]?.length ?? 0;
+  const result: number[][] = Array.from({ length: h }, () => new Array(w).fill(0));
+
+  for (let row = 0; row < h; row++) {
+    for (let col = 0; col < w; col++) {
+      const offset = (BAYER_4X4[row % 4][col % 4] / 16 - 0.5) * ORDERED_STRENGTH;
+      const cell = cells[row][col];
+      const adjusted: RGB = {
+        r: clamp(cell.r + offset, 0, 255),
+        g: clamp(cell.g + offset, 0, 255),
+        b: clamp(cell.b + offset, 0, 255),
+      };
+      result[row][col] = nearestIndex(rgbToLab(adjusted), palette);
     }
   }
 

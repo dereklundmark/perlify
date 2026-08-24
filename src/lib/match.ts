@@ -1,11 +1,13 @@
-import type { Bead, CropRect, PreprocessSettings } from '../db/schema';
+import type { Bead, CropRect, DitherMode, PreprocessSettings } from '../db/schema';
 import type { GridData } from './grid';
 import { CATALOG } from './catalog';
 import {
   applyPreprocess,
+  atkinsonMatch,
   floydSteinbergMatch,
   hexToRgb,
   nearestIndex,
+  orderedDitherMatch,
   pickAutoPaletteIndices,
   rgbToLab,
   type PaletteEntry,
@@ -66,7 +68,7 @@ export interface MatchParams {
   paletteMode: 'auto' | 'collection';
   colorCount: number;
   collectionBeads: Bead[];
-  dither: boolean;
+  ditherMode: DitherMode;
 }
 
 export interface MatchResult {
@@ -97,9 +99,20 @@ export function matchImageToGrid(params: MatchParams): MatchResult {
   const paletteEntries: PaletteEntry[] = candidatePalette.map((b) => ({ id: b.id, lab: rgbToLab(hexToRgb(b.hex)) }));
   const paletteRgb = candidatePalette.map((b) => hexToRgb(b.hex));
 
-  const indicesGrid: number[][] = params.dither
-    ? floydSteinbergMatch(adjustedGrid, paletteEntries, paletteRgb)
-    : adjustedGrid.map((row) => row.map((c) => nearestIndex(rgbToLab(c), paletteEntries)));
+  let indicesGrid: number[][];
+  switch (params.ditherMode) {
+    case 'floyd-steinberg':
+      indicesGrid = floydSteinbergMatch(adjustedGrid, paletteEntries, paletteRgb);
+      break;
+    case 'atkinson':
+      indicesGrid = atkinsonMatch(adjustedGrid, paletteEntries, paletteRgb);
+      break;
+    case 'ordered':
+      indicesGrid = orderedDitherMatch(adjustedGrid, paletteEntries);
+      break;
+    default:
+      indicesGrid = adjustedGrid.map((row) => row.map((c) => nearestIndex(rgbToLab(c), paletteEntries)));
+  }
 
   const gridData: GridData = indicesGrid.map((row) => row.map((idx) => candidatePalette[idx].id));
 
