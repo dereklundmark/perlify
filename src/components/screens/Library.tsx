@@ -85,11 +85,11 @@ export function Library() {
           <ol className="library-first-run__steps">
             <li>
               <span className="library-first-run__index">1</span>
-              <span className="type-body">Set your board size and bead type</span>
+              <span className="type-body">Pick a photo and perlify it</span>
             </li>
             <li>
               <span className="library-first-run__index">2</span>
-              <span className="type-body">Pick a photo and perlify it</span>
+              <span className="type-body">Set your board size and bead type</span>
             </li>
             <li>
               <span className="library-first-run__index">3</span>
