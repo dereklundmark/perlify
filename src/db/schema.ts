@@ -37,9 +37,12 @@ export interface PreprocessSettings {
 export type PaletteMode = 'auto' | 'collection';
 
 /**
- * Normalized (0-1) crop rect against the original sourceImage.
- * `{x:0,y:0,width:1,height:1}` is the sentinel "not framed yet" value —
- * Adjust prompts the crop tool (CropSheet) the first time it sees this.
+ * Normalized (0-1) crop rect against sourceImage, used to fit the photo to
+ * the board's shape (see PegboardCropSheet). `{x:0,y:0,width:1,height:1}`
+ * is the sentinel "not framed yet" value — Board Setup silently fills in a
+ * centered default the first time it sees this (see computeCoverCrop in
+ * lib/crop.ts), so a pattern never renders visibly stretched even before
+ * the user opens that tool.
  */
 export interface CropRect {
   x: number;

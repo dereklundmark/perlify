@@ -7,36 +7,33 @@ import {
   type WheelEvent as ReactWheelEvent,
 } from 'react';
 import type { CropRect } from '../../db/schema';
-import './CropSheet.css';
+import { isSentinelCrop } from '../../lib/crop';
+import './PegboardCropSheet.css';
 
-interface CropSheetProps {
+interface PegboardCropSheetProps {
   sourceImage: string;
   cropRect: CropRect;
   /** widthPegs / heightPegs — the crop window's shape. */
   boardAspect: number;
-  onApply: (cropRect: CropRect, rotatedSourceImage?: string) => void;
+  onApply: (cropRect: CropRect) => void;
   onClose: () => void;
 }
 
 const STAGE_MAX = 320;
 
-function isSentinelCrop(c: CropRect): boolean {
-  return c.x === 0 && c.y === 0 && c.width === 1 && c.height === 1;
-}
-
 /**
- * Full-screen "frame your photo to the board" tool — pinch/pan/zoom/rotate.
- * Nothing here is automatic: the user decides the crop, and can reopen this
- * at any time from Adjust to change their mind.
+ * Full-screen "fit this photo to the board" tool — pinch/pan/zoom only
+ * (trimming and rotating the photo itself happens earlier, in
+ * PhotoCropSheet, right after picking it). Nothing here is automatic: the
+ * user decides the framing, and can reopen this any time from Board Setup
+ * to change their mind.
  */
-export function CropSheet({ sourceImage, cropRect, boardAspect, onApply, onClose }: CropSheetProps) {
-  const [workingImage, setWorkingImage] = useState(sourceImage);
+export function PegboardCropSheet({ sourceImage, cropRect, boardAspect, onApply, onClose }: PegboardCropSheetProps) {
   const [imageSize, setImageSize] = useState<{ width: number; height: number } | null>(null);
   const [scale, setScale] = useState(1);
   const [offset, setOffset] = useState({ x: 0, y: 0 });
   const dragState = useRef<{ x: number; y: number } | null>(null);
   const pinchState = useRef<{ dist: number; scale: number } | null>(null);
-  const imgElRef = useRef<HTMLImageElement>(null);
 
   const cropBoxW = boardAspect >= 1 ? STAGE_MAX : STAGE_MAX * boardAspect;
   const cropBoxH = boardAspect >= 1 ? STAGE_MAX / boardAspect : STAGE_MAX;
@@ -86,22 +83,6 @@ export function CropSheet({ sourceImage, cropRect, boardAspect, onApply, onClose
   }, [imageSize]);
 
   function resetFraming() {
-    setScale(1);
-    setOffset({ x: 0, y: 0 });
-  }
-
-  function rotate() {
-    const img = imgElRef.current;
-    if (!img || !imageSize) return;
-    const canvas = document.createElement('canvas');
-    canvas.width = imageSize.height;
-    canvas.height = imageSize.width;
-    const ctx = canvas.getContext('2d')!;
-    ctx.translate(canvas.width / 2, canvas.height / 2);
-    ctx.rotate(Math.PI / 2);
-    ctx.drawImage(img, -imageSize.width / 2, -imageSize.height / 2);
-    setWorkingImage(canvas.toDataURL('image/jpeg', 0.92));
-    setImageSize({ width: imageSize.height, height: imageSize.width });
     setScale(1);
     setOffset({ x: 0, y: 0 });
   }
@@ -177,7 +158,7 @@ export function CropSheet({ sourceImage, cropRect, boardAspect, onApply, onClose
       width: cropBoxW / displayedW,
       height: cropBoxH / displayedH,
     };
-    onApply(newCropRect, workingImage !== sourceImage ? workingImage : undefined);
+    onApply(newCropRect);
   }
 
   return (
@@ -186,7 +167,7 @@ export function CropSheet({ sourceImage, cropRect, boardAspect, onApply, onClose
         <button type="button" onClick={onClose}>
           CANCEL
         </button>
-        <span className="type-eyebrow">FRAME PHOTO</span>
+        <span className="type-eyebrow">FIT TO BOARD</span>
         <button type="button" className="crop-sheet__done" onClick={handleDone}>
           DONE
         </button>
@@ -204,8 +185,7 @@ export function CropSheet({ sourceImage, cropRect, boardAspect, onApply, onClose
         onWheel={onWheel}
       >
         <img
-          ref={imgElRef}
-          src={workingImage}
+          src={sourceImage}
           alt=""
           draggable={false}
           className="crop-sheet__image"
@@ -232,14 +212,13 @@ export function CropSheet({ sourceImage, cropRect, boardAspect, onApply, onClose
       </div>
 
       <div className="crop-sheet__controls">
-        <button type="button" className="crop-sheet__control-btn" onClick={rotate}>
-          ⟳ ROTATE
-        </button>
         <button type="button" className="crop-sheet__control-btn" onClick={resetFraming}>
           RESET
         </button>
       </div>
-      <p className="type-body crop-sheet__caption">Pinch or scroll to zoom, drag to reposition. Zoom out past the edge to pad with white space.</p>
+      <p className="type-body crop-sheet__caption">
+        Pinch or scroll to zoom, drag to reposition. Zoom out past the edge to pad with white space.
+      </p>
     </div>
   );
 }

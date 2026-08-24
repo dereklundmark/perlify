@@ -14,28 +14,28 @@
 }
 
 .adjust__grid-block {
-  padding: 2px 0 16px;
+  /* A row-direction flex parent centers this block instead of stretching
+     it (justify-content only positions on the main axis) — width:100%
+     here is what actually lets the canvas below reach full viewport
+     width, rather than falling back to its own buffer resolution. */
+  width: 100%;
+  padding: 0 0 12px;
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 13px;
+  gap: 10px;
 }
 
 .adjust__canvas {
-  /* No fixed width/height: an explicit CSS size would stretch the canvas
-     to that box regardless of the board's actual aspect ratio (a 2:1
-     board would get squished into a square). Leaving it unset renders
-     the canvas at its own drawing-buffer resolution, which already
-     preserves the board's proportions. */
-  max-width: 100%;
+  /* No border/shadow/padding and no fixed width/height: the image runs
+     flush to both screen edges, and an explicit CSS size would stretch
+     the canvas regardless of the board's actual aspect ratio (a 2:1 board
+     would get squished into a square) — leaving size unset renders it at
+     its own drawing-buffer resolution, which already preserves the
+     board's proportions. */
+  width: 100%;
   height: auto;
   display: block;
-  border-radius: var(--radius-thumbnail);
-  background: var(--white);
-  border: var(--border-thick) solid var(--ink);
-  box-shadow: var(--shadow-frame);
-  padding: 12px;
-  box-sizing: content-box;
 }
 
 .adjust__chips {
@@ -72,6 +72,59 @@
   border-radius: var(--radius-card);
   box-shadow: var(--shadow-card);
   padding: var(--card-padding);
+}
+
+.accordion-section {
+  background: var(--white);
+  border: var(--border-thick) solid var(--ink);
+  border-radius: var(--radius-card);
+  box-shadow: var(--shadow-card);
+  overflow: hidden;
+}
+
+.accordion-section__head {
+  appearance: none;
+  border: none;
+  background: transparent;
+  width: 100%;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 14px;
+  cursor: pointer;
+  text-align: left;
+  min-height: var(--touch-target-min);
+}
+
+.accordion-section__summary {
+  margin-left: auto;
+}
+
+.accordion-section__chevron {
+  width: 9px;
+  height: 9px;
+  border-right: 2px solid var(--ink);
+  border-bottom: 2px solid var(--ink);
+  transform: rotate(45deg);
+  transition: transform 0.15s ease;
+  flex-shrink: 0;
+}
+
+.accordion-section__chevron--open {
+  transform: rotate(-135deg);
+}
+
+.accordion-section__body {
+  /* No horizontal padding here — the Palette body's own children
+     (radio-card__head, adjust__auto-body, adjust__collection-swatch-row)
+     already carry their own left/right padding, matching how they looked
+     nested in the old radio-card wrapper. Sections whose body content has
+     no padding of its own (Contrast) opt in via the --padded modifier. */
+  padding: 0 0 4px;
+}
+
+.accordion-section__body--padded {
+  padding: 0 14px 14px;
 }
 
 .adjust__name-input {

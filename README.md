@@ -24,7 +24,10 @@ screen for palette/color-count/contrast/dithering (all live against the
 real photo), then a separate **Board Setup** screen for pattern name, bead
 type, and board size — splitting the two apart keeps color tuning from
 being buried under a long scrolling form of unrelated structural fields.
-Screens: Library → Photo → Adjust → Board Setup → Final Preview → Export,
+The Adjust preview runs edge-to-edge with no border/frame around it, and
+its controls collapse into an accordion (Palette open by default, Contrast
+collapsed) so the live image dominates the screen. Screens: Library →
+Photo → Adjust → Board Setup → Final Preview → Export,
 with Manual Edit, a two-step Swap flow, and a step-by-step History timeline
 reachable from the editor. iPad gets a persistent side panel (cream stage,
 yellow tool panel) instead of a bottom sheet. Multi-board seam lines and
@@ -35,14 +38,21 @@ service worker.
 (create/rename/duplicate/delete) lets you keep separate named collections
 per physical bead set; each pattern remembers which one it's locked to.
 
-**Photo framing is never automatic.** Picking a photo no longer forces a
-crop — the whole image is kept as-is. The first time a fresh photo reaches
-Adjust, a full-screen framing tool (pinch/zoom, drag, 90° rotate) opens so
-you decide what's kept before anything is matched; it's reachable again any
-time via "CROP PHOTO" on the Adjust screen, and reopening it starts from
-wherever you last left it rather than resetting. Zooming out past the
-image's own edges is allowed — anything the crop window shows beyond the
-photo's actual bounds is padded white in the matched pattern.
+**Cropping is two separate tools**, matching two separate decisions:
+right after picking a photo, **PhotoCropSheet** is a plain trim tool — drag
+any edge or corner (one boundary at a time, or two at once from a corner)
+over the static, fully-visible photo, plus rotate; no board-shape awareness
+at all, it just bakes the chosen region into a new source image. Later, on
+Board Setup, **PegboardCropSheet** ("PEGBOARD CROP") is the pinch/pan/zoom
+tool that fits that trimmed photo into the *board's* aspect ratio; it's
+reachable any time and reopening it starts from wherever you last left it.
+Zooming out past the image's own edges is allowed there — anything the crop
+window shows beyond the photo's actual bounds is padded white in the
+matched pattern. Since fitting to the board is now manual rather than a
+forced first-visit popup, Board Setup silently computes a centered,
+non-distorting default crop (`computeCoverCrop` in `lib/crop.ts`) whenever
+the board's aspect ratio changes and no real crop exists yet, so a pattern
+never renders stretched just because the pegboard tool was never opened.
 
 Documented scope cuts: no dedicated vertical-flip control on the framing
 tool (rotate three times, or flip the finished grid in Manual Edit instead),

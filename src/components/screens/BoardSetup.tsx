@@ -1,14 +1,16 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useApp } from '../../state/AppContext';
 import { WizardBar } from '../ui/WizardBar';
 import { SegmentedControl } from '../ui/SegmentedControl';
 import { NumberField } from '../ui/NumberField';
 import { UnitChip } from '../ui/UnitChip';
 import { CalibrateSheet } from './CalibrateSheet';
+import { PegboardCropSheet } from './PegboardCropSheet';
 import { useLiveMatch } from '../../hooks/useLiveMatch';
+import { computeCoverCrop, isSentinelCrop } from '../../lib/crop';
 import { pegsToUnit, pitchMm, unitToPegs, type BoardUnit } from '../../lib/board';
 import { savePattern } from '../../db/db';
-import type { BeadType, BoardConfig } from '../../db/schema';
+import type { BeadType, BoardConfig, CropRect } from '../../db/schema';
 import './BoardSetup.css';
 
 const UNIT_CYCLE: BoardUnit[] = ['pegs', 'in', 'cm'];
@@ -23,12 +25,32 @@ export function BoardSetup() {
   const draft = state.draft;
   const [unit, setUnit] = useState<BoardUnit>('pegs');
   const [calibrateOpen, setCalibrateOpen] = useState(false);
-  useLiveMatch();
+  const [pegboardCropOpen, setPegboardCropOpen] = useState(false);
+  const imgEl = useLiveMatch();
+
+  // Sample-then-stretch would otherwise distort the pattern whenever the
+  // board's aspect ratio doesn't match the (trimmed) photo's — silently
+  // fill in a centered crop matching the current board shape until the
+  // user deliberately frames it themselves via Pegboard Crop. Never
+  // touches a crop that's already real (manual, or a saved pattern's).
+  useEffect(() => {
+    if (!draft || !imgEl) return;
+    if (!isSentinelCrop(draft.cropRect)) return;
+    const imageAspect = imgEl.naturalWidth / imgEl.naturalHeight;
+    const boardAspect = draft.boardConfig.widthPegs / draft.boardConfig.heightPegs;
+    dispatch({ type: 'draft/update', patch: { cropRect: computeCoverCrop(imageAspect, boardAspect) } });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [draft?.boardConfig.widthPegs, draft?.boardConfig.heightPegs, imgEl, draft?.cropRect]);
 
   if (!draft) return null;
 
   const { boardConfig } = draft;
   const override = boardConfig.pegsPerInchOverride;
+
+  function applyPegboardCrop(newCropRect: CropRect) {
+    dispatch({ type: 'draft/update', patch: { cropRect: newCropRect } });
+    setPegboardCropOpen(false);
+  }
 
   function updateBoard(patch: Partial<BoardConfig>) {
     if (!draft) return;
@@ -151,6 +173,15 @@ export function BoardSetup() {
             </div>
           </div>
         </div>
+
+        <div className="adjust-card">
+          <div className="adjust__stepper-row">
+            <span className="type-row-label">PEGBOARD CROP</span>
+            <button type="button" className="adjust__link" onClick={() => setPegboardCropOpen(true)}>
+              FIT TO BOARD ›
+            </button>
+          </div>
+        </div>
       </div>
 
       {calibrateOpen && (
@@ -158,6 +189,16 @@ export function BoardSetup() {
           beadType={boardConfig.beadType}
           onApply={(ppin) => updateBoard({ pegsPerInchOverride: ppin })}
           onClose={() => setCalibrateOpen(false)}
+        />
+      )}
+
+      {pegboardCropOpen && draft.sourceImage && (
+        <PegboardCropSheet
+          sourceImage={draft.sourceImage}
+          cropRect={draft.cropRect}
+          boardAspect={boardConfig.widthPegs / boardConfig.heightPegs}
+          onApply={applyPegboardCrop}
+          onClose={() => setPegboardCropOpen(false)}
         />
       )}
     </div>

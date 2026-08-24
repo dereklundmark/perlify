@@ -5,37 +5,25 @@ import { SegmentedControl } from '../ui/SegmentedControl';
 import { Slider } from '../ui/Slider';
 import { Toggle } from '../ui/Toggle';
 import { EditorLayout } from '../ui/EditorLayout';
-import { CropSheet } from './CropSheet';
 import { useLiveMatch } from '../../hooks/useLiveMatch';
 import { catalogBeadById } from '../../lib/catalog';
 import { renderGrid } from '../../lib/renderGrid';
 import { beadUsage, gridStats } from '../../lib/grid';
-import type { CropRect, Pattern } from '../../db/schema';
+import type { Pattern } from '../../db/schema';
 import './ResultAdjust.css';
 
 const PRESETS = [8, 12, 16, 24, 32, 60];
 const GRID_DISPLAY_SIZE = 336;
 
+type AccordionSection = 'palette' | 'contrast' | null;
+
 export function ResultAdjust() {
   const { state, dispatch } = useApp();
   const draft = state.draft;
   const [tab, setTab] = useState<'adjust' | 'colors'>('adjust');
-  const [cropSheetOpen, setCropSheetOpen] = useState(false);
+  const [openSection, setOpenSection] = useState<AccordionSection>('palette');
   const canvasRef = useRef<HTMLCanvasElement>(null);
-  const offeredCropPrompt = useRef(false);
-  const imgEl = useLiveMatch();
-
-  // A fresh photo (never framed yet) prompts the crop tool immediately
-  // instead of silently auto-cropping — the user decides the framing.
-  useEffect(() => {
-    if (!draft || !imgEl || offeredCropPrompt.current) return;
-    const c = draft.cropRect;
-    const isFreshPhoto = c.x === 0 && c.y === 0 && c.width === 1 && c.height === 1;
-    if (isFreshPhoto) {
-      offeredCropPrompt.current = true;
-      setCropSheetOpen(true);
-    }
-  }, [draft, imgEl]);
+  useLiveMatch();
 
   useEffect(() => {
     if (!draft || !canvasRef.current || draft.gridData.length === 0) return;
@@ -66,9 +54,9 @@ export function ResultAdjust() {
   const stats = gridStats(draft.gridData);
   const usage = beadUsage(draft.gridData);
   const maxCount = usage[0]?.count ?? 1;
-  const { boardConfig } = draft;
   const collection = state.collections.find((c) => c.id === draft.collectionId) ?? state.collections[0];
   const isCollectionMode = draft.paletteMode === 'collection';
+  const contrast = draft.preprocessSettings.contrast;
 
   function updatePreprocess(patch: Partial<Pattern['preprocessSettings']>) {
     if (!draft) return;
@@ -79,15 +67,13 @@ export function ResultAdjust() {
     dispatch({ type: 'nav', screen: 'board' });
   }
 
-  function applyCrop(newCropRect: CropRect, rotatedSourceImage?: string) {
-    dispatch({
-      type: 'draft/update',
-      patch: rotatedSourceImage
-        ? { cropRect: newCropRect, sourceImage: rotatedSourceImage }
-        : { cropRect: newCropRect },
-    });
-    setCropSheetOpen(false);
+  function toggleSection(section: 'palette' | 'contrast') {
+    setOpenSection((cur) => (cur === section ? null : section));
   }
+
+  const paletteSummary = isCollectionMode
+    ? `${collection?.name ?? 'My Collection'} · ${collection?.beads.length ?? 0}`
+    : `Auto · ${draft.colorCount}`;
 
   const stage = (
     <div className="adjust__grid-block">
@@ -119,92 +105,110 @@ export function ResultAdjust() {
 
       {tab === 'adjust' && (
         <div className="adjust__form">
-          <div className={`radio-card${!isCollectionMode ? ' radio-card--selected' : ''}`}>
-            <button
-              type="button"
-              className="radio-card__head"
-              onClick={() => dispatch({ type: 'draft/update', patch: { paletteMode: 'auto' } })}
-            >
-              <span className={`radio-dot${!isCollectionMode ? ' radio-dot--selected' : ''}`} />
-              <span className="type-row-label">AUTO PALETTE</span>
-              <span className="type-numeric adjust__count-value">{draft.colorCount}</span>
+          <div className="accordion-section">
+            <button type="button" className="accordion-section__head" onClick={() => toggleSection('palette')}>
+              <span className="type-row-label">PALETTE</span>
+              <span className="type-meta accordion-section__summary">{paletteSummary}</span>
+              <span
+                className={`accordion-section__chevron${openSection === 'palette' ? ' accordion-section__chevron--open' : ''}`}
+              />
             </button>
-            {!isCollectionMode && (
-              <div className="adjust__auto-body">
-                <Slider
-                  label=""
-                  value={draft.colorCount}
-                  min={2}
-                  max={60}
-                  onChange={(v) => dispatch({ type: 'draft/update', patch: { colorCount: v } })}
-                  formatValue={() => ''}
-                />
-                <div className="adjust__presets">
-                  {PRESETS.map((p) => (
-                    <button
-                      key={p}
-                      type="button"
-                      className={`preset-chip${draft.colorCount === p ? ' preset-chip--active' : ''}`}
-                      onClick={() => dispatch({ type: 'draft/update', patch: { colorCount: p } })}
-                    >
-                      {p}
-                    </button>
+            {openSection === 'palette' && (
+              <div className="accordion-section__body">
+                <button
+                  type="button"
+                  className="radio-card__head"
+                  onClick={() => dispatch({ type: 'draft/update', patch: { paletteMode: 'auto' } })}
+                >
+                  <span className={`radio-dot${!isCollectionMode ? ' radio-dot--selected' : ''}`} />
+                  <span className="type-row-label">AUTO PALETTE</span>
+                  <span className="type-numeric adjust__count-value">{draft.colorCount}</span>
+                </button>
+                {!isCollectionMode && (
+                  <div className="adjust__auto-body">
+                    <Slider
+                      label=""
+                      value={draft.colorCount}
+                      min={2}
+                      max={60}
+                      onChange={(v) => dispatch({ type: 'draft/update', patch: { colorCount: v } })}
+                      formatValue={() => ''}
+                    />
+                    <div className="adjust__presets">
+                      {PRESETS.map((p) => (
+                        <button
+                          key={p}
+                          type="button"
+                          className={`preset-chip${draft.colorCount === p ? ' preset-chip--active' : ''}`}
+                          onClick={() => dispatch({ type: 'draft/update', patch: { colorCount: p } })}
+                        >
+                          {p}
+                        </button>
+                      ))}
+                    </div>
+                    <p className="type-body">Fewer colors read graphic and cost less; more hold gradients. Any number 2–60.</p>
+                  </div>
+                )}
+
+                <div className="adjust__divider" />
+
+                <div className="radio-card__head radio-card__head--row">
+                  <button
+                    type="button"
+                    className="radio-card__head-select"
+                    onClick={() =>
+                      dispatch({
+                        type: 'draft/update',
+                        patch: { paletteMode: 'collection', collectionId: collection?.id ?? null },
+                      })
+                    }
+                  >
+                    <span className={`radio-dot${isCollectionMode ? ' radio-dot--selected radio-dot--filled' : ''}`} />
+                    <span className="type-row-label">{collection?.name ?? 'MY COLLECTION'}</span>
+                  </button>
+                  <button
+                    type="button"
+                    className="adjust__link"
+                    onClick={() => dispatch({ type: 'nav', screen: 'collections' })}
+                  >
+                    {collection?.beads.length ?? 0} ›
+                  </button>
+                </div>
+                <div className="adjust__collection-swatch-row">
+                  {collection?.beads.map((bead) => (
+                    <span
+                      key={bead.id}
+                      className="adjust__collection-swatch"
+                      style={{ background: bead.hex }}
+                      title={bead.name}
+                    />
                   ))}
                 </div>
-                <p className="type-body">Fewer colors read graphic and cost less; more hold gradients. Any number 2–60.</p>
               </div>
             )}
           </div>
 
-          <div className={`radio-card radio-card--flush${isCollectionMode ? ' radio-card--selected' : ''}`}>
-            <div className="radio-card__head radio-card__head--row">
-              <button
-                type="button"
-                className="radio-card__head-select"
-                onClick={() =>
-                  dispatch({
-                    type: 'draft/update',
-                    patch: { paletteMode: 'collection', collectionId: collection?.id ?? null },
-                  })
-                }
-              >
-                <span className={`radio-dot${isCollectionMode ? ' radio-dot--selected radio-dot--filled' : ''}`} />
-                <span className="type-row-label">{collection?.name ?? 'MY COLLECTION'}</span>
-              </button>
-              <button
-                type="button"
-                className="adjust__link"
-                onClick={() => dispatch({ type: 'nav', screen: 'collections' })}
-              >
-                {collection?.beads.length ?? 0} ›
-              </button>
-            </div>
-            <div className="adjust__collection-swatch-row">
-              {collection?.beads.map((bead) => (
-                <span key={bead.id} className="adjust__collection-swatch" style={{ background: bead.hex }} title={bead.name} />
-              ))}
-            </div>
-          </div>
-
-          <div className="adjust-card">
-            <div className="adjust__stepper-row">
-              <span className="type-row-label">PHOTO FRAMING</span>
-              <button type="button" className="adjust__link" onClick={() => setCropSheetOpen(true)}>
-                CROP PHOTO ›
-              </button>
-            </div>
-          </div>
-
-          <div className="adjust-card">
-            <Slider
-              label="CONTRAST"
-              value={draft.preprocessSettings.contrast}
-              min={-100}
-              max={100}
-              fill="red"
-              formatValue={(v) => `${v > 0 ? '+' : ''}${v}`}
-              onChange={(v) => updatePreprocess({ contrast: v })}
-            />
+          <div className="accordion-section">
+            <button type="button" className="accordion-section__head" onClick={() => toggleSection('contrast')}>
+              <span className="type-row-label">CONTRAST</span>
+              <span className="type-meta accordion-section__summary">{`${contrast > 0 ? '+' : ''}${contrast}`}</span>
+              <span
+                className={`accordion-section__chevron${openSection === 'contrast' ? ' accordion-section__chevron--open' : ''}`}
+              />
+            </button>
+            {openSection === 'contrast' && (
+              <div className="accordion-section__body accordion-section__body--padded">
+                <Slider
+                  label=""
+                  value={contrast}
+                  min={-100}
+                  max={100}
+                  fill="red"
+                  formatValue={(v) => `${v > 0 ? '+' : ''}${v}`}
+                  onChange={(v) => updatePreprocess({ contrast: v })}
+                />
+              </div>
+            )}
           </div>
 
           <div className="adjust-card adjust__toggle-card">
@@ -263,16 +267,6 @@ export function ResultAdjust() {
       />
 
       <EditorLayout stage={stage} panelContent={panelContent} />
-
-      {cropSheetOpen && draft.sourceImage && (
-        <CropSheet
-          sourceImage={draft.sourceImage}
-          cropRect={draft.cropRect}
-          boardAspect={boardConfig.widthPegs / boardConfig.heightPegs}
-          onApply={applyCrop}
-          onClose={() => setCropSheetOpen(false)}
-        />
-      )}
     </div>
   );
 }
