@@ -2,11 +2,15 @@
   display: flex;
   justify-content: space-between;
   align-items: baseline;
-  margin-bottom: 10px;
+  margin-bottom: 4px;
+}
+
+.slider__label {
+  font-size: 12px;
 }
 
 .slider__value {
-  font-size: 22px;
+  font-size: 15px;
 }
 
 .slider__input {
@@ -14,7 +18,7 @@
   appearance: none;
   width: 100%;
   height: var(--slider-track-h);
-  border-radius: 7px;
+  border-radius: 4px;
   background: var(--track);
   border: var(--border-mid) solid var(--ink);
   box-sizing: border-box;

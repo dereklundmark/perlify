@@ -130,7 +130,7 @@
 .adjust__adjustments-body {
   display: flex;
   flex-direction: column;
-  gap: 18px;
+  gap: 10px;
 }
 
 .adjust__inline-toggle-row {
@@ -213,7 +213,7 @@
 .adjust__divider {
   height: var(--border-mid);
   background: var(--track);
-  margin: 12px 0;
+  margin: 6px 0;
 }
 
 .adjust__stepper-row {

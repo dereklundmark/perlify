@@ -72,8 +72,8 @@
   --toggle-knob-inset: 2px;
 
   /* Slider */
-  --slider-track-h: 14px;
-  --slider-thumb: 28px;
+  --slider-track-h: 8px;
+  --slider-thumb: 18px;
 
   /* Progress: N discrete segments, not a continuous bar */
   --progress-segment-h: 9px;

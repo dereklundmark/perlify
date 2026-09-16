@@ -7,7 +7,7 @@ import { UnitChip } from '../ui/UnitChip';
 import { CalibrateSheet } from './CalibrateSheet';
 import { PegboardCropSheet } from './PegboardCropSheet';
 import { useLiveMatch } from '../../hooks/useLiveMatch';
-import { computeCoverCrop, isSentinelCrop } from '../../lib/crop';
+import { computeCoverCrop } from '../../lib/crop';
 import { pegsToUnit, pitchMm, unitToPegs, type BoardUnit } from '../../lib/board';
 import { catalogBeadById } from '../../lib/catalog';
 import { renderGrid } from '../../lib/renderGrid';
@@ -60,21 +60,26 @@ export function BoardSetup() {
   }, [draft]);
 
   // Sample-then-stretch would otherwise distort the pattern whenever the
-  // board's aspect ratio doesn't match the (trimmed) photo's — silently
-  // fill in a centered crop matching the current board shape until the
-  // user deliberately frames it themselves via Pegboard Crop. Never
-  // touches a crop that's already real (manual, or a saved pattern's).
+  // board's aspect ratio doesn't match the crop's — re-fit to a centered,
+  // non-distorting crop matching the current board shape any time the two
+  // stop matching, not just the first time. Board width/height can be
+  // edited independently (there's no coupling between the two fields), so
+  // a later single-dimension edit needs this to re-fire too, or the old
+  // crop gets sampled into the new, differently-shaped grid and stretches.
+  // This does mean a manual Pegboard Crop framing gets replaced by a fresh
+  // centered fit if the board's aspect changes again afterward — reopen
+  // Pegboard Crop to reframe.
   useEffect(() => {
     if (!draft || !imgEl) return;
-    if (!isSentinelCrop(draft.cropRect)) return;
     const imageAspect = imgEl.naturalWidth / imgEl.naturalHeight;
     const boardAspect = draft.boardConfig.widthPegs / draft.boardConfig.heightPegs;
+    const { width, height } = draft.cropRect;
+    const currentVisualAspect = (width / height) * imageAspect;
+    // Skip once the crop already matches — computeCoverCrop's own result
+    // satisfies this exactly, so this is what stops the effect from
+    // re-dispatching on its own write forever.
+    if (Math.abs(currentVisualAspect - boardAspect) < 1e-4) return;
     const next = computeCoverCrop(imageAspect, boardAspect);
-    // When the aspects already match, the result is the sentinel shape
-    // again — skip the dispatch, or this would re-fire on its own write
-    // forever (a same-aspect fresh photo, e.g. a square photo on the
-    // square default board, would otherwise infinite-loop here).
-    if (isSentinelCrop(next)) return;
     dispatch({ type: 'draft/update', patch: { cropRect: next } });
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [draft?.boardConfig.widthPegs, draft?.boardConfig.heightPegs, imgEl, draft?.cropRect]);

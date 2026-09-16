@@ -64,10 +64,14 @@ reachable any time and reopening it starts from wherever you last left it.
 Zooming out past the image's own edges is allowed there — anything the crop
 window shows beyond the photo's actual bounds is padded white in the
 matched pattern. Since fitting to the board is now manual rather than a
-forced first-visit popup, Board Setup silently computes a centered,
-non-distorting default crop (`computeCoverCrop` in `lib/crop.ts`) whenever
-the board's aspect ratio changes and no real crop exists yet, so a pattern
-never renders stretched just because the pegboard tool was never opened.
+forced first-visit popup, Board Setup silently re-fits to a centered,
+non-distorting crop (`computeCoverCrop` in `lib/crop.ts`) any time the
+board's aspect ratio changes and no longer matches the current crop —
+not just the first time, so a later width- or height-only edit (the two
+fields are independent) never leaves a stale crop to be stretched onto
+the new board shape. A manual Pegboard Crop framing survives until the
+board's aspect changes again, at which point it's replaced by a fresh
+centered fit — reopen Pegboard Crop afterward to reframe.
 
 Documented scope cuts: no dedicated vertical-flip control on the framing
 tool (rotate three times, or flip the finished grid in Manual Edit instead),

@@ -9,11 +9,18 @@ interface SegmentedControlProps<T extends string> {
   options: SegmentedOption<T>[];
   value: T;
   onChange: (value: T) => void;
+  /** 'compact' for tight contexts (e.g. tabs above a scrolling panel). */
+  size?: 'default' | 'compact';
 }
 
-export function SegmentedControl<T extends string>({ options, value, onChange }: SegmentedControlProps<T>) {
+export function SegmentedControl<T extends string>({
+  options,
+  value,
+  onChange,
+  size = 'default',
+}: SegmentedControlProps<T>) {
   return (
-    <div className="segmented" role="tablist">
+    <div className={`segmented${size === 'compact' ? ' segmented--compact' : ''}`} role="tablist">
       {options.map((opt) => (
         <button
           key={opt.value}

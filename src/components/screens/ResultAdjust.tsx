@@ -35,6 +35,10 @@ function formatSigned(v: number): string {
   return `${v > 0 ? '+' : ''}${v}`;
 }
 
+function formatCount(n: number): string {
+  return n >= 1000 ? `${(n / 1000).toFixed(1)}k` : String(n);
+}
+
 export function ResultAdjust() {
   const { state, dispatch } = useApp();
   const draft = state.draft;
@@ -113,19 +117,16 @@ export function ResultAdjust() {
   const stage = (
     <div className="adjust__grid-block">
       <canvas ref={canvasRef} className="adjust__canvas" />
-      <div className="adjust__chips">
-        <span className="adjust__chip adjust__chip--ink">{stats.beadCount} BEADS</span>
-        <span className="adjust__chip adjust__chip--outline">{stats.colorCount} COLORS</span>
-      </div>
     </div>
   );
 
   const panelContent = (
     <>
       <SegmentedControl
+        size="compact"
         options={[
           { value: 'adjust', label: 'ADJUST' },
-          { value: 'colors', label: 'COLORS' },
+          { value: 'colors', label: `COLORS · ${formatCount(stats.beadCount)}` },
           { value: 'edit', label: 'EDIT' },
         ]}
         value={tab}
@@ -338,7 +339,6 @@ export function ResultAdjust() {
                     </button>
                   ))}
                 </div>
-                <p className="type-body">Box Average smooths photos; Nearest Neighbor keeps flat-color art (cartoons, sprites) crisp.</p>
 
                 <div className="adjust__divider" />
 
@@ -363,7 +363,6 @@ export function ResultAdjust() {
                   max={10}
                   onChange={(v) => updatePreprocess({ sharpen: v })}
                 />
-                <p className="type-body">Denoise and Abstraction smooth noise/detail before matching; Sharpen keeps edges legible on small boards.</p>
               </div>
             )}
           </div>
