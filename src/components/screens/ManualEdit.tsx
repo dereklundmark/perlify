@@ -32,6 +32,9 @@ interface HistoryStep {
   swatch?: string;
   swatchFrom?: string;
   swatchTo?: string;
+  /** Set only for swap steps — the bead-id rule, so Done can persist it as a colorSwaps entry. */
+  swapFromId?: string;
+  swapToId?: string;
 }
 
 export function ManualEdit() {
@@ -278,6 +281,8 @@ export function ManualEdit() {
     pushStep(swapColor(grid, swapSourceId, swapTargetId), `${fromBead?.name ?? 'Color'} → ${toBead?.name ?? 'color'}`, affected, {
       swatchFrom: fromBead?.hex,
       swatchTo: toBead?.hex,
+      swapFromId: swapSourceId,
+      swapToId: swapTargetId,
     });
     setView('edit');
     setSwapSourceId(null);
@@ -289,8 +294,16 @@ export function ManualEdit() {
     const finalWidth = grid[0]?.length ?? draft.boardConfig.widthPegs;
     const finalHeight = grid.length || draft.boardConfig.heightPegs;
     const boardConfig = { ...draft.boardConfig, widthPegs: finalWidth, heightPegs: finalHeight };
-    const updated = { ...draft, gridData: grid, boardConfig, updatedAt: Date.now() };
-    dispatch({ type: 'draft/update', patch: { gridData: grid, boardConfig } });
+    // Swaps applied (and not since undone) this session get added to the
+    // pattern's persistent colorSwaps list, so a later slider/palette
+    // change on Adjust re-applies them instead of silently reverting them.
+    const sessionSwaps = history
+      .slice(0, pointer + 1)
+      .filter((s): s is HistoryStep & { swapFromId: string; swapToId: string } => !!s.swapFromId && !!s.swapToId)
+      .map((s) => ({ from: s.swapFromId, to: s.swapToId }));
+    const colorSwaps = [...(draft.colorSwaps ?? []), ...sessionSwaps];
+    const updated = { ...draft, gridData: grid, boardConfig, colorSwaps, updatedAt: Date.now() };
+    dispatch({ type: 'draft/update', patch: { gridData: grid, boardConfig, colorSwaps } });
     await savePattern(updated);
     dispatch({ type: 'library/upsert', pattern: updated });
     dispatch({ type: 'nav', screen: 'adjust' });

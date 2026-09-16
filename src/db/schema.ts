@@ -74,12 +74,19 @@ export interface Pattern {
   boardConfig: BoardConfig;
   collectionId: string | null; // null when paletteMode is 'auto'
   paletteMode: PaletteMode;
-  colorCount: number; // 2-60, auto mode only
+  colorCount: number; // 2-60, caps whichever palette (auto or collection) is active
   ditherMode: DitherMode;
   samplingMode: SamplingMode;
   preprocessSettings: PreprocessSettings;
 
   gridData: (string | null)[][]; // beadId | null, [row][col]
+  /**
+   * Manual "wherever the match outputs X, use Y instead" rules from the
+   * editor's Swap tool, re-applied after every live re-match (see
+   * matchImageToGrid) so a swap survives a later slider/palette change
+   * instead of being silently overwritten by the fresh match.
+   */
+  colorSwaps: { from: string; to: string }[];
 
   gridlines: boolean;
   symbolOverlay: boolean;

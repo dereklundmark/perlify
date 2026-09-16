@@ -2,6 +2,7 @@ import type { Bead, CropRect, DitherMode, PreprocessSettings, SamplingMode } fro
 import type { GridData } from './grid';
 import { CATALOG } from './catalog';
 import { abstractGrid, denoiseGrid, sharpenGrid } from './imageProcess';
+import { swapColor } from './gridTransform';
 import {
   applyPreprocess,
   atkinsonMatch,
@@ -109,6 +110,8 @@ export interface MatchParams {
   collectionBeads: Bead[];
   ditherMode: DitherMode;
   samplingMode: SamplingMode;
+  /** Manual editor swaps, re-applied after matching so they survive a later slider/palette change. */
+  colorSwaps: { from: string; to: string }[];
 }
 
 export interface MatchResult {
@@ -158,7 +161,7 @@ export function matchImageToGrid(params: MatchParams): MatchResult {
 
   if (candidatePalette.length === 0) {
     const empty: GridData = sharpened.map((row) => row.map(() => null));
-    return { gridData: empty, candidatePalette };
+    return { gridData: applySwaps(empty, params.colorSwaps), candidatePalette };
   }
 
   const paletteEntries: PaletteEntry[] = candidatePalette.map((b) => ({ id: b.id, lab: rgbToLab(hexToRgb(b.hex)) }));
@@ -179,7 +182,11 @@ export function matchImageToGrid(params: MatchParams): MatchResult {
       indicesGrid = sharpened.map((row) => row.map((c) => nearestIndex(rgbToLab(c), paletteEntries)));
   }
 
-  const gridData: GridData = indicesGrid.map((row) => row.map((idx) => candidatePalette[idx].id));
+  const matched: GridData = indicesGrid.map((row) => row.map((idx) => candidatePalette[idx].id));
 
-  return { gridData, candidatePalette };
+  return { gridData: applySwaps(matched, params.colorSwaps), candidatePalette };
+}
+
+function applySwaps(grid: GridData, swaps: { from: string; to: string }[]): GridData {
+  return swaps.reduce((g, { from, to }) => swapColor(g, from, to), grid);
 }

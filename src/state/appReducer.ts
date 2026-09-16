@@ -69,6 +69,7 @@ export function createBlankPattern(collectionId: string | null): Pattern {
       sharpen: 0,
     },
     gridData: [],
+    colorSwaps: [],
     gridlines: true,
     symbolOverlay: true,
     previewBackground: 'black',
