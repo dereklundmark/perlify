@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { useApp } from '../../state/AppContext';
 import { WizardBar } from '../ui/WizardBar';
 import { SegmentedControl } from '../ui/SegmentedControl';
@@ -9,16 +9,23 @@ import { PegboardCropSheet } from './PegboardCropSheet';
 import { useLiveMatch } from '../../hooks/useLiveMatch';
 import { computeCoverCrop, isSentinelCrop } from '../../lib/crop';
 import { pegsToUnit, pitchMm, unitToPegs, type BoardUnit } from '../../lib/board';
+import { catalogBeadById } from '../../lib/catalog';
+import { renderGrid } from '../../lib/renderGrid';
+import { gridStats } from '../../lib/grid';
 import { savePattern } from '../../db/db';
 import type { BeadType, BoardConfig, CropRect } from '../../db/schema';
 import './BoardSetup.css';
 
 const UNIT_CYCLE: BoardUnit[] = ['pegs', 'in', 'cm'];
+const GRID_DISPLAY_SIZE = 336; // matches the Adjust screen's live preview
 
 /**
  * Board size / bead type / pattern name — split out from the Colors screen
  * so choosing a color count against a big live preview isn't buried under
- * a long scrolling form of unrelated structural fields.
+ * a long scrolling form of unrelated structural fields. Keeps its own live
+ * preview (not just the form) because changing board size here re-matches
+ * the grid — without a visible result, you'd have to bounce back to
+ * Adjust every time just to see what changed.
  */
 export function BoardSetup() {
   const { state, dispatch } = useApp();
@@ -26,7 +33,32 @@ export function BoardSetup() {
   const [unit, setUnit] = useState<BoardUnit>('pegs');
   const [calibrateOpen, setCalibrateOpen] = useState(false);
   const [pegboardCropOpen, setPegboardCropOpen] = useState(false);
+  const canvasRef = useRef<HTMLCanvasElement>(null);
   const imgEl = useLiveMatch();
+
+  useEffect(() => {
+    if (!draft || !canvasRef.current || draft.gridData.length === 0) return;
+    const cols = draft.boardConfig.widthPegs;
+    const rows = draft.boardConfig.heightPegs;
+    const cellSize = GRID_DISPLAY_SIZE / Math.max(cols, rows);
+    const canvas = canvasRef.current;
+    canvas.width = cols * cellSize;
+    canvas.height = rows * cellSize;
+    const ctx = canvas.getContext('2d');
+    if (!ctx) return;
+    renderGrid(ctx, {
+      grid: draft.gridData,
+      cellSize,
+      getBead: catalogBeadById,
+      gridlines: draft.gridlines,
+      symbolOverlay: false,
+      surface: 'light',
+      background: '#ffffff',
+      boardsWide: draft.boardConfig.boardsWide,
+      boardsHigh: draft.boardConfig.boardsHigh,
+      seamLines: draft.seamLines,
+    });
+  }, [draft]);
 
   // Sample-then-stretch would otherwise distort the pattern whenever the
   // board's aspect ratio doesn't match the (trimmed) photo's — silently
@@ -46,6 +78,7 @@ export function BoardSetup() {
 
   const { boardConfig } = draft;
   const override = boardConfig.pegsPerInchOverride;
+  const stats = gridStats(draft.gridData);
 
   function applyPegboardCrop(newCropRect: CropRect) {
     dispatch({ type: 'draft/update', patch: { cropRect: newCropRect } });
@@ -110,6 +143,14 @@ export function BoardSetup() {
       />
 
       <div className="screen__body board-setup__body">
+        <div className="adjust__grid-block">
+          <canvas ref={canvasRef} className="adjust__canvas" />
+          <div className="adjust__chips">
+            <span className="adjust__chip adjust__chip--ink">{stats.beadCount} BEADS</span>
+            <span className="adjust__chip adjust__chip--outline">{stats.colorCount} COLORS</span>
+          </div>
+        </div>
+
         <div className="adjust-card">
           <div className="type-eyebrow">PATTERN NAME</div>
           <input

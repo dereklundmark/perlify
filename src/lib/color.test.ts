@@ -68,7 +68,16 @@ describe('nearestIndex vs naive RGB distance — the "not RGB distance" regressi
   });
 });
 
-const NEUTRAL = { contrast: 0, saturation: 0, brightness: 0, duotone: false, duotoneHue: 0 };
+const NEUTRAL = {
+  contrast: 0,
+  saturation: 0,
+  brightness: 0,
+  duotone: false,
+  duotoneHue: 0,
+  denoise: 0,
+  abstraction: 0,
+  sharpen: 0,
+};
 
 describe('applyPreprocess', () => {
   it('is a no-op at neutral settings', () => {

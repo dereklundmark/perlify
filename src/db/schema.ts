@@ -34,12 +34,18 @@ export interface PreprocessSettings {
   brightness: number; // -100..100
   duotone: boolean;
   duotoneHue: number; // 0-360
+  denoise: number; // 0-10, box-blur strength before matching
+  abstraction: number; // 0-10, edge-aware smoothing strength before matching
+  sharpen: number; // 0-10, unsharp-mask strength right before matching
 }
 
 export type PaletteMode = 'auto' | 'collection';
 
 /** Discrete dithering styles offered in the Adjust screen's palette. */
 export type DitherMode = 'none' | 'floyd-steinberg' | 'atkinson' | 'ordered';
+
+/** How source pixels become one cell's color — see lib/match.ts's sampleGridRgb. */
+export type SamplingMode = 'box' | 'nearest';
 
 /**
  * Normalized (0-1) crop rect against sourceImage, used to fit the photo to
@@ -70,6 +76,7 @@ export interface Pattern {
   paletteMode: PaletteMode;
   colorCount: number; // 2-60, auto mode only
   ditherMode: DitherMode;
+  samplingMode: SamplingMode;
   preprocessSettings: PreprocessSettings;
 
   gridData: (string | null)[][]; // beadId | null, [row][col]

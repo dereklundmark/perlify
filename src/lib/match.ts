@@ -1,6 +1,7 @@
-import type { Bead, CropRect, DitherMode, PreprocessSettings } from '../db/schema';
+import type { Bead, CropRect, DitherMode, PreprocessSettings, SamplingMode } from '../db/schema';
 import type { GridData } from './grid';
 import { CATALOG } from './catalog';
+import { abstractGrid, denoiseGrid, sharpenGrid } from './imageProcess';
 import {
   applyPreprocess,
   atkinsonMatch,
@@ -14,17 +15,24 @@ import {
   type RGB,
 } from './color';
 
+const MAX_INTERMEDIATE = 1200;
+
 /**
- * Downscales the cropped region straight to widthPegs x heightPegs with
- * high-quality image smoothing — the browser's bilinear/bicubic filtering
- * is a good stand-in for "average each cell's source-image region to one
- * RGB value" and is dramatically simpler/faster than a manual box average.
+ * Samples the cropped region down to widthPegs x heightPegs. 'box' draws
+ * the region at (near-)native resolution first, then manually averages
+ * every source pixel inside each destination cell's exact rectangle —
+ * deterministic and correct regardless of downscale ratio, unlike relying
+ * on the browser's own resize quality for one huge single-step resize.
+ * 'nearest' instead samples one representative pixel per cell (its
+ * center) — useful for source art that's already flat-colored/pixelated
+ * (cartoons, sprites), where averaging would blur crisp edges.
  */
 export function sampleGridRgb(
   image: HTMLImageElement | HTMLCanvasElement,
   cropRect: CropRect,
   widthPegs: number,
   heightPegs: number,
+  samplingMode: SamplingMode = 'box',
 ): RGB[][] {
   const sw = image instanceof HTMLImageElement ? image.naturalWidth : image.width;
   const sh = image instanceof HTMLImageElement ? image.naturalHeight : image.height;
@@ -33,26 +41,57 @@ export function sampleGridRgb(
   const sWidth = cropRect.width * sw;
   const sHeight = cropRect.height * sh;
 
+  const fitScale = Math.min(1, MAX_INTERMEDIATE / Math.max(sWidth, sHeight));
+  const capW = Math.max(widthPegs, Math.round(sWidth * fitScale));
+  const capH = Math.max(heightPegs, Math.round(sHeight * fitScale));
+
   const canvas = document.createElement('canvas');
-  canvas.width = widthPegs;
-  canvas.height = heightPegs;
+  canvas.width = capW;
+  canvas.height = capH;
   const ctx = canvas.getContext('2d')!;
   // The crop window can extend past the source image's own bounds (the
   // user zoomed out to pad a narrower photo) — pre-fill white so drawImage's
   // spec-mandated clipping to the actual image leaves white in the gaps.
   ctx.fillStyle = '#ffffff';
-  ctx.fillRect(0, 0, widthPegs, heightPegs);
+  ctx.fillRect(0, 0, capW, capH);
   ctx.imageSmoothingEnabled = true;
   ctx.imageSmoothingQuality = 'high';
-  ctx.drawImage(image, sx, sy, sWidth, sHeight, 0, 0, widthPegs, heightPegs);
-  const { data } = ctx.getImageData(0, 0, widthPegs, heightPegs);
+  ctx.drawImage(image, sx, sy, sWidth, sHeight, 0, 0, capW, capH);
+  const { data } = ctx.getImageData(0, 0, capW, capH);
+
+  const pixelAt = (x: number, y: number): RGB => {
+    const i = (y * capW + x) * 4;
+    return { r: data[i], g: data[i + 1], b: data[i + 2] };
+  };
 
   const grid: RGB[][] = [];
   for (let row = 0; row < heightPegs; row++) {
+    const y0 = Math.floor((row / heightPegs) * capH);
+    const y1 = Math.max(y0 + 1, Math.floor(((row + 1) / heightPegs) * capH));
     const rowArr: RGB[] = [];
     for (let col = 0; col < widthPegs; col++) {
-      const i = (row * widthPegs + col) * 4;
-      rowArr.push({ r: data[i], g: data[i + 1], b: data[i + 2] });
+      const x0 = Math.floor((col / widthPegs) * capW);
+      const x1 = Math.max(x0 + 1, Math.floor(((col + 1) / widthPegs) * capW));
+      if (samplingMode === 'nearest') {
+        const cx = Math.min(capW - 1, Math.floor((x0 + x1) / 2));
+        const cy = Math.min(capH - 1, Math.floor((y0 + y1) / 2));
+        rowArr.push(pixelAt(cx, cy));
+      } else {
+        let r = 0;
+        let g = 0;
+        let b = 0;
+        let count = 0;
+        for (let y = y0; y < Math.min(y1, capH); y++) {
+          for (let x = x0; x < Math.min(x1, capW); x++) {
+            const p = pixelAt(x, y);
+            r += p.r;
+            g += p.g;
+            b += p.b;
+            count++;
+          }
+        }
+        rowArr.push(count > 0 ? { r: r / count, g: g / count, b: b / count } : { r: 255, g: 255, b: 255 });
+      }
     }
     grid.push(rowArr);
   }
@@ -69,6 +108,7 @@ export interface MatchParams {
   colorCount: number;
   collectionBeads: Bead[];
   ditherMode: DitherMode;
+  samplingMode: SamplingMode;
 }
 
 export interface MatchResult {
@@ -78,21 +118,33 @@ export interface MatchResult {
 }
 
 export function matchImageToGrid(params: MatchParams): MatchResult {
-  const rawGrid = sampleGridRgb(params.image, params.cropRect, params.widthPegs, params.heightPegs);
-  const adjustedGrid = rawGrid.map((row) => row.map((c) => applyPreprocess(c, params.preprocess)));
+  const rawGrid = sampleGridRgb(
+    params.image,
+    params.cropRect,
+    params.widthPegs,
+    params.heightPegs,
+    params.samplingMode,
+  );
+  // Denoise/abstract first (clean up the sampled colors before tonal
+  // adjustments, like a normal photo pipeline), sharpen last (acts on the
+  // final adjusted image, right before matching).
+  const denoised = denoiseGrid(rawGrid, params.preprocess.denoise);
+  const abstracted = abstractGrid(denoised, params.preprocess.abstraction);
+  const adjustedGrid = abstracted.map((row) => row.map((c) => applyPreprocess(c, params.preprocess)));
+  const sharpened = sharpenGrid(adjustedGrid, params.preprocess.sharpen);
 
   let candidatePalette: Bead[];
   if (params.paletteMode === 'collection') {
     candidatePalette = params.collectionBeads;
   } else {
-    const flatLabs = adjustedGrid.flat().map(rgbToLab);
+    const flatLabs = sharpened.flat().map(rgbToLab);
     const catalogEntries: PaletteEntry[] = CATALOG.map((b) => ({ id: b.id, lab: rgbToLab(hexToRgb(b.hex)) }));
     const indices = pickAutoPaletteIndices(flatLabs, catalogEntries, params.colorCount);
     candidatePalette = indices.map((i) => CATALOG[i]);
   }
 
   if (candidatePalette.length === 0) {
-    const empty: GridData = adjustedGrid.map((row) => row.map(() => null));
+    const empty: GridData = sharpened.map((row) => row.map(() => null));
     return { gridData: empty, candidatePalette };
   }
 
@@ -102,16 +154,16 @@ export function matchImageToGrid(params: MatchParams): MatchResult {
   let indicesGrid: number[][];
   switch (params.ditherMode) {
     case 'floyd-steinberg':
-      indicesGrid = floydSteinbergMatch(adjustedGrid, paletteEntries, paletteRgb);
+      indicesGrid = floydSteinbergMatch(sharpened, paletteEntries, paletteRgb);
       break;
     case 'atkinson':
-      indicesGrid = atkinsonMatch(adjustedGrid, paletteEntries, paletteRgb);
+      indicesGrid = atkinsonMatch(sharpened, paletteEntries, paletteRgb);
       break;
     case 'ordered':
-      indicesGrid = orderedDitherMatch(adjustedGrid, paletteEntries);
+      indicesGrid = orderedDitherMatch(sharpened, paletteEntries);
       break;
     default:
-      indicesGrid = adjustedGrid.map((row) => row.map((c) => nearestIndex(rgbToLab(c), paletteEntries)));
+      indicesGrid = sharpened.map((row) => row.map((c) => nearestIndex(rgbToLab(c), paletteEntries)));
   }
 
   const gridData: GridData = indicesGrid.map((row) => row.map((idx) => candidatePalette[idx].id));

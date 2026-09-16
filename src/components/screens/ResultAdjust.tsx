@@ -10,7 +10,7 @@ import { catalogBeadById, HAMA_PRESET_BEADS, PERLER_PRESET_BEADS } from '../../l
 import { HAMA_PRESET_COLLECTION_ID, PERLER_PRESET_COLLECTION_ID } from '../../db/db';
 import { renderGrid } from '../../lib/renderGrid';
 import { beadUsage, gridStats } from '../../lib/grid';
-import type { DitherMode, Pattern } from '../../db/schema';
+import type { DitherMode, Pattern, SamplingMode } from '../../db/schema';
 import './ResultAdjust.css';
 
 const PRESETS = [8, 12, 16, 24, 32, 60];
@@ -23,7 +23,12 @@ const DITHER_OPTIONS: { value: DitherMode; label: string }[] = [
   { value: 'ordered', label: 'ORDERED' },
 ];
 
-type AccordionSection = 'palette' | 'adjustments' | null;
+const SAMPLING_OPTIONS: { value: SamplingMode; label: string }[] = [
+  { value: 'box', label: 'BOX AVERAGE' },
+  { value: 'nearest', label: 'NEAREST NEIGHBOR' },
+];
+
+type AccordionSection = 'palette' | 'adjustments' | 'detail' | null;
 
 function formatSigned(v: number): string {
   return `${v > 0 ? '+' : ''}${v}`;
@@ -78,7 +83,7 @@ export function ResultAdjust() {
   const myCollection = isMyCollectionSelected
     ? collection
     : state.collections.find((c) => c.id !== HAMA_PRESET_COLLECTION_ID && c.id !== PERLER_PRESET_COLLECTION_ID);
-  const { contrast, saturation, brightness } = draft.preprocessSettings;
+  const { contrast, saturation, brightness, denoise, abstraction, sharpen } = draft.preprocessSettings;
 
   function updatePreprocess(patch: Partial<Pattern['preprocessSettings']>) {
     if (!draft) return;
@@ -89,7 +94,7 @@ export function ResultAdjust() {
     dispatch({ type: 'nav', screen: 'board' });
   }
 
-  function toggleSection(section: 'palette' | 'adjustments') {
+  function toggleSection(section: 'palette' | 'adjustments' | 'detail') {
     setOpenSection((cur) => (cur === section ? null : section));
   }
 
@@ -302,6 +307,60 @@ export function ResultAdjust() {
                     className="adjust__hue-rail"
                   />
                 )}
+              </div>
+            )}
+          </div>
+
+          <div className="accordion-section">
+            <button type="button" className="accordion-section__head" onClick={() => toggleSection('detail')}>
+              <span className="type-row-label">DETAIL</span>
+              <span className="type-meta accordion-section__summary">
+                {draft.samplingMode === 'box' ? 'Box average' : 'Nearest neighbor'}
+              </span>
+              <span
+                className={`accordion-section__chevron${openSection === 'detail' ? ' accordion-section__chevron--open' : ''}`}
+              />
+            </button>
+            {openSection === 'detail' && (
+              <div className="accordion-section__body accordion-section__body--padded adjust__adjustments-body">
+                <div className="adjust__presets">
+                  {SAMPLING_OPTIONS.map((opt) => (
+                    <button
+                      key={opt.value}
+                      type="button"
+                      className={`preset-chip${draft.samplingMode === opt.value ? ' preset-chip--active' : ''}`}
+                      onClick={() => dispatch({ type: 'draft/update', patch: { samplingMode: opt.value } })}
+                    >
+                      {opt.label}
+                    </button>
+                  ))}
+                </div>
+                <p className="type-body">Box Average smooths photos; Nearest Neighbor keeps flat-color art (cartoons, sprites) crisp.</p>
+
+                <div className="adjust__divider" />
+
+                <Slider
+                  label="DENOISE"
+                  value={denoise}
+                  min={0}
+                  max={10}
+                  onChange={(v) => updatePreprocess({ denoise: v })}
+                />
+                <Slider
+                  label="ABSTRACTION"
+                  value={abstraction}
+                  min={0}
+                  max={10}
+                  onChange={(v) => updatePreprocess({ abstraction: v })}
+                />
+                <Slider
+                  label="SHARPEN"
+                  value={sharpen}
+                  min={0}
+                  max={10}
+                  onChange={(v) => updatePreprocess({ sharpen: v })}
+                />
+                <p className="type-body">Denoise and Abstraction smooth noise/detail before matching; Sharpen keeps edges legible on small boards.</p>
               </div>
             )}
           </div>

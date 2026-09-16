@@ -71,6 +71,24 @@ tool (rotate three times, or flip the finished grid in Manual Edit instead),
 rather than to a saved collection, and the custom-color picker is a single
 hue rail at fixed saturation/brightness (matching the actual Pegboard mock).
 
+**Board Setup keeps a live preview too** (not just Adjust) — changing board
+size there re-matches the grid, so without a visible result you'd have to
+bounce back to Adjust every time just to see what changed.
+
+**A "DETAIL" section on Adjust controls how smooth the pixelation itself
+is** (`src/lib/imageProcess.ts`, wired into `matchImageToGrid` in
+`lib/match.ts`): **Sampling Mode** — Box Average (the default; manually
+averages every source pixel inside each cell, at up to native resolution,
+rather than relying on the browser's own resize quality for one huge
+single-step downscale) vs Nearest Neighbor (samples one pixel per cell —
+better for already flat-colored source art like cartoons/sprites, where
+averaging would blur crisp edges); **Denoise** (box blur before matching —
+directly flattens photo/JPEG noise that would otherwise get amplified into
+speckled bead choices); **Abstraction** (a cheap edge-aware/bilateral-style
+smoothing pass — merges flat regions and gentle gradients while leaving
+real edges alone); **Sharpen** (unsharp mask, applied right before
+matching — keeps small boards legible). All three sliders are 0-10.
+
 ## Stack
 
 Vite + React + TypeScript, plain CSS custom properties for the design tokens,
