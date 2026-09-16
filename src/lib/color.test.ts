@@ -6,10 +6,12 @@ import {
   hexToRgb,
   nearestIndex,
   pickAutoPaletteIndices,
+  relativeLuminance,
   rgbToLab,
   type PaletteEntry,
   type RGB,
 } from './color';
+import { rgbToHsb } from './hsb';
 import { CATALOG } from './catalog';
 
 describe('rgbToLab', () => {
