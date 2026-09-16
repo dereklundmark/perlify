@@ -81,7 +81,7 @@ export function Photo() {
         },
       });
       setPhotoCropOpen(false);
-      dispatch({ type: 'nav', screen: 'adjust' });
+      dispatch({ type: 'nav', screen: 'board' });
     };
     img.src = newSourceImage;
   }

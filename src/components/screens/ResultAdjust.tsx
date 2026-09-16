@@ -10,6 +10,7 @@ import { catalogBeadById, HAMA_PRESET_BEADS, PERLER_PRESET_BEADS } from '../../l
 import { HAMA_PRESET_COLLECTION_ID, PERLER_PRESET_COLLECTION_ID } from '../../db/db';
 import { renderGrid } from '../../lib/renderGrid';
 import { beadUsage, gridStats } from '../../lib/grid';
+import { savePattern } from '../../db/db';
 import type { DitherMode, Pattern, SamplingMode } from '../../db/schema';
 import './ResultAdjust.css';
 
@@ -90,8 +91,11 @@ export function ResultAdjust() {
     dispatch({ type: 'draft/update', patch: { preprocessSettings: { ...draft.preprocessSettings, ...patch } } });
   }
 
-  function goToBoard() {
-    dispatch({ type: 'nav', screen: 'board' });
+  async function goToPreview() {
+    if (!draft) return;
+    await savePattern(draft);
+    dispatch({ type: 'library/upsert', pattern: draft });
+    dispatch({ type: 'nav', screen: 'preview' });
   }
 
   function toggleSection(section: 'palette' | 'adjustments' | 'detail') {
@@ -417,13 +421,13 @@ export function ResultAdjust() {
     <div className="screen screen--cream">
       <WizardBar
         left={
-          <button type="button" onClick={() => dispatch({ type: 'nav', screen: 'photo' })}>
+          <button type="button" onClick={() => dispatch({ type: 'nav', screen: 'board' })}>
             BACK
           </button>
         }
         center={<span className="adjust__title-center type-numeric">{draft.name.toUpperCase()}</span>}
         right={
-          <button type="button" className="adjust__next-btn" onClick={goToBoard}>
+          <button type="button" className="adjust__next-btn" onClick={goToPreview}>
             NEXT
           </button>
         }

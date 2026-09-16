@@ -19,20 +19,24 @@ from-scratch implementation of that spec, not a copy of the reference HTML.
 ## Status
 
 **Pegboard rebuild** (current): the full Pegboard visual system, plus a
-reordered flow — **Photo comes first**, then a big-preview **Adjust**
-screen for palette/color-count/contrast/dithering (all live against the
-real photo), then a separate **Board Setup** screen for pattern name, bead
-type, and board size — splitting the two apart keeps color tuning from
-being buried under a long scrolling form of unrelated structural fields.
-The Adjust preview runs edge-to-edge with no border/frame around it, and
-its controls collapse into an accordion (Palette open by default,
-Adjustments — contrast/saturation/brightness — collapsed) so the live
-image dominates the screen. There's no fixed default board size either: a
-fresh photo gets a starting board shape matching its own aspect ratio
-(`computeDefaultBoardSize` in `lib/board.ts`), so the live preview never
-opens visibly squished into a square before you've picked a real board
-size on Board Setup. Screens: Library →
-Photo → Adjust → Board Setup → Final Preview → Export,
+reordered flow — **Photo comes first**, then **Board Setup** (pattern
+name, bead type, board size) locks in the physical board's real shape,
+then a big-preview **Adjust** screen for palette/color-count/contrast/
+dithering (all live against the real photo, already matched to the real
+board). Board size first means a later size change never has to happen
+after color tuning is already dialed in. Both screens keep their own live
+preview (not just Adjust) — canvas.grid-block sits in an unpadded stage
+region on each, spanning the full screen width — so changing anything on
+either one shows the result immediately, no bouncing between screens just
+to see what changed. Adjust's controls collapse into an accordion (Palette
+open by default — its option rows are deliberately compact since you tend
+to tap between Auto/Hama/Perler/My Collection repeatedly to compare —
+Adjustments and Detail collapsed) so the live image dominates the screen.
+There's no fixed default board size either: a fresh photo gets a starting
+board shape matching its own aspect ratio (`computeDefaultBoardSize` in
+`lib/board.ts`), so the live preview never opens visibly squished into a
+square before you've adjusted it on Board Setup. Screens: Library →
+Photo → Board Setup → Adjust → Final Preview → Export,
 with Manual Edit, a two-step Swap flow, and a step-by-step History timeline
 reachable from the editor. iPad gets a persistent side panel (cream stage,
 yellow tool panel) instead of a bottom sheet. Multi-board seam lines and

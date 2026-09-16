@@ -12,7 +12,6 @@ import { pegsToUnit, pitchMm, unitToPegs, type BoardUnit } from '../../lib/board
 import { catalogBeadById } from '../../lib/catalog';
 import { renderGrid } from '../../lib/renderGrid';
 import { gridStats } from '../../lib/grid';
-import { savePattern } from '../../db/db';
 import type { BeadType, BoardConfig, CropRect } from '../../db/schema';
 import './BoardSetup.css';
 
@@ -20,12 +19,12 @@ const UNIT_CYCLE: BoardUnit[] = ['pegs', 'in', 'cm'];
 const GRID_DISPLAY_SIZE = 336; // matches the Adjust screen's live preview
 
 /**
- * Board size / bead type / pattern name — split out from the Colors screen
- * so choosing a color count against a big live preview isn't buried under
- * a long scrolling form of unrelated structural fields. Keeps its own live
- * preview (not just the form) because changing board size here re-matches
- * the grid — without a visible result, you'd have to bounce back to
- * Adjust every time just to see what changed.
+ * Board size / bead type / pattern name — comes right after Photo, before
+ * Colors, so the board's real physical shape is locked in first and color
+ * tuning never gets disturbed by a later board-size change. Keeps its own
+ * live preview (not just the form) because changing board size here
+ * re-matches the grid — without a visible result, you'd have to jump to
+ * Colors every time just to see what changed.
  */
 export function BoardSetup() {
   const { state, dispatch } = useApp();
@@ -70,7 +69,13 @@ export function BoardSetup() {
     if (!isSentinelCrop(draft.cropRect)) return;
     const imageAspect = imgEl.naturalWidth / imgEl.naturalHeight;
     const boardAspect = draft.boardConfig.widthPegs / draft.boardConfig.heightPegs;
-    dispatch({ type: 'draft/update', patch: { cropRect: computeCoverCrop(imageAspect, boardAspect) } });
+    const next = computeCoverCrop(imageAspect, boardAspect);
+    // When the aspects already match, the result is the sentinel shape
+    // again — skip the dispatch, or this would re-fire on its own write
+    // forever (a same-aspect fresh photo, e.g. a square photo on the
+    // square default board, would otherwise infinite-loop here).
+    if (isSentinelCrop(next)) return;
+    dispatch({ type: 'draft/update', patch: { cropRect: next } });
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [draft?.boardConfig.widthPegs, draft?.boardConfig.heightPegs, imgEl, draft?.cropRect]);
 
@@ -110,11 +115,8 @@ export function BoardSetup() {
     updateBoard({ beadType: type, pegsPerInchOverride: undefined });
   }
 
-  async function goToPreview() {
-    if (!draft) return;
-    await savePattern(draft);
-    dispatch({ type: 'library/upsert', pattern: draft });
-    dispatch({ type: 'nav', screen: 'preview' });
+  function goToAdjust() {
+    dispatch({ type: 'nav', screen: 'adjust' });
   }
 
   const widthDisplay = pegsToUnit(boardConfig.widthPegs, unit, boardConfig.beadType, override);
@@ -130,13 +132,13 @@ export function BoardSetup() {
     <div className="screen screen--cream">
       <WizardBar
         left={
-          <button type="button" onClick={() => dispatch({ type: 'nav', screen: 'adjust' })}>
+          <button type="button" onClick={() => dispatch({ type: 'nav', screen: 'photo' })}>
             BACK
           </button>
         }
         center={<span className="adjust__title-center type-numeric">BOARD SETUP</span>}
         right={
-          <button type="button" className="adjust__next-btn" onClick={goToPreview}>
+          <button type="button" className="adjust__next-btn" onClick={goToAdjust}>
             NEXT
           </button>
         }

@@ -63,7 +63,7 @@ export function FinalPreview() {
       <WizardBar
         step={4}
         left={
-          <button type="button" onClick={() => dispatch({ type: 'nav', screen: 'board' })}>
+          <button type="button" onClick={() => dispatch({ type: 'nav', screen: 'adjust' })}>
             BACK
           </button>
         }
