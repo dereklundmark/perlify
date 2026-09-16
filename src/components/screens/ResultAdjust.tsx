@@ -152,7 +152,7 @@ export function ResultAdjust() {
                   onClick={() => dispatch({ type: 'draft/update', patch: { paletteMode: 'auto' } })}
                 >
                   <span className={`radio-dot${!isCollectionMode ? ' radio-dot--selected' : ''}`} />
-                  <span className="type-row-label">AUTO PALETTE</span>
+                  <span className="adjust__palette-label">AUTO PALETTE</span>
                   <span className="type-numeric adjust__count-value">{draft.colorCount}</span>
                 </button>
                 {!isCollectionMode && (
@@ -177,7 +177,6 @@ export function ResultAdjust() {
                         </button>
                       ))}
                     </div>
-                    <p className="type-body">Fewer colors read graphic and cost less; more hold gradients. Any number 2–60.</p>
                   </div>
                 )}
 
@@ -194,7 +193,7 @@ export function ResultAdjust() {
                   }
                 >
                   <span className={`radio-dot${isHamaSelected ? ' radio-dot--selected radio-dot--filled' : ''}`} />
-                  <span className="type-row-label">HAMA</span>
+                  <span className="adjust__palette-label">HAMA</span>
                   <span className="type-numeric adjust__count-value">{HAMA_PRESET_BEADS.length}</span>
                 </button>
 
@@ -211,7 +210,7 @@ export function ResultAdjust() {
                   }
                 >
                   <span className={`radio-dot${isPerlerSelected ? ' radio-dot--selected radio-dot--filled' : ''}`} />
-                  <span className="type-row-label">PERLER</span>
+                  <span className="adjust__palette-label">PERLER</span>
                   <span className="type-numeric adjust__count-value">{PERLER_PRESET_BEADS.length}</span>
                 </button>
 
@@ -229,7 +228,7 @@ export function ResultAdjust() {
                     }
                   >
                     <span className={`radio-dot${isMyCollectionSelected ? ' radio-dot--selected radio-dot--filled' : ''}`} />
-                    <span className="type-row-label">{myCollection?.name ?? 'MY COLLECTION'}</span>
+                    <span className="adjust__palette-label">{myCollection?.name ?? 'MY COLLECTION'}</span>
                   </button>
                   <button
                     type="button"

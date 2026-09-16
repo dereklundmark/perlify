@@ -142,7 +142,7 @@ export function BoardSetup() {
         }
       />
 
-      <div className="screen__body board-setup__body">
+      <div className="screen__body">
         <div className="adjust__grid-block">
           <canvas ref={canvasRef} className="adjust__canvas" />
           <div className="adjust__chips">
@@ -151,6 +151,7 @@ export function BoardSetup() {
           </div>
         </div>
 
+        <div className="board-setup__body">
         <div className="adjust-card">
           <div className="type-eyebrow">PATTERN NAME</div>
           <input
@@ -222,6 +223,7 @@ export function BoardSetup() {
               FIT TO BOARD ›
             </button>
           </div>
+        </div>
         </div>
       </div>
 

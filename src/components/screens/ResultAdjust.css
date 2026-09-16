@@ -258,17 +258,17 @@
   width: 100%;
   display: flex;
   align-items: center;
-  gap: 10px;
-  padding: 14px;
+  gap: 8px;
+  padding: 8px 12px;
   cursor: pointer;
   text-align: left;
-  min-height: var(--touch-target-min);
+  min-height: 38px;
 }
 
 .radio-card__head--row {
   cursor: default;
   justify-content: space-between;
-  padding: 12px 14px;
+  padding: 8px 12px;
 }
 
 .radio-card__head-select {
@@ -277,7 +277,7 @@
   background: transparent;
   display: flex;
   align-items: center;
-  gap: 10px;
+  gap: 8px;
   padding: 0;
   cursor: pointer;
   text-align: left;
@@ -286,8 +286,8 @@
 }
 
 .radio-dot {
-  width: 22px;
-  height: 22px;
+  width: 16px;
+  height: 16px;
   border-radius: 50%;
   border: var(--border-thick) solid var(--ink);
   flex-shrink: 0;
@@ -295,29 +295,38 @@
 }
 .radio-dot--selected {
   background: var(--ink);
-  box-shadow: inset 0 0 0 3px #fff;
+  box-shadow: inset 0 0 0 2.5px #fff;
 }
 .radio-dot--selected.radio-dot--filled {
   background: var(--ink);
   box-shadow: none;
 }
 
+/* Palette option rows (Auto/Hama/Perler/My Collection) run smaller than
+   the rest of the app's row labels — the user compares them repeatedly
+   to see how each affects the image, so keeping them compact matters
+   more here than elsewhere. */
+.adjust__palette-label {
+  font: 700 12px var(--font-ui);
+  color: var(--ink);
+}
+
 .adjust__count-value {
   margin-left: auto;
-  font-size: 24px;
+  font-size: 14px;
 }
 
 .adjust__auto-body {
-  padding: 0 14px 14px;
+  padding: 0 12px 10px;
   display: flex;
   flex-direction: column;
-  gap: 12px;
+  gap: 8px;
 }
 
 .adjust__presets {
   display: flex;
   flex-wrap: wrap;
-  gap: 6px;
+  gap: 5px;
 }
 
 .preset-chip {
@@ -326,8 +335,8 @@
   background: var(--white);
   border-radius: var(--radius-swatch);
   flex: 1;
-  height: 32px;
-  font: 700 12px var(--font-ui);
+  height: 26px;
+  font: 700 11px var(--font-ui);
   color: var(--ink);
   cursor: pointer;
 }
@@ -340,14 +349,14 @@
 .adjust__collection-swatch-row {
   display: flex;
   flex-wrap: wrap;
-  gap: 5px;
-  padding: 0 14px 14px 46px;
+  gap: 4px;
+  padding: 0 12px 10px 34px;
 }
 
 .adjust__collection-swatch {
-  width: 20px;
-  height: 20px;
-  border-radius: 4px;
+  width: 14px;
+  height: 14px;
+  border-radius: 3px;
   border: var(--border-thin) solid var(--ink);
 }
 
