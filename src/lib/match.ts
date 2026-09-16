@@ -135,7 +135,20 @@ export function matchImageToGrid(params: MatchParams): MatchResult {
 
   let candidatePalette: Bead[];
   if (params.paletteMode === 'collection') {
-    candidatePalette = params.collectionBeads;
+    // colorCount caps a collection's palette the same way it caps Auto —
+    // below the collection's own size, keep only the N most-used beads
+    // rather than always matching against every bead the collection has.
+    if (params.colorCount < params.collectionBeads.length) {
+      const flatLabs = sharpened.flat().map(rgbToLab);
+      const collectionEntries: PaletteEntry[] = params.collectionBeads.map((b) => ({
+        id: b.id,
+        lab: rgbToLab(hexToRgb(b.hex)),
+      }));
+      const indices = pickAutoPaletteIndices(flatLabs, collectionEntries, params.colorCount);
+      candidatePalette = indices.map((i) => params.collectionBeads[i]);
+    } else {
+      candidatePalette = params.collectionBeads;
+    }
   } else {
     const flatLabs = sharpened.flat().map(rgbToLab);
     const catalogEntries: PaletteEntry[] = CATALOG.map((b) => ({ id: b.id, lab: rgbToLab(hexToRgb(b.hex)) }));

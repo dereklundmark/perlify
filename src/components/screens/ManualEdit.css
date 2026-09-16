@@ -200,14 +200,19 @@
 }
 
 .edit__swap-canvas {
-  width: 261px;
-  height: 261px;
+  /* No fixed size: the canvas already carries the same fit-to-width
+     cellSize as the main edit view (cols/rows * cellSize), so forcing a
+     fixed square box here would both shrink large boards down to a tiny
+     thumbnail and squash non-square boards into a square. max-width is
+     just a clamp for a board that's zoomed in via pinch on the main view. */
+  max-width: 100%;
+  height: auto;
   background: var(--white);
   border: var(--border-thick) solid var(--ink);
   box-shadow: var(--shadow-frame);
   border-radius: var(--radius-thumbnail);
   padding: 12px;
-  box-sizing: content-box;
+  box-sizing: border-box;
 }
 
 .edit__swap-caption {

@@ -13,6 +13,11 @@
   font-weight: 700;
 }
 
+.adjust__home-btn {
+  font-size: 17px;
+  line-height: 1;
+}
+
 .adjust__grid-block {
   /* A row-direction flex parent centers this block instead of stretching
      it (justify-content only positions on the main axis) — width:100%

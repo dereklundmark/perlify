@@ -82,3 +82,8 @@
   text-align: center;
   color: var(--muted);
 }
+
+.preview__home-btn {
+  font-size: 17px;
+  line-height: 1;
+}

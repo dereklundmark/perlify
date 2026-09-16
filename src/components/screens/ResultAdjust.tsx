@@ -39,6 +39,37 @@ function formatCount(n: number): string {
   return n >= 1000 ? `${(n / 1000).toFixed(1)}k` : String(n);
 }
 
+interface ColorCountBodyProps {
+  max: number;
+  value: number;
+  onChange: (v: number) => void;
+}
+
+// Shared by every palette option (Auto and each collection) — same slider
+// caps whichever pool is currently active to its N most-used colors, so
+// switching between Auto/Hama/Perler/My Collection keeps one consistent
+// "how many colors" control instead of each mode needing its own.
+function ColorCountBody({ max, value, onChange }: ColorCountBodyProps) {
+  const clampedMax = Math.max(2, max);
+  return (
+    <div className="adjust__auto-body">
+      <Slider label="" value={Math.min(value, clampedMax)} min={2} max={clampedMax} onChange={onChange} formatValue={() => ''} />
+      <div className="adjust__presets">
+        {PRESETS.filter((p) => p <= clampedMax).map((p) => (
+          <button
+            key={p}
+            type="button"
+            className={`preset-chip${value === p ? ' preset-chip--active' : ''}`}
+            onClick={() => onChange(p)}
+          >
+            {p}
+          </button>
+        ))}
+      </div>
+    </div>
+  );
+}
+
 export function ResultAdjust() {
   const { state, dispatch } = useApp();
   const draft = state.draft;
@@ -89,6 +120,12 @@ export function ResultAdjust() {
     ? collection
     : state.collections.find((c) => c.id !== HAMA_PRESET_COLLECTION_ID && c.id !== PERLER_PRESET_COLLECTION_ID);
   const { contrast, saturation, brightness, denoise, abstraction, sharpen } = draft.preprocessSettings;
+  const hamaCount = isHamaSelected ? Math.min(draft.colorCount, HAMA_PRESET_BEADS.length) : HAMA_PRESET_BEADS.length;
+  const perlerCount = isPerlerSelected
+    ? Math.min(draft.colorCount, PERLER_PRESET_BEADS.length)
+    : PERLER_PRESET_BEADS.length;
+  const myCollectionSize = myCollection?.beads.length ?? 0;
+  const myCollectionCount = isMyCollectionSelected ? Math.min(draft.colorCount, myCollectionSize) : myCollectionSize;
 
   function updatePreprocess(patch: Partial<Pattern['preprocessSettings']>) {
     if (!draft) return;
@@ -102,16 +139,23 @@ export function ResultAdjust() {
     dispatch({ type: 'nav', screen: 'preview' });
   }
 
+  async function goToLibrary() {
+    if (!draft) return;
+    await savePattern(draft);
+    dispatch({ type: 'library/upsert', pattern: draft });
+    dispatch({ type: 'nav', screen: 'library' });
+  }
+
   function toggleSection(section: 'palette' | 'adjustments' | 'detail') {
     setOpenSection((cur) => (cur === section ? null : section));
   }
 
   const paletteSummary = isHamaSelected
-    ? `Hama · ${HAMA_PRESET_BEADS.length}`
+    ? `Hama · ${hamaCount}`
     : isPerlerSelected
-      ? `Perler · ${PERLER_PRESET_BEADS.length}`
+      ? `Perler · ${perlerCount}`
       : isMyCollectionSelected
-        ? `${collection?.name ?? 'My Collection'} · ${collection?.beads.length ?? 0}`
+        ? `${collection?.name ?? 'My Collection'} · ${myCollectionCount}`
         : `Auto · ${draft.colorCount}`;
 
   const stage = (
@@ -161,28 +205,11 @@ export function ResultAdjust() {
                   <span className="type-numeric adjust__count-value">{draft.colorCount}</span>
                 </button>
                 {!isCollectionMode && (
-                  <div className="adjust__auto-body">
-                    <Slider
-                      label=""
-                      value={draft.colorCount}
-                      min={2}
-                      max={60}
-                      onChange={(v) => dispatch({ type: 'draft/update', patch: { colorCount: v } })}
-                      formatValue={() => ''}
-                    />
-                    <div className="adjust__presets">
-                      {PRESETS.map((p) => (
-                        <button
-                          key={p}
-                          type="button"
-                          className={`preset-chip${draft.colorCount === p ? ' preset-chip--active' : ''}`}
-                          onClick={() => dispatch({ type: 'draft/update', patch: { colorCount: p } })}
-                        >
-                          {p}
-                        </button>
-                      ))}
-                    </div>
-                  </div>
+                  <ColorCountBody
+                    max={60}
+                    value={draft.colorCount}
+                    onChange={(v) => dispatch({ type: 'draft/update', patch: { colorCount: v } })}
+                  />
                 )}
 
                 <div className="adjust__divider" />
@@ -199,8 +226,15 @@ export function ResultAdjust() {
                 >
                   <span className={`radio-dot${isHamaSelected ? ' radio-dot--selected radio-dot--filled' : ''}`} />
                   <span className="adjust__palette-label">HAMA</span>
-                  <span className="type-numeric adjust__count-value">{HAMA_PRESET_BEADS.length}</span>
+                  <span className="type-numeric adjust__count-value">{hamaCount}</span>
                 </button>
+                {isHamaSelected && (
+                  <ColorCountBody
+                    max={HAMA_PRESET_BEADS.length}
+                    value={draft.colorCount}
+                    onChange={(v) => dispatch({ type: 'draft/update', patch: { colorCount: v } })}
+                  />
+                )}
 
                 <div className="adjust__divider" />
 
@@ -216,8 +250,15 @@ export function ResultAdjust() {
                 >
                   <span className={`radio-dot${isPerlerSelected ? ' radio-dot--selected radio-dot--filled' : ''}`} />
                   <span className="adjust__palette-label">PERLER</span>
-                  <span className="type-numeric adjust__count-value">{PERLER_PRESET_BEADS.length}</span>
+                  <span className="type-numeric adjust__count-value">{perlerCount}</span>
                 </button>
+                {isPerlerSelected && (
+                  <ColorCountBody
+                    max={PERLER_PRESET_BEADS.length}
+                    value={draft.colorCount}
+                    onChange={(v) => dispatch({ type: 'draft/update', patch: { colorCount: v } })}
+                  />
+                )}
 
                 <div className="adjust__divider" />
 
@@ -240,9 +281,16 @@ export function ResultAdjust() {
                     className="adjust__link"
                     onClick={() => dispatch({ type: 'nav', screen: 'collections' })}
                   >
-                    {myCollection?.beads.length ?? 0} ›
+                    {myCollectionCount} ›
                   </button>
                 </div>
+                {isMyCollectionSelected && myCollectionSize > 0 && (
+                  <ColorCountBody
+                    max={myCollectionSize}
+                    value={draft.colorCount}
+                    onChange={(v) => dispatch({ type: 'draft/update', patch: { colorCount: v } })}
+                  />
+                )}
                 <div className="adjust__collection-swatch-row">
                   {myCollection?.beads.map((bead) => (
                     <span
@@ -420,9 +468,14 @@ export function ResultAdjust() {
     <div className="screen screen--cream">
       <WizardBar
         left={
-          <button type="button" onClick={() => dispatch({ type: 'nav', screen: 'board' })}>
-            BACK
-          </button>
+          <>
+            <button type="button" onClick={() => dispatch({ type: 'nav', screen: 'board' })}>
+              BACK
+            </button>
+            <button type="button" className="adjust__home-btn" aria-label="Go to library" onClick={goToLibrary}>
+              ⌂
+            </button>
+          </>
         }
         center={<span className="adjust__title-center type-numeric">{draft.name.toUpperCase()}</span>}
         right={

@@ -1,10 +1,11 @@
-import { useEffect, useRef } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { useApp } from '../../state/AppContext';
 import { WizardBar } from '../ui/WizardBar';
 import { Toggle } from '../ui/Toggle';
+import { PillButton } from '../ui/PillButton';
 import { catalogBeadById } from '../../lib/catalog';
 import { renderGrid } from '../../lib/renderGrid';
-import { savePattern } from '../../db/db';
+import { savePattern, duplicatePattern } from '../../db/db';
 import type { Pattern } from '../../db/schema';
 import './FinalPreview.css';
 
@@ -15,6 +16,7 @@ export function FinalPreview() {
   const { state, dispatch } = useApp();
   const draft = state.draft;
   const canvasRef = useRef<HTMLCanvasElement>(null);
+  const [copySaved, setCopySaved] = useState(false);
 
   useEffect(() => {
     if (!draft || !canvasRef.current || draft.gridData.length === 0) return;
@@ -58,14 +60,39 @@ export function FinalPreview() {
     dispatch({ type: 'library/upsert', pattern: updated });
   }
 
+  // Snapshots the design as-is under a new id, so going back to make
+  // different edits can never lose this version — it stays in the
+  // library as its own pattern regardless of what happens to the draft.
+  async function saveCopy() {
+    if (!draft) return;
+    await savePattern(draft);
+    const copy = await duplicatePattern(draft.id);
+    if (!copy) return;
+    dispatch({ type: 'library/upsert', pattern: copy });
+    setCopySaved(true);
+    window.setTimeout(() => setCopySaved(false), 1800);
+  }
+
+  async function goToLibrary() {
+    if (!draft) return;
+    await savePattern(draft);
+    dispatch({ type: 'library/upsert', pattern: draft });
+    dispatch({ type: 'nav', screen: 'library' });
+  }
+
   return (
     <div className="screen screen--cream">
       <WizardBar
         step={4}
         left={
-          <button type="button" onClick={() => dispatch({ type: 'nav', screen: 'adjust' })}>
-            BACK
-          </button>
+          <>
+            <button type="button" onClick={() => dispatch({ type: 'nav', screen: 'adjust' })}>
+              BACK
+            </button>
+            <button type="button" className="preview__home-btn" aria-label="Go to library" onClick={goToLibrary}>
+              ⌂
+            </button>
+          </>
         }
         right={
           <button type="button" onClick={() => dispatch({ type: 'nav', screen: 'export' })}>
@@ -129,6 +156,10 @@ export function FinalPreview() {
           )}
 
           <p className="type-body preview__footnote">Display only — toggling these never changes a bead.</p>
+
+          <PillButton variant="secondary" onClick={saveCopy}>
+            {copySaved ? 'COPY SAVED ✓' : 'SAVE A COPY'}
+          </PillButton>
         </div>
       </div>
     </div>

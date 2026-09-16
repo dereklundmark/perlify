@@ -12,6 +12,7 @@ import { pegsToUnit, pitchMm, unitToPegs, type BoardUnit } from '../../lib/board
 import { catalogBeadById } from '../../lib/catalog';
 import { renderGrid } from '../../lib/renderGrid';
 import { gridStats } from '../../lib/grid';
+import { savePattern } from '../../db/db';
 import type { BeadType, BoardConfig, CropRect } from '../../db/schema';
 import './BoardSetup.css';
 
@@ -124,6 +125,13 @@ export function BoardSetup() {
     dispatch({ type: 'nav', screen: 'adjust' });
   }
 
+  async function goToLibrary() {
+    if (!draft) return;
+    await savePattern(draft);
+    dispatch({ type: 'library/upsert', pattern: draft });
+    dispatch({ type: 'nav', screen: 'library' });
+  }
+
   const widthDisplay = pegsToUnit(boardConfig.widthPegs, unit, boardConfig.beadType, override);
   const heightDisplay = pegsToUnit(boardConfig.heightPegs, unit, boardConfig.beadType, override);
   const widthIn = pegsToUnit(boardConfig.widthPegs, 'in', boardConfig.beadType, override);
@@ -137,9 +145,14 @@ export function BoardSetup() {
     <div className="screen screen--cream">
       <WizardBar
         left={
-          <button type="button" onClick={() => dispatch({ type: 'nav', screen: 'photo' })}>
-            BACK
-          </button>
+          <>
+            <button type="button" onClick={() => dispatch({ type: 'nav', screen: 'photo' })}>
+              BACK
+            </button>
+            <button type="button" className="adjust__home-btn" aria-label="Go to library" onClick={goToLibrary}>
+              ⌂
+            </button>
+          </>
         }
         center={<span className="adjust__title-center type-numeric">BOARD SETUP</span>}
         right={
