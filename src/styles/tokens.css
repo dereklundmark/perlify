@@ -72,8 +72,11 @@
   --toggle-knob-inset: 2px;
 
   /* Slider */
-  --slider-track-h: 8px;
-  --slider-thumb: 18px;
+  --slider-track-h: 10px;
+  --slider-thumb: 26px;
+  /* Invisible touch box the thin track sits inside — a lot bigger than the
+     track so a finger doesn't have to land precisely on it to start a drag. */
+  --slider-touch-h: 40px;
 
   /* Progress: N discrete segments, not a continuous bar */
   --progress-segment-h: 9px;

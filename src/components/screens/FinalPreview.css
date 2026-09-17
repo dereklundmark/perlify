@@ -15,6 +15,14 @@
   padding: 12px 0;
 }
 
+.preview__canvas-wrap {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  min-height: 0;
+}
+
 .preview__canvas {
   max-width: 100%;
   max-height: 100%;
@@ -22,6 +30,16 @@
   border: var(--border-thick) solid var(--ink);
   box-shadow: 6px 6px 0 var(--ink);
   border-radius: var(--radius-thumbnail);
+}
+
+.preview__peg-badge {
+  font: 700 11px var(--font-ui);
+  color: var(--ink);
+  background: var(--white);
+  border: var(--border-mid) solid var(--ink);
+  border-radius: 12px;
+  padding: 4px 10px;
+  flex-shrink: 0;
 }
 
 .preview__controls {

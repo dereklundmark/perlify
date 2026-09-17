@@ -34,6 +34,12 @@
   background: var(--cream);
 }
 
+.bottom-sheet--fill {
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+}
+
 .bottom-sheet__handle {
   width: 46px;
   height: 5px;

@@ -161,6 +161,9 @@ export function ResultAdjust() {
   const stage = (
     <div className="adjust__grid-block">
       <canvas ref={canvasRef} className="adjust__canvas" />
+      <span className="adjust__peg-badge">
+        {draft.boardConfig.widthPegs}×{draft.boardConfig.heightPegs} PEGS
+      </span>
     </div>
   );
 
@@ -220,7 +223,13 @@ export function ResultAdjust() {
                   onClick={() =>
                     dispatch({
                       type: 'draft/update',
-                      patch: { paletteMode: 'collection', collectionId: HAMA_PRESET_COLLECTION_ID },
+                      patch: {
+                        paletteMode: 'collection',
+                        collectionId: HAMA_PRESET_COLLECTION_ID,
+                        // Switching in fresh defaults to the whole collection, not
+                        // whatever count Auto Palette happened to be left at.
+                        ...(isHamaSelected ? {} : { colorCount: HAMA_PRESET_BEADS.length }),
+                      },
                     })
                   }
                 >
@@ -244,7 +253,11 @@ export function ResultAdjust() {
                   onClick={() =>
                     dispatch({
                       type: 'draft/update',
-                      patch: { paletteMode: 'collection', collectionId: PERLER_PRESET_COLLECTION_ID },
+                      patch: {
+                        paletteMode: 'collection',
+                        collectionId: PERLER_PRESET_COLLECTION_ID,
+                        ...(isPerlerSelected ? {} : { colorCount: PERLER_PRESET_BEADS.length }),
+                      },
                     })
                   }
                 >
@@ -269,7 +282,11 @@ export function ResultAdjust() {
                     onClick={() =>
                       dispatch({
                         type: 'draft/update',
-                        patch: { paletteMode: 'collection', collectionId: myCollection?.id ?? null },
+                        patch: {
+                          paletteMode: 'collection',
+                          collectionId: myCollection?.id ?? null,
+                          ...(isMyCollectionSelected ? {} : { colorCount: myCollectionSize }),
+                        },
                       })
                     }
                   >
@@ -465,7 +482,7 @@ export function ResultAdjust() {
   );
 
   return (
-    <div className="screen screen--cream">
+    <div className="screen screen--cream editor-screen--pinned">
       <WizardBar
         left={
           <>
@@ -485,7 +502,7 @@ export function ResultAdjust() {
         }
       />
 
-      <EditorLayout stage={stage} panelContent={panelContent} />
+      <EditorLayout stage={stage} panelContent={panelContent} pinnedStage />
     </div>
   );
 }

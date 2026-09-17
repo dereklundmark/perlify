@@ -9,6 +9,10 @@
   margin-bottom: 20px;
 }
 
+.library__brand {
+  margin-bottom: 4px;
+}
+
 .library__count-badge {
   width: 52px;
   height: 52px;

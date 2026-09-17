@@ -11,7 +11,11 @@
 }
 
 .wizard-bar__side {
-  flex: 1;
+  /* Sized to its own content, not an equal flex share — with a second
+     button (the library shortcut) now on the left only, an equal-share
+     split wasted width the left side didn't need and starved the center
+     title of room to the point it truncated even short titles. */
+  flex: 0 0 auto;
   display: flex;
   align-items: center;
   gap: 14px;
@@ -25,7 +29,8 @@
 }
 
 .wizard-bar__center {
-  flex: 1.4;
+  flex: 1;
+  min-width: 0;
   text-align: center;
   color: var(--muted);
 }

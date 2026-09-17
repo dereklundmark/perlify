@@ -103,7 +103,12 @@ export function FinalPreview() {
 
       <div className="screen__body preview__body">
         <div className="preview__stage">
-          <canvas ref={canvasRef} className="preview__canvas" />
+          <div className="preview__canvas-wrap">
+            <canvas ref={canvasRef} className="preview__canvas" />
+            <span className="preview__peg-badge">
+              {draft.boardConfig.widthPegs}×{draft.boardConfig.heightPegs} PEGS
+            </span>
+          </div>
         </div>
 
         <div className="preview__controls">

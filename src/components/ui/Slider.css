@@ -13,19 +13,40 @@
   font-size: 15px;
 }
 
+/* The input's own box is a tall, invisible touch target (--slider-touch-h)
+   — a lot easier to grab with a finger than the thin visual track alone.
+   The track and thumb are styled as pseudo-elements so they can stay thin
+   and small while still rendering centered inside that taller box. */
 .slider__input {
   -webkit-appearance: none;
   appearance: none;
   width: 100%;
+  height: var(--slider-touch-h);
+  background: transparent;
+  border: none;
+  box-sizing: border-box;
+  margin: 0;
+  cursor: pointer;
+}
+
+.slider__input::-webkit-slider-runnable-track {
   height: var(--slider-track-h);
   border-radius: 4px;
   background: var(--track);
   border: var(--border-mid) solid var(--ink);
   box-sizing: border-box;
-  margin: 0;
 }
 
-.slider__input--yellow {
+.slider__input::-moz-range-track {
+  height: var(--slider-track-h);
+  border-radius: 4px;
+  background: var(--track);
+  border: var(--border-mid) solid var(--ink);
+  box-sizing: border-box;
+}
+
+.slider__input--yellow::-webkit-slider-runnable-track,
+.slider__input--yellow::-moz-range-track {
   background: linear-gradient(
     to right,
     var(--yellow) 0%,
@@ -35,7 +56,8 @@
   );
 }
 
-.slider__input--red {
+.slider__input--red::-webkit-slider-runnable-track,
+.slider__input--red::-moz-range-track {
   background: linear-gradient(
     to right,
     var(--red) 0%,
@@ -50,6 +72,9 @@
   appearance: none;
   width: var(--slider-thumb);
   height: var(--slider-thumb);
+  /* Chrome/Safari align the thumb to the runnable-track's top edge by
+     default — shift it up to center on the (much thinner) track. */
+  margin-top: calc((var(--slider-track-h) - var(--slider-thumb)) / 2);
   border-radius: 50%;
   background: var(--white);
   border: var(--border-thick) solid var(--ink);

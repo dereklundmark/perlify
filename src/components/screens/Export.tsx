@@ -89,7 +89,8 @@ export function Export() {
             LIST
           </h2>
           <span className="type-meta">
-            {pageCount} PAGE{pageCount === 1 ? '' : 'S'} · A4
+            {draft.boardConfig.widthPegs}×{draft.boardConfig.heightPegs} PEGS · {pageCount} PAGE
+            {pageCount === 1 ? '' : 'S'} · A4
           </span>
         </div>
 

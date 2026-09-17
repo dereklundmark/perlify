@@ -124,11 +124,14 @@ export function Library() {
     <div className="screen screen--yellow">
       <div className="screen__body library__body">
         <div className="library__header">
-          <h1 className="type-headline">
-            MY
-            <br />
-            PATTERNS
-          </h1>
+          <div>
+            <div className="type-eyebrow library__brand">PERLIFY</div>
+            <h1 className="type-headline">
+              MY
+              <br />
+              PATTERNS
+            </h1>
+          </div>
           <div className="library__count-badge">{state.patterns.length}</div>
         </div>
 
