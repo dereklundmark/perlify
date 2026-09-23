@@ -19,6 +19,18 @@ const INFERENCE_MAX_DIM = 256;
 let modelPromise: Promise<tf.GraphModel> | null = null;
 let mirrorPadRegistered = false;
 
+// A visible page yields for a real animation frame. A hidden one (user
+// switched apps mid-run) never gets frames and has its timers throttled, so
+// it just hops the event loop instead — otherwise the model would stall.
+function yieldToBrowser(): Promise<void> {
+  if (document.visibilityState === 'visible') return tf.nextFrame();
+  return new Promise((resolve) => {
+    const channel = new MessageChannel();
+    channel.port1.onmessage = () => resolve();
+    channel.port2.postMessage(null);
+  });
+}
+
 /**
  * The published model uses "reflect" padding, which tfjs's converter can't
  * run natively — the original web build works around this by registering a
@@ -30,10 +42,15 @@ function registerMirrorPad() {
   if (mirrorPadRegistered) return;
   mirrorPadRegistered = true;
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  tf.registerOp('MirrorPad', (node: any) => {
+  tf.registerOp('MirrorPad', async (node: any) => {
+    // Yield to the browser between layers, as the reference implementation
+    // does. Running the whole network as one uninterrupted GPU job got the
+    // page killed and reloaded by iOS Safari.
+    await yieldToBrowser();
+    // The pad amounts are a tiny constant already in CPU memory, so this read
+    // doesn't touch the GPU.
+    const padArr = (node.inputs[1] as tf.Tensor).arraySync() as number[][];
     return tf.tidy(() => {
-      const padTensor = node.inputs[1] as tf.Tensor;
-      const padArr = padTensor.arraySync() as number[][];
       let input = node.inputs[0] as tf.Tensor4D;
 
       for (let i = 0; i < 4; i++) {
@@ -79,13 +96,6 @@ function loadModel(): Promise<tf.GraphModel> {
   return modelPromise;
 }
 
-/** Fire-and-forget warmup so the ~16MB model is already loading by the time the user taps CARTOONIFY. */
-export function preloadCartoonifyModel(): void {
-  loadModel().catch(() => {
-    // Swallowed — the real call site (cartoonify()) will surface the error when the user actually tries it.
-  });
-}
-
 function loadImage(dataUrl: string): Promise<HTMLImageElement> {
   return new Promise((resolve, reject) => {
     const img = new Image();
@@ -108,11 +118,9 @@ export async function cartoonify(sourceImage: string): Promise<string> {
   const inputTensor = tf.tidy(() => tf.image.resizeBilinear(imgTensor, scaledSize).expandDims(0).div(255) as tf.Tensor4D);
   imgTensor.dispose();
 
-  // execute() (not executeAsync()) is safe here — unlike the reference
-  // implementation, registerMirrorPad above runs synchronously (arraySync,
-  // no awaited ops), so the graph has no async control flow for tfjs to
-  // worry about; it says as much when run with executeAsync().
-  const generated = model.execute({ test: inputTensor }) as tf.Tensor4D;
+  // Must be executeAsync: the MirrorPad op above is async (it yields between
+  // layers). tfjs's "use execute() instead" console hint doesn't apply.
+  const generated = (await model.executeAsync({ test: inputTensor })) as tf.Tensor4D;
   inputTensor.dispose();
 
   const normalized = tf.tidy(() => generated.squeeze([0]).add(1).div(2) as tf.Tensor3D);

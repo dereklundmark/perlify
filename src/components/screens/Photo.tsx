@@ -1,10 +1,9 @@
-import { useEffect, useRef, useState } from 'react';
+import { useRef, useState } from 'react';
 import { useApp } from '../../state/AppContext';
 import { WizardBar } from '../ui/WizardBar';
 import { PillButton } from '../ui/PillButton';
 import { PhotoCropSheet } from './PhotoCropSheet';
 import { computeDefaultBoardSize } from '../../lib/board';
-import { cartoonify, preloadCartoonifyModel } from '../../lib/cartoonify';
 import './Photo.css';
 
 const MAX_SOURCE_DIM = 1600;
@@ -46,13 +45,6 @@ export function Photo() {
   const [cartoonifyError, setCartoonifyError] = useState<string | null>(null);
   const [preCartoonImage, setPreCartoonImage] = useState<string | null>(null);
 
-  // Warm up the model download as soon as this screen opens, so the first
-  // CARTOONIFY tap doesn't have to wait for the ~16MB model on top of the
-  // actual transform.
-  useEffect(() => {
-    preloadCartoonifyModel();
-  }, []);
-
   if (!draft) return null;
 
   async function handleFile(file: File | undefined) {
@@ -76,6 +68,9 @@ export function Photo() {
     setCartoonifying(true);
     setCartoonifyError(null);
     try {
+      // Loaded on demand so TensorFlow.js (and its ~16MB model) never touches
+      // the rest of the app — picking a photo works exactly as before.
+      const { cartoonify } = await import('../../lib/cartoonify');
       const result = await cartoonify(draft.sourceImage);
       setPreCartoonImage(draft.sourceImage);
       dispatch({ type: 'draft/update', patch: { sourceImage: result } });
