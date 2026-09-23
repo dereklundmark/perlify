@@ -17,7 +17,7 @@ import './ResultAdjust.css';
 const PRESETS = [8, 12, 16, 24, 32, 60];
 const GRID_DISPLAY_SIZE = 336;
 // Width of the ruler gutter along the canvas's top and left edges.
-const RULER_GUTTER = 22;
+const RULER_GUTTER = 16;
 
 // Peg-count tick spacing — chosen so a board of any size shows a
 // readable handful of ticks (5, 10, 15… for a small board; 50, 100… for

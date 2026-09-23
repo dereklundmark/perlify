@@ -9,18 +9,18 @@
 .library__brand-row {
   display: flex;
   align-items: center;
-  gap: 10px;
-  margin-bottom: 6px;
+  gap: 12px;
+  margin-bottom: 10px;
 }
 
 .library__brand-icon {
-  width: 34px;
-  height: 34px;
+  width: 44px;
+  height: 44px;
   flex-shrink: 0;
 }
 
 .library__brand-word {
-  font: 400 23px var(--font-display);
+  font: 400 29px var(--font-display);
   letter-spacing: -0.01em;
   color: var(--ink);
 }

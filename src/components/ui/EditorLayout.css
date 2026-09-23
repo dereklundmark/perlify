@@ -42,7 +42,7 @@
      which is what made the image render tiny on wider "phone layout"
      screens (e.g. an iPad held in portrait, below the tablet breakpoint)
      even though there was plenty of room to grow into. */
-  height: 42vh;
-  max-height: 42vh;
+  height: 48vh;
+  max-height: 48vh;
   overflow: hidden;
 }

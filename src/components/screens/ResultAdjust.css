@@ -83,17 +83,17 @@
 .adjust__ruler {
   position: absolute;
   color: var(--muted);
-  font: 700 10px var(--font-ui);
+  font: 700 9px var(--font-ui);
 }
 
 .adjust__ruler--x {
   top: 0;
-  height: 22px;
+  height: 16px;
 }
 
 .adjust__ruler--y {
   left: 0;
-  width: 22px;
+  width: 16px;
 }
 
 .adjust__ruler-tick {
@@ -101,7 +101,7 @@
 }
 
 .adjust__ruler--x .adjust__ruler-tick {
-  bottom: 4px;
+  bottom: 3px;
   transform: translateX(-50%);
   white-space: nowrap;
 }
@@ -112,12 +112,12 @@
   top: 100%;
   margin-top: 2px;
   width: 1px;
-  height: 4px;
+  height: 3px;
   background: var(--disabled);
 }
 
 .adjust__ruler--y .adjust__ruler-tick {
-  right: 5px;
+  right: 4px;
   transform: translateY(-50%);
 }
 .adjust__ruler--y .adjust__ruler-tick::after {
