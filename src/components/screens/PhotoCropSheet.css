@@ -64,8 +64,8 @@
 
 .photo-crop__handle {
   position: absolute;
-  width: 40px;
-  height: 40px;
+  width: 56px;
+  height: 56px;
   transform: translate(-50%, -50%);
   touch-action: none;
   cursor: pointer;
@@ -78,26 +78,26 @@
   height: 16px;
 }
 .photo-crop__handle--tl::after {
-  top: 20px;
-  left: 20px;
+  top: 28px;
+  left: 28px;
   border-top: 4px solid var(--yellow);
   border-left: 4px solid var(--yellow);
 }
 .photo-crop__handle--tr::after {
-  top: 20px;
-  right: 20px;
+  top: 28px;
+  right: 28px;
   border-top: 4px solid var(--yellow);
   border-right: 4px solid var(--yellow);
 }
 .photo-crop__handle--bl::after {
-  bottom: 20px;
-  left: 20px;
+  bottom: 28px;
+  left: 28px;
   border-bottom: 4px solid var(--yellow);
   border-left: 4px solid var(--yellow);
 }
 .photo-crop__handle--br::after {
-  bottom: 20px;
-  right: 20px;
+  bottom: 28px;
+  right: 28px;
   border-bottom: 4px solid var(--yellow);
   border-right: 4px solid var(--yellow);
 }

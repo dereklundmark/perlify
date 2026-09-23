@@ -1,7 +1,7 @@
 import { useRef, useState } from 'react';
 import { useApp } from '../../state/AppContext';
 import { WizardBar } from '../ui/WizardBar';
-import { SegmentedControl } from '../ui/SegmentedControl';
+import { PillButton } from '../ui/PillButton';
 import { PhotoCropSheet } from './PhotoCropSheet';
 import { computeDefaultBoardSize } from '../../lib/board';
 import './Photo.css';
@@ -39,7 +39,6 @@ export function Photo() {
   const { state, dispatch } = useApp();
   const draft = state.draft;
   const libraryInputRef = useRef<HTMLInputElement>(null);
-  const cameraInputRef = useRef<HTMLInputElement>(null);
   const [loading, setLoading] = useState(false);
   const [photoCropOpen, setPhotoCropOpen] = useState(false);
 
@@ -113,28 +112,20 @@ export function Photo() {
           {!draft.sourceImage && <div className="photo__placeholder type-body">Choose a photo to begin</div>}
         </div>
 
-        <SegmentedControl
-          options={[
-            { value: 'roll', label: 'CAMERA ROLL' },
-            { value: 'camera', label: 'TAKE PHOTO' },
-          ]}
-          value="roll"
-          onChange={(v) => (v === 'roll' ? libraryInputRef.current?.click() : cameraInputRef.current?.click())}
-        />
+        <PillButton
+          type="button"
+          variant="secondary"
+          style={{ width: '100%' }}
+          onClick={() => libraryInputRef.current?.click()}
+        >
+          SELECT IMAGE
+        </PillButton>
       </div>
 
       <input
         ref={libraryInputRef}
         type="file"
         accept="image/*"
-        hidden
-        onChange={(e) => handleFile(e.target.files?.[0])}
-      />
-      <input
-        ref={cameraInputRef}
-        type="file"
-        accept="image/*"
-        capture="environment"
         hidden
         onChange={(e) => handleFile(e.target.files?.[0])}
       />

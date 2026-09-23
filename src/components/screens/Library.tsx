@@ -124,15 +124,17 @@ export function Library() {
     <div className="screen screen--yellow">
       <div className="screen__body library__body">
         <div className="library__header">
-          <div>
-            <div className="type-eyebrow library__brand">PERLIFY</div>
-            <h1 className="type-headline">
-              MY
-              <br />
-              PATTERNS
-            </h1>
+          <div className="library__brand-row">
+            <div className="library__brand-icon" aria-hidden>
+              <PegboardIcon />
+            </div>
+            <span className="library__brand-word">PERLIFY</span>
           </div>
-          <div className="library__count-badge">{state.patterns.length}</div>
+          <h1 className="type-headline">
+            MY
+            <br />
+            PATTERNS
+          </h1>
         </div>
 
         <div className="library__grid">

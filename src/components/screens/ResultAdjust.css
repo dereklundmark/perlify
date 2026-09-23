@@ -27,8 +27,21 @@
 }
 
 .adjust__home-btn {
-  font-size: 17px;
+  /* A bare glyph the same weight as "BACK" was easy to miss — give it its
+     own bordered chip so it reads as a distinct, tappable action. */
+  width: 36px;
+  height: 36px;
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 18px;
   line-height: 1;
+  color: var(--ink);
+  background: var(--white);
+  border: var(--border-thick) solid var(--ink);
+  border-radius: 50%;
+  box-shadow: var(--shadow-thumb);
 }
 
 .adjust__grid-block {
@@ -47,20 +60,75 @@
   position: relative;
 }
 
-.adjust__peg-badge {
-  /* Absolutely positioned over the image, not stacked below it — the stage
-     region is height-capped, so anything in normal flow competes with the
-     image itself for that space. */
+.adjust__stage-box {
+  /* An explicit size (not content-based) so ResizeObserver reports the
+     real available space — the ruler-frame inside is sized FROM that
+     measurement, so letting this box shrink-wrap its own content would
+     be circular. */
+  width: 100%;
+  height: 100%;
+  min-width: 0;
+  min-height: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+}
+
+.adjust__ruler-frame {
+  position: relative;
+  flex-shrink: 0;
+}
+
+.adjust__ruler {
   position: absolute;
-  top: 8px;
-  right: 8px;
-  font: 700 11px var(--font-ui);
-  color: var(--ink);
-  background: var(--white);
-  border: var(--border-mid) solid var(--ink);
-  border-radius: 12px;
-  padding: 4px 10px;
-  pointer-events: none;
+  color: var(--muted);
+  font: 700 10px var(--font-ui);
+}
+
+.adjust__ruler--x {
+  top: 0;
+  height: 22px;
+}
+
+.adjust__ruler--y {
+  left: 0;
+  width: 22px;
+}
+
+.adjust__ruler-tick {
+  position: absolute;
+}
+
+.adjust__ruler--x .adjust__ruler-tick {
+  bottom: 4px;
+  transform: translateX(-50%);
+  white-space: nowrap;
+}
+.adjust__ruler--x .adjust__ruler-tick::after {
+  content: '';
+  position: absolute;
+  left: 50%;
+  top: 100%;
+  margin-top: 2px;
+  width: 1px;
+  height: 4px;
+  background: var(--disabled);
+}
+
+.adjust__ruler--y .adjust__ruler-tick {
+  right: 5px;
+  transform: translateY(-50%);
+}
+.adjust__ruler--y .adjust__ruler-tick::after {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 100%;
+  margin-left: 2px;
+  width: 4px;
+  height: 1px;
+  background: var(--disabled);
 }
 
 .adjust__canvas {
@@ -73,6 +141,16 @@
   width: 100%;
   height: auto;
   display: block;
+}
+
+.adjust__preview-canvas {
+  /* Sized and positioned via inline style, computed from the ruler
+     gutter + the measured available space — see ResultAdjust.tsx. */
+  position: absolute;
+  display: block;
+  background: var(--white);
+  border: var(--border-mid) solid var(--ink);
+  box-shadow: var(--shadow-thumb);
 }
 
 .adjust__chips {

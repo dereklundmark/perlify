@@ -3,29 +3,26 @@
 }
 
 .library__header {
-  display: flex;
-  justify-content: space-between;
-  align-items: flex-start;
   margin-bottom: 20px;
 }
 
-.library__brand {
-  margin-bottom: 4px;
-}
-
-.library__count-badge {
-  width: 52px;
-  height: 52px;
-  border-radius: 50%;
-  background: var(--white);
-  border: var(--border-thick) solid var(--ink);
-  box-shadow: var(--shadow-badge);
+.library__brand-row {
   display: flex;
   align-items: center;
-  justify-content: center;
-  font: 400 22px var(--font-display);
-  color: var(--ink);
+  gap: 10px;
+  margin-bottom: 6px;
+}
+
+.library__brand-icon {
+  width: 34px;
+  height: 34px;
   flex-shrink: 0;
+}
+
+.library__brand-word {
+  font: 400 23px var(--font-display);
+  letter-spacing: -0.01em;
+  color: var(--ink);
 }
 
 .library__grid {
