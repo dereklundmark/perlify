@@ -1,9 +1,10 @@
-import { useRef, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { useApp } from '../../state/AppContext';
 import { WizardBar } from '../ui/WizardBar';
 import { PillButton } from '../ui/PillButton';
 import { PhotoCropSheet } from './PhotoCropSheet';
 import { computeDefaultBoardSize } from '../../lib/board';
+import { cartoonify, preloadCartoonifyModel } from '../../lib/cartoonify';
 import './Photo.css';
 
 const MAX_SOURCE_DIM = 1600;
@@ -41,12 +42,24 @@ export function Photo() {
   const libraryInputRef = useRef<HTMLInputElement>(null);
   const [loading, setLoading] = useState(false);
   const [photoCropOpen, setPhotoCropOpen] = useState(false);
+  const [cartoonifying, setCartoonifying] = useState(false);
+  const [cartoonifyError, setCartoonifyError] = useState<string | null>(null);
+  const [preCartoonImage, setPreCartoonImage] = useState<string | null>(null);
+
+  // Warm up the model download as soon as this screen opens, so the first
+  // CARTOONIFY tap doesn't have to wait for the ~16MB model on top of the
+  // actual transform.
+  useEffect(() => {
+    preloadCartoonifyModel();
+  }, []);
 
   if (!draft) return null;
 
   async function handleFile(file: File | undefined) {
     if (!file) return;
     setLoading(true);
+    setPreCartoonImage(null);
+    setCartoonifyError(null);
     try {
       const { dataUrl } = await downsizeToDataUrl(file, MAX_SOURCE_DIM);
       dispatch({
@@ -56,6 +69,27 @@ export function Photo() {
     } finally {
       setLoading(false);
     }
+  }
+
+  async function handleCartoonify() {
+    if (!draft?.sourceImage || cartoonifying) return;
+    setCartoonifying(true);
+    setCartoonifyError(null);
+    try {
+      const result = await cartoonify(draft.sourceImage);
+      setPreCartoonImage(draft.sourceImage);
+      dispatch({ type: 'draft/update', patch: { sourceImage: result } });
+    } catch {
+      setCartoonifyError('Could not cartoonify this photo — try a different one.');
+    } finally {
+      setCartoonifying(false);
+    }
+  }
+
+  function handleRevertCartoonify() {
+    if (!preCartoonImage) return;
+    dispatch({ type: 'draft/update', patch: { sourceImage: preCartoonImage } });
+    setPreCartoonImage(null);
   }
 
   function confirm() {
@@ -120,6 +154,20 @@ export function Photo() {
         >
           SELECT IMAGE
         </PillButton>
+
+        {hasImage && (
+          <PillButton
+            type="button"
+            variant="secondary"
+            size="sm"
+            style={{ alignSelf: 'center' }}
+            disabled={cartoonifying}
+            onClick={preCartoonImage ? handleRevertCartoonify : handleCartoonify}
+          >
+            {cartoonifying ? 'CARTOONIFYING…' : preCartoonImage ? '↺ REVERT TO ORIGINAL' : '✨ CARTOONIFY'}
+          </PillButton>
+        )}
+        {cartoonifyError && <p className="type-body photo__cartoonify-error">{cartoonifyError}</p>}
       </div>
 
       <input

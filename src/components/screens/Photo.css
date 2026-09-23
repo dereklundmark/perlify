@@ -10,6 +10,12 @@
   font-weight: 700;
 }
 
+.photo__cartoonify-error {
+  text-align: center;
+  color: var(--red);
+  margin: -8px 0 0;
+}
+
 .photo__stage {
   width: 100%;
   aspect-ratio: 1;
