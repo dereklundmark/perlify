@@ -9,10 +9,12 @@
 import * as tf from '@tensorflow/tfjs';
 
 const MODEL_URL = `${import.meta.env.BASE_URL}animegan-model/model.json`;
-// Longest side fed to the model. Inference cost scales with pixel count, and
-// this keeps it fast/memory-safe on phones — the bead-matching pipeline
-// downsamples far past this anyway, so there's no quality loss that matters.
-const INFERENCE_MAX_DIM = 640;
+// Longest side fed to the model. The network's early layers run at full
+// input resolution with 64+ channels, so GPU memory scales with pixel count —
+// 640px crashed the page on an iPhone 12. 256px matches the "medium" size the
+// original AnimeGAN.js app offers on phones, and the bead grid is only ~30-100
+// cells wide, so nothing that matters is lost.
+const INFERENCE_MAX_DIM = 256;
 
 let modelPromise: Promise<tf.GraphModel> | null = null;
 let mirrorPadRegistered = false;
@@ -122,5 +124,14 @@ export async function cartoonify(sourceImage: string): Promise<string> {
   await tf.browser.toPixels(normalized, canvas);
   normalized.dispose();
 
-  return canvas.toDataURL('image/jpeg', 0.92);
+  // Scale back up to the photo's original size so the crop step etc. see a
+  // normally-sized image with the same aspect ratio.
+  const out = document.createElement('canvas');
+  out.width = img.naturalWidth;
+  out.height = img.naturalHeight;
+  const outCtx = out.getContext('2d')!;
+  outCtx.imageSmoothingQuality = 'high';
+  outCtx.drawImage(canvas, 0, 0, out.width, out.height);
+
+  return out.toDataURL('image/jpeg', 0.92);
 }
