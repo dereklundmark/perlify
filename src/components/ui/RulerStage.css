@@ -1,0 +1,80 @@
+.ruler-stage {
+  /* An explicit size (not content-based) so ResizeObserver reports the
+     real available space — the frame inside is sized FROM that
+     measurement, so letting this box shrink-wrap its own content would
+     be circular. */
+  width: 100%;
+  height: 100%;
+  min-width: 0;
+  min-height: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+}
+
+.ruler-stage__frame {
+  position: relative;
+  flex-shrink: 0;
+}
+
+.ruler-stage__ruler {
+  position: absolute;
+  color: var(--muted);
+  font: 700 9px var(--font-ui);
+}
+
+.ruler-stage__ruler--x {
+  top: 0;
+  height: 16px;
+}
+
+.ruler-stage__ruler--y {
+  left: 0;
+  width: 16px;
+}
+
+.ruler-stage__tick {
+  position: absolute;
+}
+
+.ruler-stage__ruler--x .ruler-stage__tick {
+  bottom: 3px;
+  transform: translateX(-50%);
+  white-space: nowrap;
+}
+.ruler-stage__ruler--x .ruler-stage__tick::after {
+  content: '';
+  position: absolute;
+  left: 50%;
+  top: 100%;
+  margin-top: 2px;
+  width: 1px;
+  height: 3px;
+  background: var(--disabled);
+}
+
+.ruler-stage__ruler--y .ruler-stage__tick {
+  right: 4px;
+  transform: translateY(-50%);
+}
+.ruler-stage__ruler--y .ruler-stage__tick::after {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 100%;
+  margin-left: 2px;
+  width: 4px;
+  height: 1px;
+  background: var(--disabled);
+}
+
+.ruler-stage__canvas {
+  /* Sized and positioned via inline style, computed from the ruler
+     gutter + the measured available space — see RulerStage.tsx. */
+  position: absolute;
+  display: block;
+  background: var(--white);
+  border: var(--border-mid) solid var(--ink);
+  box-shadow: var(--shadow-thumb);
+}

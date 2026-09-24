@@ -3,52 +3,43 @@ import { useApp } from '../../state/AppContext';
 import { WizardBar } from '../ui/WizardBar';
 import { Toggle } from '../ui/Toggle';
 import { PillButton } from '../ui/PillButton';
+import { RulerStage, useRulerLayout } from '../ui/RulerStage';
 import { catalogBeadById } from '../../lib/catalog';
 import { renderGrid } from '../../lib/renderGrid';
 import { savePattern, duplicatePattern } from '../../db/db';
 import type { Pattern } from '../../db/schema';
 import './FinalPreview.css';
 
-const GRID_DISPLAY_SIZE = 320;
-const CANVAS_PADDING = 20;
-
 export function FinalPreview() {
   const { state, dispatch } = useApp();
   const draft = state.draft;
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const [copySaved, setCopySaved] = useState(false);
+  // Same sizing + rulers as the Adjust screen, so the pattern doesn't
+  // change scale between the two.
+  const rulerLayout = useRulerLayout(draft?.boardConfig.widthPegs ?? 1, draft?.boardConfig.heightPegs ?? 1);
+  const { cellSize, canvasW, canvasH } = rulerLayout;
 
   useEffect(() => {
     if (!draft || !canvasRef.current || draft.gridData.length === 0) return;
-    const cols = draft.boardConfig.widthPegs;
-    const rows = draft.boardConfig.heightPegs;
-    const cellSize = GRID_DISPLAY_SIZE / Math.max(cols, rows);
     const canvas = canvasRef.current;
-    canvas.width = cols * cellSize + CANVAS_PADDING * 2;
-    canvas.height = rows * cellSize + CANVAS_PADDING * 2;
+    canvas.width = canvasW;
+    canvas.height = canvasH;
     const ctx = canvas.getContext('2d');
     if (!ctx) return;
-    const backgroundFill = draft.previewBackground === 'white' ? '#ffffff' : '#000000';
-    // The grid itself is always fully opaque cell-to-cell, so the toggle
-    // only reads as a visible change via the margin around it.
-    ctx.fillStyle = backgroundFill;
-    ctx.fillRect(0, 0, canvas.width, canvas.height);
-    ctx.save();
-    ctx.translate(CANVAS_PADDING, CANVAS_PADDING);
     renderGrid(ctx, {
       grid: draft.gridData,
       cellSize,
       getBead: catalogBeadById,
       gridlines: draft.gridlines,
       symbolOverlay: draft.symbolOverlay,
-      surface: draft.previewBackground === 'white' ? 'light' : 'dark',
-      background: backgroundFill,
+      surface: 'light',
+      background: '#ffffff',
       boardsWide: draft.boardConfig.boardsWide,
       boardsHigh: draft.boardConfig.boardsHigh,
       seamLines: draft.seamLines,
     });
-    ctx.restore();
-  }, [draft]);
+  }, [draft, cellSize, canvasW, canvasH]);
 
   if (!draft) return null;
 
@@ -81,7 +72,7 @@ export function FinalPreview() {
   }
 
   return (
-    <div className="screen screen--cream">
+    <div className="screen screen--cream preview__screen">
       <WizardBar
         step={4}
         left={
@@ -101,39 +92,12 @@ export function FinalPreview() {
         }
       />
 
-      <div className="screen__body preview__body">
-        <div className="preview__stage">
-          <div className="preview__canvas-wrap">
-            <canvas ref={canvasRef} className="preview__canvas" />
-            <span className="preview__peg-badge">
-              {draft.boardConfig.widthPegs}×{draft.boardConfig.heightPegs} PEGS
-            </span>
-          </div>
-        </div>
+      <div className="preview__stage">
+        <RulerStage layout={rulerLayout} canvasRef={canvasRef} />
+      </div>
 
+      <div className="preview__body">
         <div className="preview__controls">
-          <div>
-            <div className="type-eyebrow preview__eyebrow">BACKGROUND BEHIND PATTERN</div>
-            <div className="preview__bg-row">
-              <button
-                type="button"
-                className={`preview__bg-pill${draft.previewBackground === 'white' ? ' preview__bg-pill--active' : ''}`}
-                onClick={() => persist({ previewBackground: 'white' })}
-              >
-                <span className="preview__bg-chip" style={{ background: '#fff' }} />
-                WHITE
-              </button>
-              <button
-                type="button"
-                className={`preview__bg-pill${draft.previewBackground === 'black' ? ' preview__bg-pill--active' : ''}`}
-                onClick={() => persist({ previewBackground: 'black' })}
-              >
-                <span className="preview__bg-chip" style={{ background: '#000' }} />
-                BLACK
-              </button>
-            </div>
-          </div>
-
           <div className="preview__row">
             <div>
               <div className="type-row-label">SYMBOL OVERLAY</div>

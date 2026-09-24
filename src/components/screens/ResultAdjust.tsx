@@ -5,6 +5,7 @@ import { SegmentedControl } from '../ui/SegmentedControl';
 import { Slider } from '../ui/Slider';
 import { Toggle } from '../ui/Toggle';
 import { EditorLayout } from '../ui/EditorLayout';
+import { RulerStage, useRulerLayout } from '../ui/RulerStage';
 import { useLiveMatch } from '../../hooks/useLiveMatch';
 import { catalogBeadById, HAMA_PRESET_BEADS, PERLER_PRESET_BEADS } from '../../lib/catalog';
 import { HAMA_PRESET_COLLECTION_ID, PERLER_PRESET_COLLECTION_ID } from '../../db/db';
@@ -15,25 +16,6 @@ import type { DitherMode, Pattern, SamplingMode } from '../../db/schema';
 import './ResultAdjust.css';
 
 const PRESETS = [8, 12, 16, 24, 32, 60];
-const GRID_DISPLAY_SIZE = 336;
-// Width of the ruler gutter along the canvas's top and left edges.
-const RULER_GUTTER = 16;
-
-// Peg-count tick spacing — chosen so a board of any size shows a
-// readable handful of ticks (5, 10, 15… for a small board; 50, 100… for
-// a big one) instead of either a dense unreadable comb or almost none.
-function pickRulerStep(maxDim: number): number {
-  if (maxDim <= 20) return 5;
-  if (maxDim <= 60) return 10;
-  if (maxDim <= 120) return 20;
-  return 50;
-}
-
-function ticksUpTo(n: number, step: number): number[] {
-  const ticks: number[] = [];
-  for (let v = step; v < n; v += step) ticks.push(v);
-  return ticks;
-}
 
 const DITHER_OPTIONS: { value: DitherMode; label: string }[] = [
   { value: 'none', label: 'NONE' },
@@ -94,39 +76,9 @@ export function ResultAdjust() {
   const [tab, setTab] = useState<'adjust' | 'colors'>('adjust');
   const [openSection, setOpenSection] = useState<AccordionSection>('palette');
   const canvasRef = useRef<HTMLCanvasElement>(null);
-  const stageBoxRef = useRef<HTMLDivElement>(null);
-  const [stageSize, setStageSize] = useState({ width: 0, height: 0 });
+  const rulerLayout = useRulerLayout(draft?.boardConfig.widthPegs ?? 1, draft?.boardConfig.heightPegs ?? 1);
+  const { cellSize, canvasW, canvasH } = rulerLayout;
   useLiveMatch();
-
-  // Measures the space actually available for the image (the ruler gutter
-  // eats into it), so the ruler and the image always agree on scale —
-  // rather than sizing the canvas to a fixed guess and hoping it happens to
-  // match whatever room the current screen has (which is how the image
-  // used to render tiny on a wide screen like an iPad).
-  useEffect(() => {
-    const el = stageBoxRef.current;
-    if (!el) return;
-    const observer = new ResizeObserver(([entry]) => {
-      const { width, height } = entry.contentRect;
-      setStageSize({ width, height });
-    });
-    observer.observe(el);
-    return () => observer.disconnect();
-  }, []);
-
-  const cols = draft?.boardConfig.widthPegs ?? 1;
-  const rows = draft?.boardConfig.heightPegs ?? 1;
-  const availableW = stageSize.width - RULER_GUTTER;
-  const availableH = stageSize.height - RULER_GUTTER;
-  const cellSize =
-    availableW > 0 && availableH > 0
-      ? Math.max(2, Math.min(availableW / cols, availableH / rows))
-      : GRID_DISPLAY_SIZE / Math.max(cols, rows);
-  const canvasW = cellSize * cols;
-  const canvasH = cellSize * rows;
-  const rulerStep = pickRulerStep(Math.max(cols, rows));
-  const xTicks = ticksUpTo(cols, rulerStep);
-  const yTicks = ticksUpTo(rows, rulerStep);
 
   useEffect(() => {
     if (!draft || !canvasRef.current || draft.gridData.length === 0) return;
@@ -207,32 +159,7 @@ export function ResultAdjust() {
 
   const stage = (
     <div className="adjust__grid-block">
-      <div className="adjust__stage-box" ref={stageBoxRef}>
-        <div
-          className="adjust__ruler-frame"
-          style={{ width: canvasW + RULER_GUTTER, height: canvasH + RULER_GUTTER }}
-        >
-          <div className="adjust__ruler adjust__ruler--x" style={{ left: RULER_GUTTER, width: canvasW }}>
-            {xTicks.map((n) => (
-              <span key={n} className="adjust__ruler-tick" style={{ left: n * cellSize }}>
-                {n}
-              </span>
-            ))}
-          </div>
-          <div className="adjust__ruler adjust__ruler--y" style={{ top: RULER_GUTTER, height: canvasH }}>
-            {yTicks.map((n) => (
-              <span key={n} className="adjust__ruler-tick" style={{ top: n * cellSize }}>
-                {n}
-              </span>
-            ))}
-          </div>
-          <canvas
-            ref={canvasRef}
-            className="adjust__preview-canvas"
-            style={{ left: RULER_GUTTER, top: RULER_GUTTER, width: canvasW, height: canvasH }}
-          />
-        </div>
-      </div>
+      <RulerStage layout={rulerLayout} canvasRef={canvasRef} />
     </div>
   );
 
