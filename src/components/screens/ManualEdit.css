@@ -127,6 +127,17 @@
   display: inline-block;
 }
 
+.edit__drag-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+  background: var(--cream);
+  border: var(--border-thick) solid var(--ink);
+  border-radius: var(--radius-list);
+  padding: 10px 13px;
+}
+
 .edit__palette-header {
   display: flex;
   justify-content: space-between;

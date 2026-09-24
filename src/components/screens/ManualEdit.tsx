@@ -11,6 +11,7 @@ import { WizardBar } from '../ui/WizardBar';
 import { EditorLayout } from '../ui/EditorLayout';
 import { BottomSheet } from '../ui/BottomSheet';
 import { PillButton } from '../ui/PillButton';
+import { Toggle } from '../ui/Toggle';
 import { catalogBeadById, CATALOG } from '../../lib/catalog';
 import { renderGrid } from '../../lib/renderGrid';
 import { beadUsage, gridStats, type GridData } from '../../lib/grid';
@@ -65,9 +66,33 @@ export function ManualEdit() {
   const [swapTargetId, setSwapTargetId] = useState<string | null>(null);
 
   const canvasRef = useRef<HTMLCanvasElement>(null);
-  const pinchState = useRef<{ dist: number; cellSize: number } | null>(null);
+  const viewportRef = useRef<HTMLDivElement>(null);
+  const pinchState = useRef<{ dist: number; cellSize: number; midX: number; midY: number } | null>(null);
   const activeBatchRef = useRef<string | null>(null);
   const seeded = useRef(false);
+
+  // Drag-painting: a finger sliding across squares fires many pointer events
+  // faster than React re-renders, so each one must build on the previous
+  // one's result (kept here), not on whatever `grid`/`history` the last
+  // render happened to capture — otherwise squares get skipped or reverted.
+  const live = useRef({ grid, history, pointer });
+  live.current = { grid, history, pointer };
+  const strokeCellRef = useRef<{ row: number; col: number } | null>(null);
+  const [dragPaint, setDragPaint] = useState(() => {
+    try {
+      return localStorage.getItem('perlify.dragPaint') === '1';
+    } catch {
+      return false;
+    }
+  });
+  function updateDragPaint(on: boolean) {
+    setDragPaint(on);
+    try {
+      localStorage.setItem('perlify.dragPaint', on ? '1' : '0');
+    } catch {
+      // Storage unavailable (private mode etc.) — the setting just won't persist.
+    }
+  }
 
   const usage = useMemo(() => beadUsage(grid), [grid]);
   const paletteIds = useMemo(() => {
@@ -142,13 +167,21 @@ export function ManualEdit() {
 
   if (!draft) return null;
 
+  // Writes state and the `live` mirror together, so back-to-back calls
+  // (drag-painting) see each other's results before React re-renders.
+  function commit(newGrid: GridData, nextHistory: HistoryStep[], nextPointer: number) {
+    live.current = { grid: newGrid, history: nextHistory, pointer: nextPointer };
+    setHistory(nextHistory);
+    setPointer(nextPointer);
+    setGrid(newGrid);
+  }
+
   function pushStep(newGrid: GridData, label: string, affectedCount: number, extra: Partial<HistoryStep> = {}) {
-    const truncated = history.slice(0, pointer + 1);
+    const { history: h, pointer: p } = live.current;
+    const truncated = h.slice(0, p + 1);
     const step: HistoryStep = { id: crypto.randomUUID(), label, affectedCount, grid: newGrid, ...extra };
     const next = [...truncated, step].slice(-MAX_HISTORY);
-    setHistory(next);
-    setPointer(next.length - 1);
-    setGrid(newGrid);
+    commit(newGrid, next, next.length - 1);
   }
 
   function jumpTo(index: number) {
@@ -172,39 +205,36 @@ export function ManualEdit() {
     const canvas = canvasRef.current;
     if (!canvas) return null;
     const rect = canvas.getBoundingClientRect();
-    const col = Math.floor((e.clientX - rect.left) / cellSize);
-    const row = Math.floor((e.clientY - rect.top) / cellSize);
+    // Measure from inside the canvas's border, not its outer edge — the
+    // ~2px offset was enough to land a touch in the neighboring square.
+    const col = Math.floor((e.clientX - rect.left - canvas.clientLeft) / cellSize);
+    const row = Math.floor((e.clientY - rect.top - canvas.clientTop) / cellSize);
     if (row < 0 || row >= grid.length || col < 0 || col >= (grid[0]?.length ?? 0)) return null;
     return { row, col };
   }
 
-  function handleCanvasClick(e: ReactPointerEvent) {
-    if (view !== 'edit') return;
-    const cell = cellFromEvent(e);
-    if (!cell) return;
-    setLastCell(cell);
+  function applyToolAt(cell: { row: number; col: number }) {
+    const { grid: g, history: h, pointer: p } = live.current;
 
     if (tool === 'paint' && currentColor) {
-      const newGrid = paintCell(grid, cell.row, cell.col, currentColor);
+      const newGrid = paintCell(g, cell.row, cell.col, currentColor);
       const batchKey = `paint:${currentColor}`;
-      if (activeBatchRef.current === batchKey && pointer === history.length - 1) {
-        const count = history[pointer].affectedCount + 1;
-        const updated = { ...history[pointer], grid: newGrid, affectedCount: count, label: `Painted ${count} bead${count === 1 ? '' : 's'}` };
-        setHistory((prev) => [...prev.slice(0, -1), updated]);
-        setGrid(newGrid);
+      if (activeBatchRef.current === batchKey && p === h.length - 1) {
+        const count = h[p].affectedCount + 1;
+        const updated = { ...h[p], grid: newGrid, affectedCount: count, label: `Painted ${count} bead${count === 1 ? '' : 's'}` };
+        commit(newGrid, [...h.slice(0, -1), updated], p);
       } else {
         activeBatchRef.current = batchKey;
         const bead = catalogBeadById(currentColor);
         pushStep(newGrid, 'Painted 1 bead', 1, { swatch: bead?.hex });
       }
     } else if (tool === 'clear') {
-      const newGrid = clearCell(grid, cell.row, cell.col);
+      const newGrid = clearCell(g, cell.row, cell.col);
       const batchKey = 'clear';
-      if (activeBatchRef.current === batchKey && pointer === history.length - 1) {
-        const count = history[pointer].affectedCount + 1;
-        const updated = { ...history[pointer], grid: newGrid, affectedCount: count, label: `Cleared ${count} bead${count === 1 ? '' : 's'}` };
-        setHistory((prev) => [...prev.slice(0, -1), updated]);
-        setGrid(newGrid);
+      if (activeBatchRef.current === batchKey && p === h.length - 1) {
+        const count = h[p].affectedCount + 1;
+        const updated = { ...h[p], grid: newGrid, affectedCount: count, label: `Cleared ${count} bead${count === 1 ? '' : 's'}` };
+        commit(newGrid, [...h.slice(0, -1), updated], p);
       } else {
         activeBatchRef.current = batchKey;
         pushStep(newGrid, 'Cleared 1 bead', 1);
@@ -212,7 +242,43 @@ export function ManualEdit() {
     }
   }
 
+  function handleCanvasClick(e: ReactPointerEvent) {
+    if (view !== 'edit') return;
+    const cell = cellFromEvent(e);
+    if (!cell) return;
+    setLastCell(cell);
+    // Each drag stroke is its own history step (the cells it covers merge
+    // into it), so one undo takes back one stroke, not everything painted.
+    if (dragPaint) activeBatchRef.current = null;
+    applyToolAt(cell);
+    if (dragPaint) strokeCellRef.current = cell;
+  }
+
+  function endStroke() {
+    strokeCellRef.current = null;
+  }
+
+  // Sliding a finger quickly can skip whole squares between two pointer
+  // events, so fill in every cell along the straight line from the last
+  // one painted to the one under the finger now.
+  function continueStroke(e: ReactPointerEvent) {
+    const from = strokeCellRef.current;
+    const to = cellFromEvent(e);
+    if (!from || !to || (from.row === to.row && from.col === to.col)) return;
+    const steps = Math.max(Math.abs(to.row - from.row), Math.abs(to.col - from.col));
+    for (let i = 1; i <= steps; i++) {
+      const cell = {
+        row: Math.round(from.row + ((to.row - from.row) * i) / steps),
+        col: Math.round(from.col + ((to.col - from.col) * i) / steps),
+      };
+      applyToolAt(cell);
+    }
+    strokeCellRef.current = to;
+    setLastCell(to);
+  }
+
   function handlePointerMove(e: ReactPointerEvent) {
+    if (dragPaint && strokeCellRef.current && view === 'edit') continueStroke(e);
     if (e.pointerType !== 'pen' && e.pointerType !== 'mouse') return;
     const cell = cellFromEvent(e);
     if (!cell) {
@@ -228,14 +294,32 @@ export function ManualEdit() {
     const [a, b] = [touches[0], touches[1]];
     return Math.hypot(a.clientX - b.clientX, a.clientY - b.clientY);
   }
+  function touchMid(touches: ReactTouchEvent['touches']) {
+    return { x: (touches[0].clientX + touches[1].clientX) / 2, y: (touches[0].clientY + touches[1].clientY) / 2 };
+  }
   function onTouchStart(e: ReactTouchEvent) {
-    if (e.touches.length === 2) pinchState.current = { dist: touchDist(e.touches), cellSize };
+    if (e.touches.length === 2) {
+      // A second finger means pinch/pan, not painting.
+      endStroke();
+      const mid = touchMid(e.touches);
+      pinchState.current = { dist: touchDist(e.touches), cellSize, midX: mid.x, midY: mid.y };
+    }
   }
   function onTouchMove(e: ReactTouchEvent) {
     if (e.touches.length === 2 && pinchState.current) {
       e.preventDefault();
       const ratio = touchDist(e.touches) / pinchState.current.dist;
       setCellSize(Math.min(52, Math.max(12, pinchState.current.cellSize * ratio)));
+      // With drag-painting on, one finger belongs to the brush, so the
+      // browser's own scrolling is off (see the canvas's touch-action) —
+      // two fingers pan the zoomed canvas by hand instead.
+      if (dragPaint && viewportRef.current) {
+        const mid = touchMid(e.touches);
+        viewportRef.current.scrollLeft -= mid.x - pinchState.current.midX;
+        viewportRef.current.scrollTop -= mid.y - pinchState.current.midY;
+        pinchState.current.midX = mid.x;
+        pinchState.current.midY = mid.y;
+      }
     }
   }
   function onTouchEnd(e: ReactTouchEvent) {
@@ -464,13 +548,27 @@ export function ManualEdit() {
         </button>
       </div>
 
-      <div className="edit__viewport" onTouchStart={onTouchStart} onTouchMove={onTouchMove} onTouchEnd={onTouchEnd}>
+      <div
+        ref={viewportRef}
+        className="edit__viewport"
+        onTouchStart={onTouchStart}
+        onTouchMove={onTouchMove}
+        onTouchEnd={onTouchEnd}
+      >
         <canvas
           ref={canvasRef}
           className="edit__canvas"
+          // Drag-painting needs one-finger drags delivered to the canvas
+          // instead of scrolling the page; taps-only mode leaves scrolling alone.
+          style={dragPaint ? { touchAction: 'none' } : undefined}
           onPointerDown={handleCanvasClick}
           onPointerMove={handlePointerMove}
-          onPointerLeave={() => setHoverPointer(null)}
+          onPointerUp={endStroke}
+          onPointerCancel={endStroke}
+          onPointerLeave={() => {
+            setHoverPointer(null);
+            endStroke();
+          }}
         />
       </div>
 
@@ -489,6 +587,16 @@ export function ManualEdit() {
 
   const panelContent = (
     <>
+      <div className="edit__drag-row">
+        <div>
+          <div className="type-row-label">PAINT BY DRAGGING</div>
+          <div className="type-meta">
+            {dragPaint ? 'Hold and slide across squares · 2 fingers to zoom/pan' : 'Off — tap squares one at a time'}
+          </div>
+        </div>
+        <Toggle checked={dragPaint} onChange={updateDragPaint} />
+      </div>
+
       <div className="edit__palette-header">
         <span className="type-eyebrow">ACTIVE PALETTE · {paletteIds.length}</span>
         <button type="button" className="adjust__link" onClick={() => setCatalogOpen(true)}>
