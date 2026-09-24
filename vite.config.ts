@@ -29,15 +29,11 @@ export default defineConfig({
           { src: `${BASE}icons/icon-512.png`, sizes: '512x512', type: 'image/png', purpose: 'maskable' },
         ],
       },
-      // Everything the app needs is bundled/self-hosted (fonts, icons, JS/CSS,
-      // the cartoonify model) and there are no network requests to cache at
-      // runtime — precaching the build output is what makes "works in
-      // airplane mode" true. json/bin are the cartoonify model's weights
-      // (public/animegan-model); the raised size limit is for its ~4MB
-      // shards, which are well past Workbox's 2MB default.
+      // Everything the app needs is bundled/self-hosted (fonts, icons, JS/CSS)
+      // and there are no network requests to cache at runtime — precaching
+      // the build output is what makes "works in airplane mode" true.
       workbox: {
-        globPatterns: ['**/*.{js,css,html,woff2,png,svg,ico,json,bin}'],
-        maximumFileSizeToCacheInBytes: 8 * 1024 * 1024,
+        globPatterns: ['**/*.{js,css,html,woff2,png,svg,ico}'],
       },
     }),
   ],
