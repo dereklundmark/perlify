@@ -208,9 +208,9 @@ export function BoardSetup() {
             <span className="type-meta">{conversionLabel}</span>
           </div>
           <div className="adjust__board-fields">
-            <NumberField label="WIDTH" value={round1(widthDisplay)} onChange={handleWidth} />
+            <NumberField label="WIDTH" value={round1(widthDisplay)} onChange={handleWidth} commitOnEnter />
             <span className="adjust__times type-numeric">×</span>
-            <NumberField label="HEIGHT" value={round1(heightDisplay)} onChange={handleHeight} />
+            <NumberField label="HEIGHT" value={round1(heightDisplay)} onChange={handleHeight} commitOnEnter />
             <UnitChip value={unit.toUpperCase()} onClick={cycleUnit} />
           </div>
           <div className="adjust__divider" />
