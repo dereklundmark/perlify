@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react';
+import { Fragment, useEffect, useRef, useState } from 'react';
 import { useApp } from '../../state/AppContext';
 import { WizardBar } from '../ui/WizardBar';
 import { SegmentedControl } from '../ui/SegmentedControl';
@@ -111,20 +111,17 @@ export function ResultAdjust() {
   const isPerlerSelected = isCollectionMode && draft.collectionId === PERLER_PRESET_COLLECTION_ID;
   const isMyCollectionSelected = isCollectionMode && !isHamaSelected && !isPerlerSelected;
   const collection = state.collections.find((c) => c.id === draft.collectionId) ?? state.collections[0];
-  // Distinct from `collection` above: MY COLLECTION must resolve to the
-  // user's own collection even while a preset is active, both so tapping
-  // it doesn't just re-select the preset it's currently showing, and so
-  // its own label/swatches don't briefly read "Hama"/"Perler".
-  const myCollection = isMyCollectionSelected
-    ? collection
-    : state.collections.find((c) => c.id !== HAMA_PRESET_COLLECTION_ID && c.id !== PERLER_PRESET_COLLECTION_ID);
+  // Every user-made collection gets its own row (oldest first, so rows don't
+  // reshuffle each time one is saved) — previously only one was ever shown.
+  const customCollections = state.collections
+    .filter((c) => c.id !== HAMA_PRESET_COLLECTION_ID && c.id !== PERLER_PRESET_COLLECTION_ID)
+    .sort((a, b) => a.createdAt - b.createdAt);
   const { contrast, saturation, brightness, denoise, abstraction, sharpen } = draft.preprocessSettings;
   const hamaCount = isHamaSelected ? Math.min(draft.colorCount, HAMA_PRESET_BEADS.length) : HAMA_PRESET_BEADS.length;
   const perlerCount = isPerlerSelected
     ? Math.min(draft.colorCount, PERLER_PRESET_BEADS.length)
     : PERLER_PRESET_BEADS.length;
-  const myCollectionSize = myCollection?.beads.length ?? 0;
-  const myCollectionCount = isMyCollectionSelected ? Math.min(draft.colorCount, myCollectionSize) : myCollectionSize;
+  const selectedCollectionCount = Math.min(draft.colorCount, collection?.beads.length ?? draft.colorCount);
 
   function updatePreprocess(patch: Partial<Pattern['preprocessSettings']>) {
     if (!draft) return;
@@ -154,7 +151,7 @@ export function ResultAdjust() {
     : isPerlerSelected
       ? `Perler · ${perlerCount}`
       : isMyCollectionSelected
-        ? `${collection?.name ?? 'My Collection'} · ${myCollectionCount}`
+        ? `${collection?.name ?? 'My Collection'} · ${selectedCollectionCount}`
         : `Auto · ${draft.colorCount}`;
 
   const stage = (
@@ -271,48 +268,70 @@ export function ResultAdjust() {
 
                 <div className="adjust__divider" />
 
+                {customCollections.map((c, i) => {
+                  const selected = isCollectionMode && draft.collectionId === c.id;
+                  const size = c.beads.length;
+                  const count = selected ? Math.min(draft.colorCount, size) : size;
+                  return (
+                    <Fragment key={c.id}>
+                      {i > 0 && <div className="adjust__divider" />}
+                      <div className="radio-card__head radio-card__head--row">
+                        <button
+                          type="button"
+                          className="radio-card__head-select"
+                          onClick={() =>
+                            dispatch({
+                              type: 'draft/update',
+                              patch: {
+                                paletteMode: 'collection',
+                                collectionId: c.id,
+                                ...(selected ? {} : { colorCount: size }),
+                              },
+                            })
+                          }
+                        >
+                          <span className={`radio-dot${selected ? ' radio-dot--selected radio-dot--filled' : ''}`} />
+                          <span className="adjust__palette-label">{c.name}</span>
+                        </button>
+                        <button
+                          type="button"
+                          className="adjust__link"
+                          aria-label={`Edit ${c.name}`}
+                          onClick={() => dispatch({ type: 'collection/edit', id: c.id })}
+                        >
+                          {count} ›
+                        </button>
+                      </div>
+                      {selected && size > 0 && (
+                        <ColorCountBody
+                          max={size}
+                          value={draft.colorCount}
+                          onChange={(v) => dispatch({ type: 'draft/update', patch: { colorCount: v } })}
+                        />
+                      )}
+                      <div className="adjust__collection-swatch-row">
+                        {c.beads.map((bead) => (
+                          <span
+                            key={bead.id}
+                            className="adjust__collection-swatch"
+                            style={{ background: bead.hex }}
+                            title={bead.name}
+                          />
+                        ))}
+                      </div>
+                    </Fragment>
+                  );
+                })}
+
+                <div className="adjust__divider" />
                 <div className="radio-card__head radio-card__head--row">
-                  <button
-                    type="button"
-                    className="radio-card__head-select"
-                    onClick={() =>
-                      dispatch({
-                        type: 'draft/update',
-                        patch: {
-                          paletteMode: 'collection',
-                          collectionId: myCollection?.id ?? null,
-                          ...(isMyCollectionSelected ? {} : { colorCount: myCollectionSize }),
-                        },
-                      })
-                    }
-                  >
-                    <span className={`radio-dot${isMyCollectionSelected ? ' radio-dot--selected radio-dot--filled' : ''}`} />
-                    <span className="adjust__palette-label">{myCollection?.name ?? 'MY COLLECTION'}</span>
-                  </button>
                   <button
                     type="button"
                     className="adjust__link"
                     onClick={() => dispatch({ type: 'nav', screen: 'collections' })}
                   >
-                    {myCollectionCount} ›
+                    MANAGE COLLECTIONS ›
                   </button>
-                </div>
-                {isMyCollectionSelected && myCollectionSize > 0 && (
-                  <ColorCountBody
-                    max={myCollectionSize}
-                    value={draft.colorCount}
-                    onChange={(v) => dispatch({ type: 'draft/update', patch: { colorCount: v } })}
-                  />
-                )}
-                <div className="adjust__collection-swatch-row">
-                  {myCollection?.beads.map((bead) => (
-                    <span
-                      key={bead.id}
-                      className="adjust__collection-swatch"
-                      style={{ background: bead.hex }}
-                      title={bead.name}
-                    />
-                  ))}
                 </div>
               </div>
             )}

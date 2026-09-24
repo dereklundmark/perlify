@@ -62,7 +62,10 @@ export function CollectionEditor() {
     const updated = { ...editing, name: name.trim() || editing.name, beads };
     await saveCollection(updated);
     dispatch({ type: 'collection/upsert', collection: updated });
-    dispatch({ type: 'nav', screen: 'adjust' });
+    // Adjust needs an open pattern to render — coming here from the
+    // library's MY BEAD COLORS there isn't one, and navigating to it showed
+    // a blank white screen. Go back to where the user actually came from.
+    dispatch({ type: 'nav', screen: state.draft ? 'adjust' : 'collections' });
   }
 
   return (
