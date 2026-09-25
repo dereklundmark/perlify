@@ -6,6 +6,7 @@ import { PillButton } from '../ui/PillButton';
 import { RulerStage, useRulerLayout } from '../ui/RulerStage';
 import { catalogBeadById } from '../../lib/catalog';
 import { renderGrid } from '../../lib/renderGrid';
+import { patternGrid } from '../../lib/grid';
 import { savePattern, duplicatePattern } from '../../db/db';
 import type { Pattern } from '../../db/schema';
 import './FinalPreview.css';
@@ -28,7 +29,7 @@ export function FinalPreview() {
     const ctx = canvas.getContext('2d');
     if (!ctx) return;
     renderGrid(ctx, {
-      grid: draft.gridData,
+      grid: patternGrid(draft),
       cellSize,
       getBead: catalogBeadById,
       gridlines: draft.gridlines,

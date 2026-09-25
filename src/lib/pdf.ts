@@ -1,7 +1,7 @@
 import { jsPDF } from 'jspdf';
 import type { Pattern } from '../db/schema';
 import { catalogBeadById } from './catalog';
-import { beadUsage, gridStats } from './grid';
+import { beadUsage, gridStats, patternGrid } from './grid';
 import type { GridData } from './grid';
 import { renderGrid } from './renderGrid';
 import { shareOrDownloadBlob } from './save';
@@ -166,7 +166,8 @@ function boardSlice(grid: GridData, boardsWide: number, boardsHigh: number, bx: 
 export function buildPatternPdf(pattern: Pattern): Blob {
   const { boardsWide, boardsHigh } = pattern.boardConfig;
   const multiBoard = boardsWide * boardsHigh > 1;
-  const stats = gridStats(pattern.gridData);
+  const flatGrid = patternGrid(pattern);
+  const stats = gridStats(flatGrid);
 
   const doc = new jsPDF({ unit: 'mm', format: 'a4' });
 
@@ -184,7 +185,7 @@ export function buildPatternPdf(pattern: Pattern): Blob {
   doc.setTextColor(90);
   doc.text(metaLine, MARGIN_MM, MARGIN_MM + 6);
 
-  const { dataUrl, widthPx, heightPx } = renderGridPng(pattern.gridData, {
+  const { dataUrl, widthPx, heightPx } = renderGridPng(flatGrid, {
     gridlines: pattern.gridlines,
     symbolOverlay: pattern.symbolOverlay,
   });
@@ -199,7 +200,7 @@ export function buildPatternPdf(pattern: Pattern): Blob {
   const imgX = MARGIN_MM + (CONTENT_W - imgW) / 2;
   const imgY = MARGIN_MM + 12;
   doc.addImage(dataUrl, 'PNG', imgX, imgY, imgW, imgH);
-  drawLegend(doc, pattern.gridData, imgY + imgH + 10);
+  drawLegend(doc, flatGrid, imgY + imgH + 10);
 
   // One page per physical board, each with its own legend, per the handoff's
   // "beads per board are counted separately" / "split PDF per board".
@@ -207,7 +208,7 @@ export function buildPatternPdf(pattern: Pattern): Blob {
     let boardNum = 1;
     for (let by = 0; by < boardsHigh; by++) {
       for (let bx = 0; bx < boardsWide; bx++) {
-        const slice = boardSlice(pattern.gridData, boardsWide, boardsHigh, bx, by);
+        const slice = boardSlice(flatGrid, boardsWide, boardsHigh, bx, by);
         const sliceStats = gridStats(slice);
         drawBoardPage(
           doc,

@@ -10,7 +10,7 @@ import { useLiveMatch } from '../../hooks/useLiveMatch';
 import { catalogBeadById, HAMA_PRESET_BEADS, PERLER_PRESET_BEADS } from '../../lib/catalog';
 import { HAMA_PRESET_COLLECTION_ID, PERLER_PRESET_COLLECTION_ID } from '../../db/db';
 import { renderGrid } from '../../lib/renderGrid';
-import { beadUsage, gridStats } from '../../lib/grid';
+import { beadUsage, gridStats, patternGrid } from '../../lib/grid';
 import { savePattern } from '../../db/db';
 import type { DitherMode, Pattern, SamplingMode } from '../../db/schema';
 import './ResultAdjust.css';
@@ -88,7 +88,7 @@ export function ResultAdjust() {
     const ctx = canvas.getContext('2d');
     if (!ctx) return;
     renderGrid(ctx, {
-      grid: draft.gridData,
+      grid: patternGrid(draft),
       cellSize,
       getBead: catalogBeadById,
       gridlines: draft.gridlines,
@@ -103,8 +103,8 @@ export function ResultAdjust() {
 
   if (!draft) return null;
 
-  const stats = gridStats(draft.gridData);
-  const usage = beadUsage(draft.gridData);
+  const stats = gridStats(patternGrid(draft));
+  const usage = beadUsage(patternGrid(draft));
   const maxCount = usage[0]?.count ?? 1;
   const isCollectionMode = draft.paletteMode === 'collection';
   const isHamaSelected = isCollectionMode && draft.collectionId === HAMA_PRESET_COLLECTION_ID;

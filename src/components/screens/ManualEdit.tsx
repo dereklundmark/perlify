@@ -14,7 +14,8 @@ import { PillButton } from '../ui/PillButton';
 import { Toggle } from '../ui/Toggle';
 import { catalogBeadById, CATALOG } from '../../lib/catalog';
 import { renderGrid } from '../../lib/renderGrid';
-import { beadUsage, gridStats, type GridData } from '../../lib/grid';
+import { beadUsage, compositeGrid, gridStats, type GridData } from '../../lib/grid';
+import type { PatternLayer } from '../../db/schema';
 import { paintCell, clearCell, swapColor, rotate90, flipHorizontal } from '../../lib/gridTransform';
 import { savePattern } from '../../db/db';
 import './ManualEdit.css';
@@ -25,11 +26,29 @@ const MAX_HISTORY = 50;
 type Tool = 'paint' | 'clear' | 'swap';
 type View = 'edit' | 'swap-find' | 'swap-choose';
 
+/** Everything the editor can change and undo: the photo (base) layer plus the extra layers over it. */
+interface Doc {
+  base: GridData;
+  baseVisible: boolean;
+  layers: PatternLayer[];
+}
+
+const BASE_ID = 'base';
+
+function withActiveGrid(doc: Doc, activeId: string, grid: GridData): Doc {
+  if (activeId === BASE_ID) return { ...doc, base: grid };
+  return { ...doc, layers: doc.layers.map((l) => (l.id === activeId ? { ...l, grid } : l)) };
+}
+
+function flatten(doc: Doc): GridData {
+  return compositeGrid({ base: doc.base, layers: doc.layers, baseVisible: doc.baseVisible });
+}
+
 interface HistoryStep {
   id: string;
   label: string;
   affectedCount: number;
-  grid: GridData;
+  doc: Doc;
   swatch?: string;
   swatchFrom?: string;
   swatchTo?: string;
@@ -38,11 +57,41 @@ interface HistoryStep {
   swapToId?: string;
 }
 
+function EyeIcon({ open }: { open: boolean }) {
+  return (
+    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" aria-hidden>
+      {open ? (
+        <>
+          <path d="M2 12s4-7 10-7 10 7 10 7-4 7-10 7S2 12 2 12z" />
+          <circle cx="12" cy="12" r="3" />
+        </>
+      ) : (
+        <>
+          <path d="M3 3l18 18" />
+          <path d="M2 12s4-7 10-7c2 0 3.8.7 5.3 1.7M22 12s-4 7-10 7c-2 0-3.8-.7-5.3-1.7" />
+        </>
+      )}
+    </svg>
+  );
+}
+
 export function ManualEdit() {
   const { state, dispatch } = useApp();
   const draft = state.draft;
 
-  const [grid, setGrid] = useState<GridData>(draft?.gridData ?? []);
+  const [doc, setDoc] = useState<Doc>(() => ({
+    base: draft?.gridData ?? [],
+    baseVisible: draft?.baseVisible !== false,
+    layers: draft?.layers ?? [],
+  }));
+  const [activeLayerId, setActiveLayerId] = useState(BASE_ID);
+  // `grid` is the ACTIVE layer's grid — what the paint/clear/swap tools
+  // act on. `flat` is what's actually shown: every visible layer combined.
+  const activeLayer = doc.layers.find((l) => l.id === activeLayerId) ?? null;
+  const activeIsBase = activeLayer === null;
+  const grid = activeLayer ? activeLayer.grid : doc.base;
+  const activeVisible = activeLayer ? activeLayer.visible : doc.baseVisible;
+  const flat = useMemo(() => flatten(doc), [doc]);
   const [history, setHistory] = useState<HistoryStep[]>([]);
   const [pointer, setPointer] = useState(0);
   const [historyOpen, setHistoryOpen] = useState(false);
@@ -75,8 +124,10 @@ export function ManualEdit() {
   // faster than React re-renders, so each one must build on the previous
   // one's result (kept here), not on whatever `grid`/`history` the last
   // render happened to capture — otherwise squares get skipped or reverted.
-  const live = useRef({ grid, history, pointer });
-  live.current = { grid, history, pointer };
+  const live = useRef({ doc, history, pointer });
+  live.current = { doc, history, pointer };
+  const activeIdRef = useRef(activeLayerId);
+  activeIdRef.current = activeLayerId;
   const strokeCellRef = useRef<{ row: number; col: number } | null>(null);
   const [dragPaint, setDragPaint] = useState(() => {
     try {
@@ -94,7 +145,8 @@ export function ManualEdit() {
     }
   }
 
-  const usage = useMemo(() => beadUsage(grid), [grid]);
+  const usage = useMemo(() => beadUsage(flat), [flat]);
+  const activeUsage = useMemo(() => beadUsage(grid), [grid]);
   const paletteIds = useMemo(() => {
     const ids = new Set(usage.map((u) => u.beadId));
     extraPaletteIds.forEach((id) => ids.add(id));
@@ -110,7 +162,7 @@ export function ManualEdit() {
       id: 'seed',
       label: `Perlified · ${stats.colorCount} colors`,
       affectedCount: stats.beadCount,
-      grid: draft.gridData,
+      doc: { base: draft.gridData, baseVisible: draft.baseVisible !== false, layers: draft.layers ?? [] },
     };
     setHistory([seed]);
     setPointer(0);
@@ -123,9 +175,9 @@ export function ManualEdit() {
 
   useEffect(() => {
     const canvas = canvasRef.current;
-    if (!canvas || grid.length === 0) return;
-    const cols = grid[0].length;
-    const rows = grid.length;
+    if (!canvas || doc.base.length === 0) return;
+    const cols = doc.base[0].length;
+    const rows = doc.base.length;
     canvas.width = cols * cellSize;
     canvas.height = rows * cellSize;
     const ctx = canvas.getContext('2d');
@@ -133,12 +185,12 @@ export function ManualEdit() {
 
     let outlineChanged: Set<string> | undefined;
     let isolate: { beadId: string; fadeToward: string; fadePct: number } | undefined;
-    let displayGrid = grid;
+    let displayGrid = flat;
 
     if (view === 'swap-find' && swapSourceId) {
       isolate = { beadId: swapSourceId, fadeToward: '#fff8e7', fadePct: 0.88 };
     } else if (view === 'swap-choose' && swapSourceId && swapTargetId) {
-      displayGrid = swapColor(grid, swapSourceId, swapTargetId);
+      displayGrid = flatten(withActiveGrid(doc, activeLayerId, swapColor(grid, swapSourceId, swapTargetId)));
       outlineChanged = new Set();
       for (let r = 0; r < grid.length; r++) {
         for (let c = 0; c < grid[0].length; c++) {
@@ -163,31 +215,38 @@ export function ManualEdit() {
       ctx.lineWidth = 3;
       ctx.strokeRect(lastCell.col * cellSize + 1.5, lastCell.row * cellSize + 1.5, cellSize - 3, cellSize - 3);
     }
-  }, [grid, cellSize, lastCell, view, swapSourceId, swapTargetId]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [doc, flat, cellSize, lastCell, view, swapSourceId, swapTargetId]);
 
   if (!draft) return null;
 
   // Writes state and the `live` mirror together, so back-to-back calls
   // (drag-painting) see each other's results before React re-renders.
-  function commit(newGrid: GridData, nextHistory: HistoryStep[], nextPointer: number) {
-    live.current = { grid: newGrid, history: nextHistory, pointer: nextPointer };
+  function commit(newDoc: Doc, nextHistory: HistoryStep[], nextPointer: number) {
+    live.current = { doc: newDoc, history: nextHistory, pointer: nextPointer };
     setHistory(nextHistory);
     setPointer(nextPointer);
-    setGrid(newGrid);
+    setDoc(newDoc);
   }
 
-  function pushStep(newGrid: GridData, label: string, affectedCount: number, extra: Partial<HistoryStep> = {}) {
+  function pushStep(newDoc: Doc, label: string, affectedCount: number, extra: Partial<HistoryStep> = {}) {
     const { history: h, pointer: p } = live.current;
     const truncated = h.slice(0, p + 1);
-    const step: HistoryStep = { id: crypto.randomUUID(), label, affectedCount, grid: newGrid, ...extra };
+    const step: HistoryStep = { id: crypto.randomUUID(), label, affectedCount, doc: newDoc, ...extra };
     const next = [...truncated, step].slice(-MAX_HISTORY);
-    commit(newGrid, next, next.length - 1);
+    commit(newDoc, next, next.length - 1);
   }
 
   function jumpTo(index: number) {
     activeBatchRef.current = null;
+    const target = history[index].doc;
     setPointer(index);
-    setGrid(history[index].grid);
+    setDoc(target);
+    // Undoing "add layer" (or redoing "delete layer") can remove the layer
+    // that was selected — fall back to the photo layer rather than editing a ghost.
+    if (activeLayerId !== BASE_ID && !target.layers.some((l) => l.id === activeLayerId)) {
+      setActiveLayerId(BASE_ID);
+    }
   }
 
   function undo() {
@@ -209,19 +268,24 @@ export function ManualEdit() {
     // ~2px offset was enough to land a touch in the neighboring square.
     const col = Math.floor((e.clientX - rect.left - canvas.clientLeft) / cellSize);
     const row = Math.floor((e.clientY - rect.top - canvas.clientTop) / cellSize);
-    if (row < 0 || row >= grid.length || col < 0 || col >= (grid[0]?.length ?? 0)) return null;
+    if (row < 0 || row >= doc.base.length || col < 0 || col >= (doc.base[0]?.length ?? 0)) return null;
     return { row, col };
   }
 
   function applyToolAt(cell: { row: number; col: number }) {
-    const { grid: g, history: h, pointer: p } = live.current;
+    const { doc: d, history: h, pointer: p } = live.current;
+    const activeId = activeIdRef.current;
+    const layer = d.layers.find((l) => l.id === activeId);
+    // Painting on a hidden layer would change something you can't see.
+    if (layer ? !layer.visible : !d.baseVisible) return;
+    const g = layer ? layer.grid : d.base;
 
     if (tool === 'paint' && currentColor) {
-      const newGrid = paintCell(g, cell.row, cell.col, currentColor);
+      const newGrid = withActiveGrid(d, activeId, paintCell(g, cell.row, cell.col, currentColor));
       const batchKey = `paint:${currentColor}`;
       if (activeBatchRef.current === batchKey && p === h.length - 1) {
         const count = h[p].affectedCount + 1;
-        const updated = { ...h[p], grid: newGrid, affectedCount: count, label: `Painted ${count} bead${count === 1 ? '' : 's'}` };
+        const updated = { ...h[p], doc: newGrid, affectedCount: count, label: `Painted ${count} bead${count === 1 ? '' : 's'}` };
         commit(newGrid, [...h.slice(0, -1), updated], p);
       } else {
         activeBatchRef.current = batchKey;
@@ -229,11 +293,11 @@ export function ManualEdit() {
         pushStep(newGrid, 'Painted 1 bead', 1, { swatch: bead?.hex });
       }
     } else if (tool === 'clear') {
-      const newGrid = clearCell(g, cell.row, cell.col);
+      const newGrid = withActiveGrid(d, activeId, clearCell(g, cell.row, cell.col));
       const batchKey = 'clear';
       if (activeBatchRef.current === batchKey && p === h.length - 1) {
         const count = h[p].affectedCount + 1;
-        const updated = { ...h[p], grid: newGrid, affectedCount: count, label: `Cleared ${count} bead${count === 1 ? '' : 's'}` };
+        const updated = { ...h[p], doc: newGrid, affectedCount: count, label: `Cleared ${count} bead${count === 1 ? '' : 's'}` };
         commit(newGrid, [...h.slice(0, -1), updated], p);
       } else {
         activeBatchRef.current = batchKey;
@@ -334,13 +398,81 @@ export function ManualEdit() {
 
   function handleRotate() {
     activeBatchRef.current = null;
-    const stats = gridStats(grid);
-    pushStep(rotate90(grid), 'Rotated 90°', stats.beadCount);
+    const stats = gridStats(flat);
+    pushStep(
+      { ...doc, base: rotate90(doc.base), layers: doc.layers.map((l) => ({ ...l, grid: rotate90(l.grid) })) },
+      'Rotated 90°',
+      stats.beadCount,
+    );
   }
   function handleFlip() {
     activeBatchRef.current = null;
-    const stats = gridStats(grid);
-    pushStep(flipHorizontal(grid), 'Flipped', stats.beadCount);
+    const stats = gridStats(flat);
+    pushStep(
+      { ...doc, base: flipHorizontal(doc.base), layers: doc.layers.map((l) => ({ ...l, grid: flipHorizontal(l.grid) })) },
+      'Flipped',
+      stats.beadCount,
+    );
+  }
+
+  // ---- Layers ----
+  function selectLayer(id: string) {
+    activeBatchRef.current = null;
+    setActiveLayerId(id);
+  }
+
+  function addLayer() {
+    activeBatchRef.current = null;
+    const rows = doc.base.length;
+    const cols = doc.base[0]?.length ?? 0;
+    let n = doc.layers.length + 1;
+    while (doc.layers.some((l) => l.name === `Layer ${n}`)) n++;
+    const layer: PatternLayer = {
+      id: crypto.randomUUID(),
+      name: `Layer ${n}`,
+      visible: true,
+      grid: Array.from({ length: rows }, () => Array<string | null>(cols).fill(null)),
+    };
+    pushStep({ ...doc, layers: [...doc.layers, layer] }, `Added "${layer.name}"`, 0);
+    setActiveLayerId(layer.id);
+  }
+
+  function toggleLayer(id: string) {
+    activeBatchRef.current = null;
+    if (id === BASE_ID) {
+      pushStep({ ...doc, baseVisible: !doc.baseVisible }, `${doc.baseVisible ? 'Hid' : 'Showed'} "Photo"`, 0);
+      return;
+    }
+    const layer = doc.layers.find((l) => l.id === id);
+    if (!layer) return;
+    pushStep(
+      { ...doc, layers: doc.layers.map((l) => (l.id === id ? { ...l, visible: !l.visible } : l)) },
+      `${layer.visible ? 'Hid' : 'Showed'} "${layer.name}"`,
+      0,
+    );
+  }
+
+  function renameLayer(id: string) {
+    const layer = doc.layers.find((l) => l.id === id);
+    if (!layer) return;
+    const name = window.prompt('Rename layer', layer.name);
+    if (!name || !name.trim() || name.trim() === layer.name) return;
+    activeBatchRef.current = null;
+    pushStep(
+      { ...doc, layers: doc.layers.map((l) => (l.id === id ? { ...l, name: name.trim() } : l)) },
+      `Renamed "${layer.name}" to "${name.trim()}"`,
+      0,
+    );
+  }
+
+  function deleteLayer(id: string) {
+    const layer = doc.layers.find((l) => l.id === id);
+    if (!layer) return;
+    const beads = gridStats(layer.grid).beadCount;
+    if (!window.confirm(`Delete "${layer.name}"?${beads > 0 ? ` Its ${beads} bead${beads === 1 ? '' : 's'} will be removed.` : ''} You can undo this.`)) return;
+    activeBatchRef.current = null;
+    pushStep({ ...doc, layers: doc.layers.filter((l) => l.id !== id) }, `Deleted "${layer.name}"`, beads);
+    if (activeLayerId === id) setActiveLayerId(BASE_ID);
   }
 
   function addFromCatalog(id: string) {
@@ -359,15 +491,21 @@ export function ManualEdit() {
 
   function applySwap() {
     if (!swapSourceId || !swapTargetId) return;
-    const affected = usage.find((u) => u.beadId === swapSourceId)?.count ?? 0;
+    const affected = activeUsage.find((u) => u.beadId === swapSourceId)?.count ?? 0;
     const fromBead = catalogBeadById(swapSourceId);
     const toBead = catalogBeadById(swapTargetId);
-    pushStep(swapColor(grid, swapSourceId, swapTargetId), `${fromBead?.name ?? 'Color'} → ${toBead?.name ?? 'color'}`, affected, {
-      swatchFrom: fromBead?.hex,
-      swatchTo: toBead?.hex,
-      swapFromId: swapSourceId,
-      swapToId: swapTargetId,
-    });
+    pushStep(
+      withActiveGrid(doc, activeLayerId, swapColor(grid, swapSourceId, swapTargetId)),
+      `${fromBead?.name ?? 'Color'} → ${toBead?.name ?? 'color'}`,
+      affected,
+      {
+        swatchFrom: fromBead?.hex,
+        swatchTo: toBead?.hex,
+        // Only swaps on the photo layer become persistent re-match rules;
+        // a swap on a painted layer has nothing to re-apply against.
+        ...(activeIsBase ? { swapFromId: swapSourceId, swapToId: swapTargetId } : {}),
+      },
+    );
     setView('edit');
     setSwapSourceId(null);
     setSwapTargetId(null);
@@ -375,8 +513,8 @@ export function ManualEdit() {
 
   async function handleDone() {
     if (!draft) return;
-    const finalWidth = grid[0]?.length ?? draft.boardConfig.widthPegs;
-    const finalHeight = grid.length || draft.boardConfig.heightPegs;
+    const finalWidth = doc.base[0]?.length ?? draft.boardConfig.widthPegs;
+    const finalHeight = doc.base.length || draft.boardConfig.heightPegs;
     const boardConfig = { ...draft.boardConfig, widthPegs: finalWidth, heightPegs: finalHeight };
     // Swaps applied (and not since undone) this session get added to the
     // pattern's persistent colorSwaps list, so a later slider/palette
@@ -386,8 +524,9 @@ export function ManualEdit() {
       .filter((s): s is HistoryStep & { swapFromId: string; swapToId: string } => !!s.swapFromId && !!s.swapToId)
       .map((s) => ({ from: s.swapFromId, to: s.swapToId }));
     const colorSwaps = [...(draft.colorSwaps ?? []), ...sessionSwaps];
-    const updated = { ...draft, gridData: grid, boardConfig, colorSwaps, updatedAt: Date.now() };
-    dispatch({ type: 'draft/update', patch: { gridData: grid, boardConfig, colorSwaps } });
+    const layered = { gridData: doc.base, layers: doc.layers, baseVisible: doc.baseVisible };
+    const updated = { ...draft, ...layered, boardConfig, colorSwaps, updatedAt: Date.now() };
+    dispatch({ type: 'draft/update', patch: { ...layered, boardConfig, colorSwaps } });
     await savePattern(updated);
     dispatch({ type: 'library/upsert', pattern: updated });
     dispatch({ type: 'nav', screen: 'adjust' });
@@ -399,7 +538,7 @@ export function ManualEdit() {
   // ---- Swap-Find view ----
   if (view === 'swap-find') {
     const sourceBead = swapSourceId ? catalogBeadById(swapSourceId) : undefined;
-    const sourceCount = swapSourceId ? usage.find((u) => u.beadId === swapSourceId)?.count ?? 0 : 0;
+    const sourceCount = swapSourceId ? activeUsage.find((u) => u.beadId === swapSourceId)?.count ?? 0 : 0;
     return (
       <div className="screen screen--cream edit__screen">
         <WizardBar
@@ -422,7 +561,7 @@ export function ManualEdit() {
         <BottomSheet variant="white">
           <div className="type-eyebrow">TAP A COLOR TO FIND IT</div>
           <div className="edit__palette-grid">
-            {paletteIds.map((id) => {
+            {activeUsage.map(({ beadId: id }) => {
               const bead = catalogBeadById(id);
               if (!bead) return null;
               return (
@@ -597,6 +736,51 @@ export function ManualEdit() {
         <Toggle checked={dragPaint} onChange={updateDragPaint} />
       </div>
 
+      <div className="edit__layers">
+        <div className="edit__palette-header">
+          <span className="type-eyebrow">LAYERS · {doc.layers.length + 1}</span>
+          <button type="button" className="adjust__link" onClick={addLayer}>
+            ADD LAYER +
+          </button>
+        </div>
+        {[
+          ...[...doc.layers].reverse().map((l) => ({ id: l.id, name: l.name, visible: l.visible, beads: gridStats(l.grid).beadCount })),
+          { id: BASE_ID, name: 'PHOTO', visible: doc.baseVisible, beads: gridStats(doc.base).beadCount },
+        ].map((row) => {
+          const active = row.id === activeLayerId;
+          return (
+            <div key={row.id} className={`edit__layer-row${active ? ' edit__layer-row--active' : ''}`}>
+              <button
+                type="button"
+                className="edit__layer-eye"
+                aria-label={`${row.visible ? 'Hide' : 'Show'} ${row.name}`}
+                aria-pressed={row.visible}
+                onClick={() => toggleLayer(row.id)}
+              >
+                <EyeIcon open={row.visible} />
+              </button>
+              <button type="button" className="edit__layer-main" onClick={() => selectLayer(row.id)}>
+                <span className="edit__layer-name">{row.name}</span>
+                <span className="type-meta">{row.beads} beads</span>
+              </button>
+              {active && row.id !== BASE_ID && (
+                <>
+                  <button type="button" className="adjust__link" onClick={() => renameLayer(row.id)}>
+                    RENAME
+                  </button>
+                  <button type="button" className="adjust__link" onClick={() => deleteLayer(row.id)}>
+                    DELETE
+                  </button>
+                </>
+              )}
+            </div>
+          );
+        })}
+        {!activeVisible && (
+          <p className="type-meta edit__layers-note">This layer is hidden — turn it on to paint on it.</p>
+        )}
+      </div>
+
       <div className="edit__palette-header">
         <span className="type-eyebrow">ACTIVE PALETTE · {paletteIds.length}</span>
         <button type="button" className="adjust__link" onClick={() => setCatalogOpen(true)}>
@@ -688,7 +872,7 @@ export function ManualEdit() {
               className="edit__history-preview"
               ref={(el) => {
                 if (!el) return;
-                const g = history[pointer]?.grid ?? grid;
+                const g = history[pointer] ? flatten(history[pointer].doc) : flat;
                 const cols = g[0]?.length ?? 1;
                 const rows = g.length || 1;
                 const cs = 145 / Math.max(cols, rows);

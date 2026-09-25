@@ -62,6 +62,17 @@ export interface CropRect {
   height: number;
 }
 
+/**
+ * An extra layer painted over the photo-matched base grid (`Pattern.gridData`).
+ * `null` cells are transparent — the layer below shows through.
+ */
+export interface PatternLayer {
+  id: string;
+  name: string;
+  visible: boolean;
+  grid: (string | null)[][];
+}
+
 export interface Pattern {
   id: string;
   name: string;
@@ -79,7 +90,11 @@ export interface Pattern {
   samplingMode: SamplingMode;
   preprocessSettings: PreprocessSettings;
 
-  gridData: (string | null)[][]; // beadId | null, [row][col]
+  gridData: (string | null)[][]; // beadId | null, [row][col] — the photo-matched base layer
+  /** Extra layers stacked over the base, bottom to top. Absent on patterns saved before layers existed. */
+  layers?: PatternLayer[];
+  /** Whether the base (photo) layer shows/exports. Absent means true. */
+  baseVisible?: boolean;
   /**
    * Manual "wherever the match outputs X, use Y instead" rules from the
    * editor's Swap tool, re-applied after every live re-match (see

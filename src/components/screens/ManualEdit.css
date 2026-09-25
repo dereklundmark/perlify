@@ -138,6 +138,75 @@
   padding: 10px 13px;
 }
 
+.edit__layers {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.edit__layer-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: var(--white);
+  border: var(--border-mid) solid var(--ink);
+  border-radius: var(--radius-list);
+  padding: 4px 10px 4px 4px;
+  min-height: var(--touch-target-min);
+}
+
+.edit__layer-row--active {
+  background: var(--yellow);
+  box-shadow: var(--shadow-thumb);
+}
+
+.edit__layer-eye {
+  appearance: none;
+  border: none;
+  background: transparent;
+  color: var(--ink);
+  width: 40px;
+  height: 36px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  flex-shrink: 0;
+}
+
+.edit__layer-eye[aria-pressed='false'] {
+  color: var(--disabled);
+}
+
+.edit__layer-main {
+  appearance: none;
+  border: none;
+  background: transparent;
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 1px;
+  text-align: left;
+  cursor: pointer;
+  padding: 2px 0;
+}
+
+.edit__layer-name {
+  font: 700 13px var(--font-ui);
+  color: var(--ink);
+  max-width: 100%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.edit__layers-note {
+  margin: 0;
+  color: var(--red);
+}
+
 .edit__palette-header {
   display: flex;
   justify-content: space-between;

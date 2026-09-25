@@ -4,7 +4,7 @@ import { WizardBar } from '../ui/WizardBar';
 import { PillButton } from '../ui/PillButton';
 import { catalogBeadById } from '../../lib/catalog';
 import { renderGrid } from '../../lib/renderGrid';
-import { beadUsage, gridStats } from '../../lib/grid';
+import { beadUsage, gridStats, patternGrid } from '../../lib/grid';
 import { exportPatternPdf } from '../../lib/pdf';
 import './Export.css';
 
@@ -27,7 +27,7 @@ export function Export() {
     const ctx = canvas.getContext('2d');
     if (!ctx) return;
     renderGrid(ctx, {
-      grid: draft.gridData,
+      grid: patternGrid(draft),
       cellSize,
       getBead: catalogBeadById,
       gridlines: draft.gridlines,
@@ -42,8 +42,8 @@ export function Export() {
 
   if (!draft) return null;
 
-  const stats = gridStats(draft.gridData);
-  const usage = beadUsage(draft.gridData);
+  const stats = gridStats(patternGrid(draft));
+  const usage = beadUsage(patternGrid(draft));
   const maxCount = usage[0]?.count ?? 1;
   const pageCount =
     draft.boardConfig.boardsWide * draft.boardConfig.boardsHigh > 1

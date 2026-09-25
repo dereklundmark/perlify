@@ -2,7 +2,7 @@ import { useRef, useState } from 'react';
 import { useApp } from '../../state/AppContext';
 import { listPatterns, deletePattern, duplicatePattern, savePattern } from '../../db/db';
 import { exportBackup, importBackup } from '../../lib/backup';
-import { gridStats } from '../../lib/grid';
+import { gridStats, patternGrid } from '../../lib/grid';
 import { PillButton } from '../ui/PillButton';
 import { MenuDots } from '../ui/MenuDots';
 import { PatternThumbnail } from '../PatternThumbnail';
@@ -139,11 +139,12 @@ export function Library() {
 
         <div className="library__grid">
           {state.patterns.map((pattern) => {
-            const stats = gridStats(pattern.gridData);
+            const flat = patternGrid(pattern);
+            const stats = gridStats(flat);
             return (
               <div key={pattern.id} className="pattern-card">
                 <button type="button" className="pattern-card__thumb-wrap" onClick={() => openPattern(pattern)}>
-                  <PatternThumbnail grid={pattern.gridData} size={160} />
+                  <PatternThumbnail grid={flat} size={160} />
                 </button>
                 <div className="pattern-card__meta-row">
                   <div>
