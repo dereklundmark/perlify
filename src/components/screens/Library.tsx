@@ -221,19 +221,15 @@ export function Library() {
   );
 }
 
+// The white tile with the same 3x3 grid of big black dots as the app's
+// home-screen icon (public/icons).
 function PegboardIcon() {
-  const dots = [];
-  const n = 12;
-  for (let row = 0; row < n; row++) {
-    for (let col = 0; col < n; col++) {
-      dots.push(<circle key={`${row}-${col}`} cx={10 + col * 19} cy={10 + row * 19} r={3.2} />);
-    }
-  }
+  const centers = [63.5, 116, 168.5];
   return (
     <svg viewBox="0 0 232 232" width="100%" height="100%">
       <rect x="1.25" y="1.25" width="229.5" height="229.5" rx="12" fill="#efece4" stroke="#12100c" strokeWidth="2.5" />
-      <g fill="none" stroke="rgba(18,16,12,0.17)" strokeWidth="1.4">
-        {dots}
+      <g fill="#12100c">
+        {centers.flatMap((cy) => centers.map((cx) => <circle key={`${cx}-${cy}`} cx={cx} cy={cy} r={18} />))}
       </g>
     </svg>
   );
