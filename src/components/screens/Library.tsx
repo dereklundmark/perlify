@@ -9,6 +9,8 @@ import { PatternThumbnail } from '../PatternThumbnail';
 import type { Pattern } from '../../db/schema';
 import './Library.css';
 
+const APP_VERSION_LABEL = `v${__APP_VERSION__} · ${__APP_BUILD__} · ${__APP_BUILT_ON__}`;
+
 export function Library() {
   const { state, dispatch } = useApp();
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -104,6 +106,7 @@ export function Library() {
             </button>
           </div>
           {importMessage && <p className="type-meta library__import-message">{importMessage}</p>}
+          <p className="type-meta library__version">{APP_VERSION_LABEL}</p>
         </div>
         <input
           ref={fileInputRef}
@@ -201,6 +204,7 @@ export function Library() {
           </button>
         </div>
         {importMessage && <p className="type-meta library__import-message">{importMessage}</p>}
+        <p className="type-meta library__version">{APP_VERSION_LABEL}</p>
       </div>
       <input
         ref={fileInputRef}
