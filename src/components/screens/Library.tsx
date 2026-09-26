@@ -1,7 +1,7 @@
 import { useRef, useState } from 'react';
 import { useApp } from '../../state/AppContext';
 import { listPatterns, deletePattern, duplicatePattern, savePattern } from '../../db/db';
-import { exportBackup, importBackup } from '../../lib/backup';
+import { exportBackup, getLastBackupAt, importBackup } from '../../lib/backup';
 import { gridStats, patternGrid } from '../../lib/grid';
 import { PillButton } from '../ui/PillButton';
 import { MenuDots } from '../ui/MenuDots';
@@ -16,6 +16,7 @@ export function Library() {
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [openMenuId, setOpenMenuId] = useState<string | null>(null);
   const [importMessage, setImportMessage] = useState<string | null>(null);
+  const [lastBackupAt, setLastBackupAt] = useState<number | null>(() => getLastBackupAt());
 
   async function refresh() {
     const patterns = await listPatterns();
@@ -23,7 +24,8 @@ export function Library() {
   }
 
   async function handleBackup() {
-    await exportBackup();
+    const savedAt = await exportBackup();
+    if (savedAt !== null) setLastBackupAt(savedAt);
   }
 
   async function handleImportFile(file: File) {
@@ -123,6 +125,17 @@ export function Library() {
     );
   }
 
+  // Flag a backup as out of date when any design was saved after it, so the
+  // reminder is about actual unprotected work rather than just elapsed time.
+  const newestEdit = state.patterns.reduce((max, p) => Math.max(max, p.updatedAt), 0);
+  const backupStale = lastBackupAt === null || newestEdit > lastBackupAt;
+  const backupStatus =
+    lastBackupAt === null
+      ? 'Never backed up'
+      : `Last backed up ${new Date(lastBackupAt).toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: 'numeric' })}${
+          backupStale ? ' · newer changes not included' : ''
+        }`;
+
   return (
     <div className="screen screen--yellow">
       <div className="screen__body library__body">
@@ -204,6 +217,9 @@ export function Library() {
           </button>
         </div>
         {importMessage && <p className="type-meta library__import-message">{importMessage}</p>}
+        <p className={`type-meta library__backup-status${backupStale ? ' library__backup-status--stale' : ''}`}>
+          {backupStatus}
+        </p>
         <p className="type-meta library__version">{APP_VERSION_LABEL}</p>
       </div>
       <input

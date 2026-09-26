@@ -3,6 +3,26 @@ import type { BeadCollection, Pattern } from '../db/schema';
 import { shareOrDownloadBlob } from './save';
 
 const BACKUP_VERSION = 1;
+const LAST_BACKUP_KEY = 'perlify.lastBackupAt';
+
+/** When a full backup was last saved from this device, or null if never. */
+export function getLastBackupAt(): number | null {
+  try {
+    const raw = localStorage.getItem(LAST_BACKUP_KEY);
+    const n = raw ? Number(raw) : NaN;
+    return Number.isFinite(n) ? n : null;
+  } catch {
+    return null;
+  }
+}
+
+function setLastBackupAt(when: number): void {
+  try {
+    localStorage.setItem(LAST_BACKUP_KEY, String(when));
+  } catch {
+    // Storage unavailable (private mode etc.) — the date just won't be remembered.
+  }
+}
 
 interface BackupFile {
   version: number;
@@ -11,7 +31,8 @@ interface BackupFile {
   patterns: Pattern[];
 }
 
-export async function exportBackup(): Promise<void> {
+/** Saves a full backup. Returns the time it was saved, or null if the user cancelled. */
+export async function exportBackup(): Promise<number | null> {
   const { collections, patterns } = await getAllForBackup();
   const payload: BackupFile = {
     version: BACKUP_VERSION,
@@ -21,7 +42,11 @@ export async function exportBackup(): Promise<void> {
   };
   const blob = new Blob([JSON.stringify(payload, null, 2)], { type: 'application/json' });
   const date = new Date().toISOString().slice(0, 10);
-  await shareOrDownloadBlob(blob, `perlify-backup-${date}.json`);
+  const saved = await shareOrDownloadBlob(blob, `perlify-backup-${date}.json`);
+  if (!saved) return null;
+  const when = Date.now();
+  setLastBackupAt(when);
+  return when;
 }
 
 export async function exportPatternJson(pattern: Pattern): Promise<void> {
