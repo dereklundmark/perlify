@@ -12,7 +12,7 @@ import { EditorLayout } from '../ui/EditorLayout';
 import { BottomSheet } from '../ui/BottomSheet';
 import { PillButton } from '../ui/PillButton';
 import { Toggle } from '../ui/Toggle';
-import { catalogBeadById, CATALOG } from '../../lib/catalog';
+import { beadById, CATALOG } from '../../lib/catalog';
 import { renderGrid } from '../../lib/renderGrid';
 import { beadUsage, compositeGrid, gridStats, type GridData } from '../../lib/grid';
 import type { PatternLayer } from '../../db/schema';
@@ -202,7 +202,7 @@ export function ManualEdit() {
     renderGrid(ctx, {
       grid: displayGrid,
       cellSize,
-      getBead: catalogBeadById,
+      getBead: beadById,
       gridlines: true,
       symbolOverlay: false,
       surface: 'light',
@@ -289,7 +289,7 @@ export function ManualEdit() {
         commit(newGrid, [...h.slice(0, -1), updated], p);
       } else {
         activeBatchRef.current = batchKey;
-        const bead = catalogBeadById(currentColor);
+        const bead = beadById(currentColor);
         pushStep(newGrid, 'Painted 1 bead', 1, { swatch: bead?.hex });
       }
     } else if (tool === 'clear') {
@@ -492,8 +492,8 @@ export function ManualEdit() {
   function applySwap() {
     if (!swapSourceId || !swapTargetId) return;
     const affected = activeUsage.find((u) => u.beadId === swapSourceId)?.count ?? 0;
-    const fromBead = catalogBeadById(swapSourceId);
-    const toBead = catalogBeadById(swapTargetId);
+    const fromBead = beadById(swapSourceId);
+    const toBead = beadById(swapTargetId);
     pushStep(
       withActiveGrid(doc, activeLayerId, swapColor(grid, swapSourceId, swapTargetId)),
       `${fromBead?.name ?? 'Color'} → ${toBead?.name ?? 'color'}`,
@@ -532,12 +532,12 @@ export function ManualEdit() {
     dispatch({ type: 'nav', screen: 'adjust' });
   }
 
-  const currentColorBead = currentColor ? catalogBeadById(currentColor) : undefined;
+  const currentColorBead = currentColor ? beadById(currentColor) : undefined;
   const currentColorCount = usage.find((u) => u.beadId === currentColor)?.count ?? 0;
 
   // ---- Swap-Find view ----
   if (view === 'swap-find') {
-    const sourceBead = swapSourceId ? catalogBeadById(swapSourceId) : undefined;
+    const sourceBead = swapSourceId ? beadById(swapSourceId) : undefined;
     const sourceCount = swapSourceId ? activeUsage.find((u) => u.beadId === swapSourceId)?.count ?? 0 : 0;
     return (
       <div className="screen screen--cream edit__screen">
@@ -562,7 +562,7 @@ export function ManualEdit() {
           <div className="type-eyebrow">TAP A COLOR TO FIND IT</div>
           <div className="edit__palette-grid">
             {activeUsage.map(({ beadId: id }) => {
-              const bead = catalogBeadById(id);
+              const bead = beadById(id);
               if (!bead) return null;
               return (
                 <button
@@ -593,8 +593,8 @@ export function ManualEdit() {
 
   // ---- Swap-Choose view ----
   if (view === 'swap-choose') {
-    const sourceBead = swapSourceId ? catalogBeadById(swapSourceId) : undefined;
-    const targetBead = swapTargetId ? catalogBeadById(swapTargetId) : undefined;
+    const sourceBead = swapSourceId ? beadById(swapSourceId) : undefined;
+    const targetBead = swapTargetId ? beadById(swapTargetId) : undefined;
     const sourceCount = swapSourceId ? usage.find((u) => u.beadId === swapSourceId)?.count ?? 0 : 0;
     return (
       <div className="screen screen--cream edit__screen">
@@ -638,7 +638,7 @@ export function ManualEdit() {
                 style={{ background: bead.hex }}
                 onClick={() => setSwapTargetId(bead.id)}
               >
-                <span>{catalogBeadById(bead.id)?.symbol ?? ''}</span>
+                <span>{beadById(bead.id)?.symbol ?? ''}</span>
               </button>
             ))}
           </div>
@@ -715,10 +715,10 @@ export function ManualEdit() {
         <div className="edit__hover-readout" style={{ left: hoverPointer.x + 16, top: hoverPointer.y - 10 }}>
           <span
             className="edit__hover-swatch"
-            style={{ background: catalogBeadById(grid[hoverPointer.row]?.[hoverPointer.col] ?? '')?.hex ?? 'transparent' }}
+            style={{ background: beadById(grid[hoverPointer.row]?.[hoverPointer.col] ?? '')?.hex ?? 'transparent' }}
           />
           {hoverPointer.row},{hoverPointer.col} →{' '}
-          {catalogBeadById(grid[hoverPointer.row]?.[hoverPointer.col] ?? '')?.name.toUpperCase() ?? 'EMPTY'}
+          {beadById(grid[hoverPointer.row]?.[hoverPointer.col] ?? '')?.name.toUpperCase() ?? 'EMPTY'}
         </div>
       )}
     </div>
@@ -789,7 +789,7 @@ export function ManualEdit() {
       </div>
       <div className="edit__palette-grid">
         {paletteIds.map((id) => {
-          const bead = catalogBeadById(id);
+          const bead = beadById(id);
           if (!bead) return null;
           return (
             <button
@@ -879,7 +879,7 @@ export function ManualEdit() {
                 el.width = cols * cs;
                 el.height = rows * cs;
                 const ctx = el.getContext('2d');
-                if (ctx) renderGrid(ctx, { grid: g, cellSize: cs, getBead: catalogBeadById, gridlines: false, symbolOverlay: false, surface: 'light' });
+                if (ctx) renderGrid(ctx, { grid: g, cellSize: cs, getBead: beadById, gridlines: false, symbolOverlay: false, surface: 'light' });
               }}
             />
           </div>

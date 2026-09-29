@@ -9,7 +9,7 @@ import { PegboardCropSheet } from './PegboardCropSheet';
 import { useLiveMatch } from '../../hooks/useLiveMatch';
 import { computeCoverCrop } from '../../lib/crop';
 import { pegsToUnit, pitchMm, unitToPegs, type BoardUnit } from '../../lib/board';
-import { catalogBeadById } from '../../lib/catalog';
+import { beadById } from '../../lib/catalog';
 import { renderGrid } from '../../lib/renderGrid';
 import { gridStats } from '../../lib/grid';
 import { savePattern } from '../../db/db';
@@ -49,7 +49,7 @@ export function BoardSetup() {
     renderGrid(ctx, {
       grid: draft.gridData,
       cellSize,
-      getBead: catalogBeadById,
+      getBead: beadById,
       gridlines: draft.gridlines,
       symbolOverlay: false,
       surface: 'light',

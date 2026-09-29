@@ -1,7 +1,8 @@
 import { useRef, useState } from 'react';
 import { useApp } from '../../state/AppContext';
-import { listPatterns, deletePattern, duplicatePattern, savePattern } from '../../db/db';
-import { exportBackup, getLastBackupAt, importBackup } from '../../lib/backup';
+import { listCollections, listPatterns, deletePattern, duplicatePattern, savePattern, type RestoreMode } from '../../db/db';
+import { exportBackup, getLastBackupAt, readBackupFile, restoreBackup, type BackupContents, type BackupFile } from '../../lib/backup';
+import { BackupSheet, RestoreSheet } from './BackupSheets';
 import { gridStats, patternGrid } from '../../lib/grid';
 import { PillButton } from '../ui/PillButton';
 import { MenuDots } from '../ui/MenuDots';
@@ -17,26 +18,75 @@ export function Library() {
   const [openMenuId, setOpenMenuId] = useState<string | null>(null);
   const [importMessage, setImportMessage] = useState<string | null>(null);
   const [lastBackupAt, setLastBackupAt] = useState<number | null>(() => getLastBackupAt());
+  const [backupSheetOpen, setBackupSheetOpen] = useState(false);
+  const [pendingRestore, setPendingRestore] = useState<BackupFile | null>(null);
 
   async function refresh() {
-    const patterns = await listPatterns();
-    dispatch({ type: 'library/loaded', patterns, collections: state.collections });
+    // Collections too — a restore can add them, and they used to only show up after a restart.
+    const [patterns, collections] = await Promise.all([listPatterns(), listCollections()]);
+    dispatch({ type: 'library/loaded', patterns, collections });
   }
 
-  async function handleBackup() {
-    const savedAt = await exportBackup();
-    if (savedAt !== null) setLastBackupAt(savedAt);
+  async function handleBackup(contents: BackupContents) {
+    setBackupSheetOpen(false);
+    const savedAt = await exportBackup(contents);
+    if (savedAt === null) return;
+    if (contents.patterns) setLastBackupAt(savedAt);
+    setImportMessage('Backup saved.');
   }
 
   async function handleImportFile(file: File) {
     try {
-      const result = await importBackup(file);
-      setImportMessage(`Restored ${result.patterns} pattern(s) and ${result.collections} collection(s).`);
-      await refresh();
+      setImportMessage(null);
+      setPendingRestore(await readBackupFile(file));
     } catch (err) {
       setImportMessage(err instanceof Error ? err.message : 'Import failed.');
     }
   }
+
+  async function handleRestore(contents: BackupContents, mode: RestoreMode) {
+    const backup = pendingRestore;
+    setPendingRestore(null);
+    if (!backup) return;
+    try {
+      const result = await restoreBackup(backup, contents, mode);
+      const describe = (counts: typeof result.collections, word: string) => {
+        const parts = [`${counts.added} ${word}${counts.added === 1 ? '' : 's'} added`];
+        if (counts.copied) parts.push(`${counts.copied} added as "(restored)" ${counts.copied === 1 ? 'copy' : 'copies'}`);
+        if (counts.unchanged) parts.push(`${counts.unchanged} already here`);
+        return parts.join(', ');
+      };
+      const lines: string[] = [];
+      if (contents.collections) lines.push(describe(result.collections, 'collection'));
+      if (contents.patterns) lines.push(describe(result.patterns, 'design'));
+      setImportMessage(`${mode === 'replace' ? 'Replaced' : 'Restored'}: ${lines.join(' · ')}.`);
+      await refresh();
+    } catch (err) {
+      setImportMessage(err instanceof Error ? err.message : 'Restore failed.');
+    }
+  }
+
+  const sheets = (
+    <>
+      {backupSheetOpen && (
+        <BackupSheet
+          collectionCount={state.collections.length}
+          patternCount={state.patterns.length}
+          onBackup={handleBackup}
+          onClose={() => setBackupSheetOpen(false)}
+        />
+      )}
+      {pendingRestore && (
+        <RestoreSheet
+          backup={pendingRestore}
+          deviceCollectionCount={state.collections.length}
+          devicePatternCount={state.patterns.length}
+          onRestore={handleRestore}
+          onClose={() => setPendingRestore(null)}
+        />
+      )}
+    </>
+  );
 
   async function handleDuplicate(pattern: Pattern) {
     await duplicatePattern(pattern.id);
@@ -121,6 +171,7 @@ export function Library() {
             e.target.value = '';
           }}
         />
+        {sheets}
       </div>
     );
   }
@@ -209,7 +260,7 @@ export function Library() {
           <button type="button" className="library__link" onClick={() => dispatch({ type: 'nav', screen: 'collections' })}>
             MY BEAD COLORS
           </button>
-          <button type="button" className="library__link" onClick={handleBackup}>
+          <button type="button" className="library__link" onClick={() => setBackupSheetOpen(true)}>
             BACK UP
           </button>
           <button type="button" className="library__link" onClick={() => fileInputRef.current?.click()}>
@@ -233,6 +284,7 @@ export function Library() {
           e.target.value = '';
         }}
       />
+      {sheets}
     </div>
   );
 }

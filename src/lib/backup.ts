@@ -1,11 +1,11 @@
-import { getAllForBackup, importBackupData } from '../db/db';
+import { getAllForBackup, restoreBackupData, type RestoreMode, type RestoreResult } from '../db/db';
 import type { BeadCollection, Pattern } from '../db/schema';
 import { shareOrDownloadBlob } from './save';
 
 const BACKUP_VERSION = 1;
 const LAST_BACKUP_KEY = 'perlify.lastBackupAt';
 
-/** When a full backup was last saved from this device, or null if never. */
+/** When a backup including designs was last saved from this device, or null if never. */
 export function getLastBackupAt(): number | null {
   try {
     const raw = localStorage.getItem(LAST_BACKUP_KEY);
@@ -24,28 +24,39 @@ function setLastBackupAt(when: number): void {
   }
 }
 
-interface BackupFile {
+export interface BackupFile {
   version: number;
   exportedAt: number;
   collections: BeadCollection[];
   patterns: Pattern[];
 }
 
-/** Saves a full backup. Returns the time it was saved, or null if the user cancelled. */
-export async function exportBackup(): Promise<number | null> {
-  const { collections, patterns } = await getAllForBackup();
+/** Which categories a backup or restore covers. */
+export interface BackupContents {
+  collections: boolean;
+  patterns: boolean;
+}
+
+/**
+ * Saves a backup of the chosen categories. Returns the time it was saved, or
+ * null if the user cancelled. Only a backup that includes designs counts
+ * toward "last backed up" — that status is about not losing designs.
+ */
+export async function exportBackup(contents: BackupContents): Promise<number | null> {
+  const all = await getAllForBackup();
   const payload: BackupFile = {
     version: BACKUP_VERSION,
     exportedAt: Date.now(),
-    collections,
-    patterns,
+    collections: contents.collections ? all.collections : [],
+    patterns: contents.patterns ? all.patterns : [],
   };
   const blob = new Blob([JSON.stringify(payload, null, 2)], { type: 'application/json' });
   const date = new Date().toISOString().slice(0, 10);
-  const saved = await shareOrDownloadBlob(blob, `perlify-backup-${date}.json`);
+  const kind = contents.collections && contents.patterns ? 'backup' : contents.patterns ? 'designs' : 'bead-colors';
+  const saved = await shareOrDownloadBlob(blob, `perlify-${kind}-${date}.json`);
   if (!saved) return null;
   const when = Date.now();
-  setLastBackupAt(when);
+  if (contents.patterns) setLastBackupAt(when);
   return when;
 }
 
@@ -57,7 +68,8 @@ export async function exportPatternJson(pattern: Pattern): Promise<void> {
 
 export class BackupImportError extends Error {}
 
-export async function importBackup(file: File): Promise<{ collections: number; patterns: number }> {
+/** Reads and validates a backup file without changing anything, so the user can choose what to restore. */
+export async function readBackupFile(file: File): Promise<BackupFile> {
   let parsed: unknown;
   try {
     parsed = JSON.parse(await file.text());
@@ -79,7 +91,15 @@ export async function importBackup(file: File): Promise<{ collections: number; p
   if (data.version > BACKUP_VERSION) {
     throw new BackupImportError('This backup was made with a newer version of Perlify.');
   }
+  return data;
+}
 
-  await importBackupData({ collections: data.collections, patterns: data.patterns });
-  return { collections: data.collections.length, patterns: data.patterns.length };
+export async function restoreBackup(data: BackupFile, contents: BackupContents, mode: RestoreMode): Promise<RestoreResult> {
+  return restoreBackupData(
+    {
+      collections: contents.collections ? data.collections : undefined,
+      patterns: contents.patterns ? data.patterns : undefined,
+    },
+    mode,
+  );
 }

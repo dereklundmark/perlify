@@ -102,6 +102,12 @@ export interface Pattern {
    * instead of being silently overwritten by the fresh match.
    */
   colorSwaps: { from: string; to: string }[];
+  /**
+   * Definitions of the non-catalog beads the grid uses, snapshotted on save
+   * so the pattern still renders after the bead is edited or removed from
+   * its collection. Absent on patterns saved before custom colors existed.
+   */
+  customBeads?: Bead[];
 
   gridlines: boolean;
   symbolOverlay: boolean;

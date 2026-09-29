@@ -7,7 +7,7 @@ import { Toggle } from '../ui/Toggle';
 import { EditorLayout } from '../ui/EditorLayout';
 import { RulerStage, useRulerLayout } from '../ui/RulerStage';
 import { useLiveMatch } from '../../hooks/useLiveMatch';
-import { catalogBeadById, HAMA_PRESET_BEADS, PERLER_PRESET_BEADS } from '../../lib/catalog';
+import { beadById, HAMA_PRESET_BEADS, PERLER_PRESET_BEADS } from '../../lib/catalog';
 import { HAMA_PRESET_COLLECTION_ID, PERLER_PRESET_COLLECTION_ID } from '../../db/db';
 import { renderGrid } from '../../lib/renderGrid';
 import { beadUsage, gridStats, patternGrid } from '../../lib/grid';
@@ -90,7 +90,7 @@ export function ResultAdjust() {
     renderGrid(ctx, {
       grid: patternGrid(draft),
       cellSize,
-      getBead: catalogBeadById,
+      getBead: beadById,
       gridlines: draft.gridlines,
       symbolOverlay: false,
       surface: 'light',
@@ -479,7 +479,7 @@ export function ResultAdjust() {
         <div className="adjust__color-list">
           {usage.length === 0 && <p className="type-body">No beads matched yet.</p>}
           {usage.map(({ beadId, count }) => {
-            const bead = catalogBeadById(beadId);
+            const bead = beadById(beadId);
             return (
               <div key={beadId} className="adjust__color-row">
                 <span className="adjust__color-swatch" style={{ background: bead?.hex }} />

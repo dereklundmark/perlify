@@ -64,3 +64,35 @@ export const DEFAULT_OWNED_BEADS: CatalogBead[] = DEFAULT_OWNED_INDICES.map((i) 
 // to get two full-spectrum, maximally-different-from-each-other subsets.
 export const HAMA_PRESET_BEADS: CatalogBead[] = CATALOG.filter((_, i) => i % 2 === 0);
 export const PERLER_PRESET_BEADS: CatalogBead[] = CATALOG.filter((_, i) => i % 2 === 1);
+
+// Custom beads (user-picked colors, or catalog colors the user re-tinted)
+// live in collections, not the catalog — but every renderer looks beads up
+// by id alone. They register here so a lookup finds them too. Entries are
+// never dropped: a pattern can still reference a bead its collection no
+// longer has.
+const CUSTOM_SYMBOLS = 'yz!#$%&*+=?@~^<>';
+const CUSTOM_BY_ID = new Map<string, CatalogBead>();
+
+function customSymbol(id: string): string {
+  let hash = 0;
+  for (let i = 0; i < id.length; i++) hash = (hash * 31 + id.charCodeAt(i)) | 0;
+  return CUSTOM_SYMBOLS.charAt(Math.abs(hash) % CUSTOM_SYMBOLS.length);
+}
+
+export function registerCustomBeads(beads: ReadonlyArray<{ id: string; name: string; hex: string }>): void {
+  for (const { id, name, hex } of beads) {
+    if (CATALOG_BY_ID.has(id)) continue;
+    const existing = CUSTOM_BY_ID.get(id);
+    if (existing && existing.hex === hex && existing.name === name) continue;
+    CUSTOM_BY_ID.set(id, { id, name, hex, symbol: customSymbol(id) });
+  }
+}
+
+/** Any bead by id — catalog first, then registered custom beads. */
+export function beadById(id: string): CatalogBead | undefined {
+  return CATALOG_BY_ID.get(id) ?? CUSTOM_BY_ID.get(id);
+}
+
+export function isCatalogBead(id: string): boolean {
+  return CATALOG_BY_ID.has(id);
+}

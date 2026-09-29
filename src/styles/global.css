@@ -122,3 +122,27 @@ p {
   flex: 1;
   min-height: 0;
 }
+
+.error-boundary__body {
+  padding: 40px var(--gutter);
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.error-boundary__detail {
+  white-space: pre-wrap;
+  word-break: break-word;
+  margin: 0;
+}
+
+.error-boundary__home {
+  appearance: none;
+  border: var(--border-thick) solid var(--ink);
+  background: var(--ink);
+  color: var(--yellow);
+  border-radius: var(--radius-pill);
+  padding: 14px 20px;
+  font: 700 14px var(--font-ui);
+  cursor: pointer;
+}

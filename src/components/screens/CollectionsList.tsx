@@ -1,13 +1,15 @@
 import { useState } from 'react';
 import { useApp } from '../../state/AppContext';
-import { createCollection, deleteCollection, duplicateCollection, saveCollection } from '../../db/db';
+import { createCollection, deleteCollection, duplicateCollection, isProtectedCollection, saveCollection } from '../../db/db';
 import { MenuDots } from '../ui/MenuDots';
+import { ConfirmDialog } from '../ui/ConfirmDialog';
 import type { BeadCollection } from '../../db/schema';
 import './CollectionsList.css';
 
 export function CollectionsList() {
   const { state, dispatch } = useApp();
   const [openMenuId, setOpenMenuId] = useState<string | null>(null);
+  const [pendingDelete, setPendingDelete] = useState<BeadCollection | null>(null);
 
   function selectAndEdit(collection: BeadCollection) {
     if (state.draft) {
@@ -39,14 +41,21 @@ export function CollectionsList() {
     if (copy) dispatch({ type: 'collection/upsert', collection: copy });
   }
 
-  async function handleDelete(collection: BeadCollection) {
+  function handleDelete(collection: BeadCollection) {
     setOpenMenuId(null);
-    const usedBy = state.patterns.filter((p) => p.collectionId === collection.id).length;
-    const warning = usedBy > 0 ? ` It's used by ${usedBy} pattern${usedBy === 1 ? '' : 's'} — they'll keep their beads but lose the lock to this collection.` : '';
-    if (!window.confirm(`Delete "${collection.name}"?${warning}`)) return;
+    if (isProtectedCollection(collection.id)) return;
+    setPendingDelete(collection);
+  }
+
+  async function confirmDelete() {
+    const collection = pendingDelete;
+    setPendingDelete(null);
+    if (!collection) return;
     await deleteCollection(collection.id);
     dispatch({ type: 'collection/remove', id: collection.id });
   }
+
+  const pendingDeleteUsedBy = pendingDelete ? state.patterns.filter((p) => p.collectionId === pendingDelete.id).length : 0;
 
   return (
     <div className="screen screen--cream collections__screen">
@@ -101,9 +110,13 @@ export function CollectionsList() {
                   <button type="button" onClick={() => handleDuplicate(collection)}>
                     Duplicate
                   </button>
-                  <button type="button" className="collection-card__menu-danger" onClick={() => handleDelete(collection)}>
-                    Delete
-                  </button>
+                  {isProtectedCollection(collection.id) ? (
+                    <span className="collection-card__menu-note">Built-in · can't delete</span>
+                  ) : (
+                    <button type="button" className="collection-card__menu-danger" onClick={() => handleDelete(collection)}>
+                      Delete
+                    </button>
+                  )}
                 </div>
               )}
             </div>
@@ -114,6 +127,24 @@ export function CollectionsList() {
           </button>
         </div>
       </div>
+
+      {pendingDelete && (
+        <ConfirmDialog
+          title={`Delete ${pendingDelete.name}?`}
+          confirmLabel="DELETE FOREVER"
+          tone="danger"
+          onConfirm={confirmDelete}
+          onCancel={() => setPendingDelete(null)}
+        >
+          <p>Are you sure? This can't be undone.</p>
+          {pendingDeleteUsedBy > 0 && (
+            <p>
+              It's used by {pendingDeleteUsedBy} pattern{pendingDeleteUsedBy === 1 ? '' : 's'} — they'll keep their beads but
+              lose the link to this collection.
+            </p>
+          )}
+        </ConfirmDialog>
+      )}
     </div>
   );
 }

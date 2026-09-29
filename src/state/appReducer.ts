@@ -141,6 +141,10 @@ export function appReducer(state: AppState, action: Action): AppState {
       return { ...state, editingCollectionId: action.id, screen: 'collection' };
 
     case 'nav':
+      // Every path back to the library saves the draft first. Dropping it
+      // here stops a stale draft from hijacking later navigation — e.g.
+      // Library → MY BEAD COLORS → SAVE used to jump into the old pattern.
+      if (action.screen === 'library') return { ...state, screen: 'library', draft: null };
       return { ...state, screen: action.screen };
 
     default:

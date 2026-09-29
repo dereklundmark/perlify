@@ -4,6 +4,9 @@ import { matchImageToGrid } from '../lib/match';
 
 const DEBOUNCE_MS = 80;
 
+/** Per pattern id: the match inputs its gridData was last produced from (or last accepted as-is). */
+const lastMatchSignature = new Map<string, string>();
+
 /**
  * Loads the draft's source image and keeps gridData live-matched against
  * whatever fields currently drive the match (crop, board size, palette,
@@ -27,14 +30,35 @@ export function useLiveMatch(): HTMLImageElement | null {
 
   useEffect(() => {
     if (!draft || !imgEl) return;
-    // Don't clobber a hand-edited grid just because this hook remounted.
+    const collectionBeads =
+      draft.paletteMode === 'collection' ? (state.collections.find((c) => c.id === draft.collectionId)?.beads ?? []) : [];
+    const signature = JSON.stringify([
+      draft.cropRect,
+      draft.boardConfig.widthPegs,
+      draft.boardConfig.heightPegs,
+      draft.preprocessSettings,
+      draft.paletteMode,
+      draft.colorCount,
+      draft.ditherMode,
+      draft.samplingMode,
+      draft.colorSwaps,
+      collectionBeads.map((b) => `${b.id}:${b.hex}`),
+    ]);
+    // Don't clobber a hand-edited grid just because this hook remounted —
+    // unless the inputs changed while it was unmounted (e.g. a collection
+    // was picked or edited on the Collections screens), which it would
+    // otherwise never notice.
     if (!didInitialMatch.current) {
       didInitialMatch.current = true;
-      if (draft.gridData.length > 0) return;
+      const previous = lastMatchSignature.get(draft.id);
+      if (draft.gridData.length > 0 && (previous === undefined || previous === signature)) {
+        lastMatchSignature.set(draft.id, signature);
+        return;
+      }
     }
     window.clearTimeout(debounceRef.current);
     debounceRef.current = window.setTimeout(() => {
-      const collectionBeads = state.collections.find((c) => c.id === draft.collectionId)?.beads ?? [];
+      lastMatchSignature.set(draft.id, signature);
       const result = matchImageToGrid({
         image: imgEl,
         cropRect: draft.cropRect,

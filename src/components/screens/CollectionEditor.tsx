@@ -1,16 +1,26 @@
 import { useMemo, useState } from 'react';
 import { useApp } from '../../state/AppContext';
-import { CATALOG, catalogBeadById } from '../../lib/catalog';
-import { hsbToRgb } from '../../lib/hsb';
-import { rgbToHex } from '../../lib/color';
+import { CATALOG, catalogBeadById, isCatalogBead } from '../../lib/catalog';
 import { saveCollection } from '../../db/db';
 import type { Bead } from '../../db/schema';
+import { BottomSheet } from '../ui/BottomSheet';
+import { ColorPicker } from '../ui/ColorPicker';
+import { SegmentedControl } from '../ui/SegmentedControl';
+import { groupByColorFamily } from '../../lib/colorFamily';
 import './CollectionEditor.css';
 
-// Pegboard's custom-color control is a single hue rail (see the `4a` canvas
-// markup) — saturation/value are fixed rather than a second rail.
-const CUSTOM_SAT = 0.65;
-const CUSTOM_VALUE = 0.85;
+const DEFAULT_CUSTOM_HEX = '#4a7bd9';
+
+type OwnedOrder = 'added' | 'family';
+const OWNED_ORDER_KEY = 'perlify.ownedOrder';
+
+function readOwnedOrder(): OwnedOrder {
+  try {
+    return localStorage.getItem(OWNED_ORDER_KEY) === 'family' ? 'family' : 'added';
+  } catch {
+    return 'added';
+  }
+}
 
 export function CollectionEditor() {
   const { state, dispatch } = useApp();
@@ -18,12 +28,29 @@ export function CollectionEditor() {
   const [name, setName] = useState(editing?.name ?? '');
   const [beads, setBeads] = useState<Bead[]>(editing?.beads ?? []);
   const [search, setSearch] = useState('');
-  const [hue, setHue] = useState(220);
+  const [customHex, setCustomHex] = useState(DEFAULT_CUSTOM_HEX);
   const [customName, setCustomName] = useState('');
+  // The owned bead whose edit sheet is open, plus that sheet's working copy.
+  const [editingBeadId, setEditingBeadId] = useState<string | null>(null);
+  const [editHex, setEditHex] = useState('');
+  const [editName, setEditName] = useState('');
+  const [saveError, setSaveError] = useState<string | null>(null);
+  const [ownedOrder, setOwnedOrder] = useState<OwnedOrder>(readOwnedOrder);
 
   const ownedIds = useMemo(() => new Set(beads.map((b) => b.id)), [beads]);
 
-  if (!editing) return null;
+  if (!editing) {
+    return (
+      <div className="screen screen--cream collection__screen">
+        <div className="collection__bar">
+          <button type="button" onClick={() => dispatch({ type: 'nav', screen: 'collections' })}>
+            COLLECTIONS
+          </button>
+        </div>
+        <p className="type-body collection__missing">This collection no longer exists.</p>
+      </div>
+    );
+  }
 
   const results = search.trim()
     ? CATALOG.filter((c) => c.name.toLowerCase().includes(search.trim().toLowerCase()))
@@ -41,31 +68,88 @@ export function CollectionEditor() {
     );
   }
 
-  function removeBead(id: string) {
-    setBeads((prev) => prev.filter((b) => b.id !== id));
+  const editingBead = editingBeadId ? beads.find((b) => b.id === editingBeadId) : undefined;
+
+  function openBeadEditor(bead: Bead) {
+    setEditingBeadId(bead.id);
+    setEditHex(bead.hex);
+    setEditName(bead.name);
   }
 
-  const customHex = rgbToHex(hsbToRgb({ h: hue, s: CUSTOM_SAT, v: CUSTOM_VALUE }));
+  function closeBeadEditor() {
+    setEditingBeadId(null);
+  }
+
+  function deleteEditingBead() {
+    if (!editingBead) return;
+    setBeads((prev) => prev.filter((b) => b.id !== editingBead.id));
+    closeBeadEditor();
+  }
+
+  function saveEditingBead() {
+    if (!editingBead) return;
+    const hex = editHex.toLowerCase();
+    const beadName = editName.trim() || editingBead.name;
+    const hexChanged = hex !== editingBead.hex.toLowerCase();
+    if (hexChanged || beadName !== editingBead.name) {
+      // A re-tinted color becomes a new bead: a catalog id always means the
+      // catalog color, and saved patterns keep drawing the custom one they used.
+      const keepId = !hexChanged && !isCatalogBead(editingBead.id);
+      const replacement: Bead = { id: keepId ? editingBead.id : crypto.randomUUID(), name: beadName, hex };
+      setBeads((prev) => prev.map((b) => (b.id === editingBead.id ? replacement : b)));
+    }
+    closeBeadEditor();
+  }
 
   function addCustomColor() {
     const bead: Bead = {
       id: crypto.randomUUID(),
-      name: customName.trim() || `Custom ${customHex}`,
+      name: customName.trim() || `Custom ${customHex.toUpperCase()}`,
       hex: customHex,
     };
     setBeads((prev) => [...prev, bead]);
     setCustomName('');
   }
 
+  function changeOwnedOrder(order: OwnedOrder) {
+    setOwnedOrder(order);
+    try {
+      localStorage.setItem(OWNED_ORDER_KEY, order);
+    } catch {
+      // Storage blocked — the choice just won't be remembered next time.
+    }
+  }
+
+  function renderOwnedSwatch(bead: Bead) {
+    const catalogBead = catalogBeadById(bead.id);
+    return (
+      <button
+        key={bead.id}
+        type="button"
+        className="collection__owned-swatch"
+        style={{ background: bead.hex }}
+        onClick={() => openBeadEditor(bead)}
+        title={`Edit ${bead.name}`}
+        aria-label={`Edit ${bead.name}`}
+      >
+        {catalogBead?.symbol && <span>{catalogBead.symbol}</span>}
+      </button>
+    );
+  }
+
   async function handleSave() {
     if (!editing) return;
     const updated = { ...editing, name: name.trim() || editing.name, beads };
-    await saveCollection(updated);
+    try {
+      await saveCollection(updated);
+    } catch (err) {
+      setSaveError(`Couldn't save: ${err instanceof Error ? err.message : String(err)}`);
+      return;
+    }
     dispatch({ type: 'collection/upsert', collection: updated });
-    // Adjust needs an open pattern to render — coming here from the
-    // library's MY BEAD COLORS there isn't one, and navigating to it showed
-    // a blank white screen. Go back to where the user actually came from.
-    dispatch({ type: 'nav', screen: state.draft ? 'adjust' : 'collections' });
+    // Adjust needs an open pattern with a photo to render — only go back
+    // there when there really is one; otherwise back to the collections list.
+    dispatch({ type: 'nav', screen: state.draft?.sourceImage ? 'adjust' : 'collections' });
   }
 
   return (
@@ -86,6 +170,7 @@ export function CollectionEditor() {
           onChange={(e) => setName(e.target.value)}
           placeholder="Collection name"
         />
+        {saveError && <p className="type-meta collection__error">{saveError}</p>}
         <div className="type-meta">
           {beads.length} BEADS · USED BY {usedByCount} PATTERN{usedByCount === 1 ? '' : 'S'}
         </div>
@@ -125,41 +210,38 @@ export function CollectionEditor() {
           })}
         </div>
 
-        <div className="type-eyebrow">
-          OWNED · {beads.length} OF {CATALOG.length}
+        <div className="collection__owned-head">
+          <span className="type-eyebrow">OWNED · {beads.length}</span>
+          {beads.length > 1 && (
+            <SegmentedControl
+              size="compact"
+              options={[
+                { value: 'added', label: 'ADDED' },
+                { value: 'family', label: 'COLOR' },
+              ]}
+              value={ownedOrder}
+              onChange={changeOwnedOrder}
+            />
+          )}
         </div>
-        <div className="collection__owned-grid">
-          {beads.map((bead) => {
-            const catalogBead = catalogBeadById(bead.id);
-            return (
-              <button
-                key={bead.id}
-                type="button"
-                className="collection__owned-swatch"
-                style={{ background: bead.hex }}
-                onClick={() => removeBead(bead.id)}
-                title={`Remove ${bead.name}`}
-              >
-                {catalogBead?.symbol && <span>{catalogBead.symbol}</span>}
-              </button>
-            );
-          })}
-        </div>
+        {beads.length > 0 && <span className="type-meta">TAP A COLOR TO EDIT OR DELETE</span>}
+        {ownedOrder === 'family' ? (
+          groupByColorFamily(beads).map((group) => (
+            <div key={group.family} className="collection__owned-group">
+              <span className="type-meta collection__owned-group-label">
+                {group.label} · {group.items.length}
+              </span>
+              <div className="collection__owned-grid">{group.items.map(renderOwnedSwatch)}</div>
+            </div>
+          ))
+        ) : (
+          <div className="collection__owned-grid">{beads.map(renderOwnedSwatch)}</div>
+        )}
 
         <div className="collection__custom-card">
-          <div className="collection__custom-head">
-            <span className="type-row-label">CUSTOM COLOR</span>
-            <span className="type-meta">{customHex.toUpperCase()}</span>
-          </div>
+          <span className="type-row-label">CUSTOM COLOR</span>
 
-          <input
-            type="range"
-            min={0}
-            max={360}
-            value={hue}
-            onChange={(e) => setHue(Number(e.target.value))}
-            className="collection__hue-rail"
-          />
+          <ColorPicker initialHex={DEFAULT_CUSTOM_HEX} onChange={setCustomHex} />
 
           <div className="collection__custom-add-row">
             <input
@@ -174,6 +256,40 @@ export function CollectionEditor() {
           </div>
         </div>
       </div>
+
+      {editingBead && (
+        <BottomSheet variant="white" modal onBackdropClick={closeBeadEditor}>
+          <div className="collection__edit-sheet">
+            <div className="collection__edit-head">
+              <span className="type-eyebrow">EDIT COLOR</span>
+              <button type="button" className="collection__edit-cancel" onClick={closeBeadEditor}>
+                CANCEL
+              </button>
+            </div>
+            <input
+              value={editName}
+              onChange={(e) => setEditName(e.target.value)}
+              placeholder="Color name"
+              className="collection__custom-name-input"
+              aria-label="Color name"
+            />
+            <ColorPicker
+              key={editingBead.id}
+              initialHex={editingBead.hex}
+              originalHex={editingBead.hex}
+              onChange={setEditHex}
+            />
+            <div className="collection__edit-actions">
+              <button type="button" className="collection__edit-delete" onClick={deleteEditingBead}>
+                DELETE
+              </button>
+              <button type="button" className="collection__custom-add collection__edit-save" onClick={saveEditingBead}>
+                SAVE COLOR
+              </button>
+            </div>
+          </div>
+        </BottomSheet>
+      )}
     </div>
   );
 }

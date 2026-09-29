@@ -9,6 +9,7 @@ import { Export } from './components/screens/Export';
 import { ManualEdit } from './components/screens/ManualEdit';
 import { CollectionEditor } from './components/screens/CollectionEditor';
 import { CollectionsList } from './components/screens/CollectionsList';
+import { ErrorBoundary } from './components/ErrorBoundary';
 
 function Screens() {
   const { state } = useApp();
@@ -39,13 +40,15 @@ function Screens() {
 
 /** Adjust/Edit break out of the phone-width shell on iPad — see EditorLayout. */
 function Shell() {
-  const { state } = useApp();
+  const { state, dispatch } = useApp();
   const isTablet = useIsTablet();
   const isWideEditor = isTablet && (state.screen === 'adjust' || state.screen === 'edit');
 
   return (
     <div className={`app-shell${isWideEditor ? ' app-shell--wide' : ''}`}>
-      <Screens />
+      <ErrorBoundary onReset={() => dispatch({ type: 'nav', screen: 'library' })}>
+        <Screens />
+      </ErrorBoundary>
     </div>
   );
 }

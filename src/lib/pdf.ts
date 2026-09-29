@@ -1,6 +1,6 @@
 import { jsPDF } from 'jspdf';
 import type { Pattern } from '../db/schema';
-import { catalogBeadById } from './catalog';
+import { beadById } from './catalog';
 import { beadUsage, gridStats, patternGrid } from './grid';
 import type { GridData } from './grid';
 import { renderGrid } from './renderGrid';
@@ -29,7 +29,7 @@ function renderGridPng(
   renderGrid(ctx, {
     grid,
     cellSize: PRINT_CELL_PX,
-    getBead: catalogBeadById,
+    getBead: beadById,
     gridlines: opts.gridlines,
     symbolOverlay: opts.symbolOverlay,
     surface: 'light',
@@ -119,7 +119,7 @@ function drawLegend(doc: jsPDF, grid: GridData, startY: number): void {
       addLegendHeader();
     }
 
-    const bead = catalogBeadById(beadId);
+    const bead = beadById(beadId);
     const [r, g, b] = hexToRgbTuple(bead?.hex ?? '#999999');
 
     doc.setFillColor(r, g, b);

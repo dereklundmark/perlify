@@ -2,7 +2,7 @@ import { useEffect, useRef, useState } from 'react';
 import { useApp } from '../../state/AppContext';
 import { WizardBar } from '../ui/WizardBar';
 import { PillButton } from '../ui/PillButton';
-import { catalogBeadById } from '../../lib/catalog';
+import { beadById } from '../../lib/catalog';
 import { renderGrid } from '../../lib/renderGrid';
 import { beadUsage, gridStats, patternGrid } from '../../lib/grid';
 import { exportPatternPdf } from '../../lib/pdf';
@@ -29,7 +29,7 @@ export function Export() {
     renderGrid(ctx, {
       grid: patternGrid(draft),
       cellSize,
-      getBead: catalogBeadById,
+      getBead: beadById,
       gridlines: draft.gridlines,
       symbolOverlay: draft.symbolOverlay,
       surface: 'light',
@@ -96,7 +96,7 @@ export function Export() {
 
         <div className="export__legend">
           {usage.map(({ beadId, count }) => {
-            const bead = catalogBeadById(beadId);
+            const bead = beadById(beadId);
             return (
               <div key={beadId} className="export__legend-row">
                 <span className="export__legend-swatch" style={{ background: bead?.hex }} />

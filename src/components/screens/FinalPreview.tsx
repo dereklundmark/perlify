@@ -4,7 +4,7 @@ import { WizardBar } from '../ui/WizardBar';
 import { Toggle } from '../ui/Toggle';
 import { PillButton } from '../ui/PillButton';
 import { RulerStage, useRulerLayout } from '../ui/RulerStage';
-import { catalogBeadById } from '../../lib/catalog';
+import { beadById } from '../../lib/catalog';
 import { renderGrid } from '../../lib/renderGrid';
 import { patternGrid } from '../../lib/grid';
 import { savePattern, duplicatePattern } from '../../db/db';
@@ -31,7 +31,7 @@ export function FinalPreview() {
     renderGrid(ctx, {
       grid: patternGrid(draft),
       cellSize,
-      getBead: catalogBeadById,
+      getBead: beadById,
       gridlines: draft.gridlines,
       symbolOverlay: draft.symbolOverlay,
       surface: 'light',

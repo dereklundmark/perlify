@@ -1,6 +1,6 @@
 import { useEffect, useRef } from 'react';
 import type { GridData } from '../lib/grid';
-import { catalogBeadById } from '../lib/catalog';
+import { beadById } from '../lib/catalog';
 import { renderGrid } from '../lib/renderGrid';
 
 interface PatternThumbnailProps {
@@ -24,7 +24,7 @@ export function PatternThumbnail({ grid, size = 160 }: PatternThumbnailProps) {
     renderGrid(ctx, {
       grid,
       cellSize,
-      getBead: catalogBeadById,
+      getBead: beadById,
       gridlines: false,
       symbolOverlay: false,
       surface: 'light',

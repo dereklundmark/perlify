@@ -1,6 +1,6 @@
 import { openDB, type DBSchema, type IDBPDatabase } from 'idb';
 import { DB_NAME, DB_VERSION, type BeadCollection, type Pattern } from './schema';
-import { DEFAULT_OWNED_BEADS, HAMA_PRESET_BEADS, PERLER_PRESET_BEADS } from '../lib/catalog';
+import { beadById, DEFAULT_OWNED_BEADS, HAMA_PRESET_BEADS, isCatalogBead, PERLER_PRESET_BEADS } from '../lib/catalog';
 
 interface PerlifyDBSchema extends DBSchema {
   collections: {
@@ -37,33 +37,48 @@ export const DEFAULT_COLLECTION_ID = 'my-colors';
 export const HAMA_PRESET_COLLECTION_ID = 'preset-hama';
 export const PERLER_PRESET_COLLECTION_ID = 'preset-perler';
 
-async function ensureCollection(id: string, name: string, beads: BeadCollection['beads']): Promise<BeadCollection> {
+// Set once the starter collections exist, so deleting one (e.g. "My
+// Colors") sticks instead of it being re-created on the next launch.
+const SEEDED_KEY = 'perlify.collectionsSeeded';
+
+function readSeededFlag(): boolean {
+  try {
+    return localStorage.getItem(SEEDED_KEY) === '1';
+  } catch {
+    return false;
+  }
+}
+
+function writeSeededFlag(): void {
+  try {
+    localStorage.setItem(SEEDED_KEY, '1');
+  } catch {
+    // Storage blocked — the non-empty check in seedStarterCollections still protects deletions.
+  }
+}
+
+/**
+ * Seeds "My Colors" + the Hama/Perler presets (quick starting palettes —
+ * see catalog.ts) on a brand-new install only. An install that already has
+ * any collection is never re-seeded.
+ */
+export async function seedStarterCollections(): Promise<void> {
+  if (readSeededFlag()) return;
   const db = await getDb();
-  const existing = await db.get('collections', id);
-  if (existing) return existing;
-  const seeded: BeadCollection = { id, name, beads, createdAt: Date.now() };
-  await db.put('collections', seeded);
-  return seeded;
-}
-
-export async function ensureDefaultCollection(): Promise<BeadCollection> {
-  return ensureCollection(
-    DEFAULT_COLLECTION_ID,
-    'My Colors',
-    DEFAULT_OWNED_BEADS.map(({ id, name, hex }) => ({ id, name, hex })),
-  );
-}
-
-/** Two preset starting palettes for trying design variations fast — see catalog.ts. */
-export async function ensurePresetCollections(): Promise<void> {
-  await Promise.all([
-    ensureCollection(HAMA_PRESET_COLLECTION_ID, 'Hama', HAMA_PRESET_BEADS.map(({ id, name, hex }) => ({ id, name, hex }))),
-    ensureCollection(
-      PERLER_PRESET_COLLECTION_ID,
-      'Perler',
-      PERLER_PRESET_BEADS.map(({ id, name, hex }) => ({ id, name, hex })),
-    ),
-  ]);
+  if ((await db.count('collections')) > 0) {
+    writeSeededFlag();
+    return;
+  }
+  const now = Date.now();
+  const toBeads = (beads: typeof DEFAULT_OWNED_BEADS) => beads.map(({ id, name, hex }) => ({ id, name, hex }));
+  const seeds: BeadCollection[] = [
+    { id: DEFAULT_COLLECTION_ID, name: 'My Colors', beads: toBeads(DEFAULT_OWNED_BEADS), createdAt: now },
+    { id: HAMA_PRESET_COLLECTION_ID, name: 'Hama', beads: toBeads(HAMA_PRESET_BEADS), createdAt: now },
+    { id: PERLER_PRESET_COLLECTION_ID, name: 'Perler', beads: toBeads(PERLER_PRESET_BEADS), createdAt: now },
+  ];
+  const tx = db.transaction('collections', 'readwrite');
+  await Promise.all([...seeds.map((c) => tx.store.put(c)), tx.done]);
+  writeSeededFlag();
 }
 
 export async function listCollections(): Promise<BeadCollection[]> {
@@ -81,7 +96,13 @@ export async function saveCollection(collection: BeadCollection): Promise<void> 
   await db.put('collections', collection);
 }
 
+/** The built-in Hama/Perler palettes can't be deleted (they can still be edited, renamed or duplicated). */
+export function isProtectedCollection(id: string): boolean {
+  return id === HAMA_PRESET_COLLECTION_ID || id === PERLER_PRESET_COLLECTION_ID;
+}
+
 export async function deleteCollection(id: string): Promise<void> {
+  if (isProtectedCollection(id)) return;
   const db = await getDb();
   await db.delete('collections', id);
 }
@@ -116,9 +137,22 @@ export async function getPattern(id: string): Promise<Pattern | undefined> {
   return db.get('patterns', id);
 }
 
+/** Snapshots every non-catalog bead the pattern uses (see Pattern.customBeads), hidden layers included. */
+function withCustomBeads(pattern: Pattern): Pattern {
+  const ids = new Set<string>();
+  for (const grid of [pattern.gridData, ...(pattern.layers ?? []).map((l) => l.grid)]) {
+    for (const row of grid) for (const id of row) if (id && !isCatalogBead(id)) ids.add(id);
+  }
+  const customBeads = [...ids].flatMap((id) => {
+    const bead = beadById(id);
+    return bead ? [{ id, name: bead.name, hex: bead.hex }] : [];
+  });
+  return { ...pattern, customBeads };
+}
+
 export async function savePattern(pattern: Pattern): Promise<void> {
   const db = await getDb();
-  await db.put('patterns', pattern);
+  await db.put('patterns', withCustomBeads(pattern));
 }
 
 export async function deletePattern(id: string): Promise<void> {
@@ -145,12 +179,98 @@ export async function getAllForBackup(): Promise<{ collections: BeadCollection[]
   return { collections, patterns };
 }
 
-export async function importBackupData(data: { collections: BeadCollection[]; patterns: Pattern[] }): Promise<void> {
+export type RestoreMode = 'add' | 'replace';
+
+export interface RestoreCounts {
+  /** New to this device and stored as-is. */
+  added: number;
+  /** Same id as something here but different content — stored as a "(restored)" copy, the original untouched. */
+  copied: number;
+  /** Already here, identical — nothing to do. */
+  unchanged: number;
+}
+
+export interface RestoreResult {
+  collections: RestoreCounts;
+  patterns: RestoreCounts;
+}
+
+const RESTORED_SUFFIX = ' (restored)';
+
+function sameCollection(a: BeadCollection, b: BeadCollection): boolean {
+  return a.name === b.name && JSON.stringify(a.beads) === JSON.stringify(b.beads);
+}
+
+/**
+ * Restores backup data. 'add' never changes or removes anything already on
+ * this device: new items are added, identical ones skipped, and conflicting
+ * ones (same id, different content — e.g. the same starter collection edited
+ * on two devices) come in as renamed copies. 'replace' wipes the chosen
+ * categories first, then stores the backup's. Either way only the
+ * categories passed in are touched.
+ */
+export async function restoreBackupData(
+  data: { collections?: BeadCollection[]; patterns?: Pattern[] },
+  mode: RestoreMode,
+): Promise<RestoreResult> {
   const db = await getDb();
   const tx = db.transaction(['collections', 'patterns'], 'readwrite');
-  await Promise.all([
-    ...data.collections.map((c) => tx.objectStore('collections').put(c)),
-    ...data.patterns.map((p) => tx.objectStore('patterns').put(p)),
-  ]);
+  const collectionStore = tx.objectStore('collections');
+  const patternStore = tx.objectStore('patterns');
+  const result: RestoreResult = {
+    collections: { added: 0, copied: 0, unchanged: 0 },
+    patterns: { added: 0, copied: 0, unchanged: 0 },
+  };
+  // Collections that came in under a new id, so their patterns can follow.
+  const collectionIdMap = new Map<string, string>();
+
+  if (mode === 'replace') {
+    if (data.collections) await collectionStore.clear();
+    if (data.patterns) await patternStore.clear();
+  }
+
+  for (const incoming of data.collections ?? []) {
+    const existing = mode === 'add' ? await collectionStore.get(incoming.id) : undefined;
+    if (!existing) {
+      await collectionStore.put(incoming);
+      result.collections.added++;
+    } else if (sameCollection(existing, incoming)) {
+      result.collections.unchanged++;
+    } else {
+      const copy = { ...incoming, id: crypto.randomUUID(), name: incoming.name + RESTORED_SUFFIX };
+      collectionIdMap.set(incoming.id, copy.id);
+      await collectionStore.put(copy);
+      result.collections.copied++;
+    }
+  }
+
+  for (const raw of data.patterns ?? []) {
+    const mappedCollection = raw.collectionId ? collectionIdMap.get(raw.collectionId) : undefined;
+    const incoming = mappedCollection ? { ...raw, collectionId: mappedCollection } : raw;
+    const existing = mode === 'add' ? await patternStore.get(incoming.id) : undefined;
+    if (!existing) {
+      await patternStore.put(incoming);
+      result.patterns.added++;
+    } else if (existing.updatedAt === incoming.updatedAt) {
+      result.patterns.unchanged++;
+    } else {
+      await patternStore.put({ ...incoming, id: crypto.randomUUID(), name: incoming.name + RESTORED_SUFFIX });
+      result.patterns.copied++;
+    }
+  }
+
+  // Replacing collections must not lose the built-in palettes.
+  if (mode === 'replace' && data.collections) {
+    const now = Date.now();
+    const presets: BeadCollection[] = [
+      { id: HAMA_PRESET_COLLECTION_ID, name: 'Hama', beads: HAMA_PRESET_BEADS.map(({ id, name, hex }) => ({ id, name, hex })), createdAt: now },
+      { id: PERLER_PRESET_COLLECTION_ID, name: 'Perler', beads: PERLER_PRESET_BEADS.map(({ id, name, hex }) => ({ id, name, hex })), createdAt: now },
+    ];
+    for (const preset of presets) {
+      if (!(await collectionStore.get(preset.id))) await collectionStore.put(preset);
+    }
+  }
+
   await tx.done;
+  return result;
 }
