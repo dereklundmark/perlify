@@ -155,7 +155,7 @@ export function RestoreSheet({ backup, deviceCollectionCount, devicePatternCount
         />
         <p className="type-meta backup-sheet__mode-note">
           {mode === 'add'
-            ? "Keeps everything already on this device. Anything new is added; if the backup has a different version of something you already have, it comes in as a \"(restored)\" copy."
+            ? "Keeps everything already on this device and adds what's new. Anything that clashes with what's here (a different version, or just the same name) comes in with \"(restored)\" on its name. Hama and Perler are never duplicated."
             : 'Deletes what is on this device for the chosen items, then restores the backup in its place.'}
         </p>
         <button

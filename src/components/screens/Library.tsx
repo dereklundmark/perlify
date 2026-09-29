@@ -54,6 +54,7 @@ export function Library() {
         const parts = [`${counts.added} ${word}${counts.added === 1 ? '' : 's'} added`];
         if (counts.copied) parts.push(`${counts.copied} added as "(restored)" ${counts.copied === 1 ? 'copy' : 'copies'}`);
         if (counts.unchanged) parts.push(`${counts.unchanged} already here`);
+        if (counts.renamed) parts.push(`${counts.renamed} renamed "(restored)" to avoid a duplicate name`);
         return parts.join(', ');
       };
       const lines: string[] = [];

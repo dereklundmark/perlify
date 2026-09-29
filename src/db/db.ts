@@ -188,6 +188,8 @@ export interface RestoreCounts {
   copied: number;
   /** Already here, identical — nothing to do. */
   unchanged: number;
+  /** New, but its name was already taken here — added with "(restored)" on the end so the two can be told apart. */
+  renamed: number;
 }
 
 export interface RestoreResult {
@@ -195,7 +197,13 @@ export interface RestoreResult {
   patterns: RestoreCounts;
 }
 
-const RESTORED_SUFFIX = ' (restored)';
+/** `name (restored)`, or `name (restored 2)`… if that's taken too. Records the result in `taken`. */
+function restoredName(name: string, taken: Set<string>): string {
+  let candidate = `${name} (restored)`;
+  for (let n = 2; taken.has(candidate); n++) candidate = `${name} (restored ${n})`;
+  taken.add(candidate);
+  return candidate;
+}
 
 function sameCollection(a: BeadCollection, b: BeadCollection): boolean {
   return a.name === b.name && JSON.stringify(a.beads) === JSON.stringify(b.beads);
@@ -204,8 +212,10 @@ function sameCollection(a: BeadCollection, b: BeadCollection): boolean {
 /**
  * Restores backup data. 'add' never changes or removes anything already on
  * this device: new items are added, identical ones skipped, and conflicting
- * ones (same id, different content — e.g. the same starter collection edited
- * on two devices) come in as renamed copies. 'replace' wipes the chosen
+ * ones (same id, different content — e.g. "My Colors" edited on two
+ * devices) come in as renamed copies — except the built-in Hama/Perler,
+ * where this device's version always wins. Anything added under a name
+ * already used here gets "(restored)" appended. 'replace' wipes the chosen
  * categories first, then stores the backup's. Either way only the
  * categories passed in are touched.
  */
@@ -218,9 +228,13 @@ export async function restoreBackupData(
   const collectionStore = tx.objectStore('collections');
   const patternStore = tx.objectStore('patterns');
   const result: RestoreResult = {
-    collections: { added: 0, copied: 0, unchanged: 0 },
-    patterns: { added: 0, copied: 0, unchanged: 0 },
+    collections: { added: 0, copied: 0, unchanged: 0, renamed: 0 },
+    patterns: { added: 0, copied: 0, unchanged: 0, renamed: 0 },
   };
+  // Names already on this device, so an incoming item never shows up as a
+  // second card with an identical name (ids differ; names alone can clash).
+  const collectionNames = new Set(mode === 'add' ? (await collectionStore.getAll()).map((c) => c.name) : []);
+  const patternNames = new Set(mode === 'add' ? (await patternStore.getAll()).map((p) => p.name) : []);
   // Collections that came in under a new id, so their patterns can follow.
   const collectionIdMap = new Map<string, string>();
 
@@ -232,12 +246,18 @@ export async function restoreBackupData(
   for (const incoming of data.collections ?? []) {
     const existing = mode === 'add' ? await collectionStore.get(incoming.id) : undefined;
     if (!existing) {
-      await collectionStore.put(incoming);
+      if (collectionNames.has(incoming.name)) {
+        await collectionStore.put({ ...incoming, name: restoredName(incoming.name, collectionNames) });
+        result.collections.renamed++;
+      } else {
+        await collectionStore.put(incoming);
+      }
       result.collections.added++;
-    } else if (sameCollection(existing, incoming)) {
+    } else if (sameCollection(existing, incoming) || isProtectedCollection(incoming.id)) {
+      // Built-in palettes are never duplicated: this device's version wins.
       result.collections.unchanged++;
     } else {
-      const copy = { ...incoming, id: crypto.randomUUID(), name: incoming.name + RESTORED_SUFFIX };
+      const copy = { ...incoming, id: crypto.randomUUID(), name: restoredName(incoming.name, collectionNames) };
       collectionIdMap.set(incoming.id, copy.id);
       await collectionStore.put(copy);
       result.collections.copied++;
@@ -249,12 +269,17 @@ export async function restoreBackupData(
     const incoming = mappedCollection ? { ...raw, collectionId: mappedCollection } : raw;
     const existing = mode === 'add' ? await patternStore.get(incoming.id) : undefined;
     if (!existing) {
-      await patternStore.put(incoming);
+      if (patternNames.has(incoming.name)) {
+        await patternStore.put({ ...incoming, name: restoredName(incoming.name, patternNames) });
+        result.patterns.renamed++;
+      } else {
+        await patternStore.put(incoming);
+      }
       result.patterns.added++;
     } else if (existing.updatedAt === incoming.updatedAt) {
       result.patterns.unchanged++;
     } else {
-      await patternStore.put({ ...incoming, id: crypto.randomUUID(), name: incoming.name + RESTORED_SUFFIX });
+      await patternStore.put({ ...incoming, id: crypto.randomUUID(), name: restoredName(incoming.name, patternNames) });
       result.patterns.copied++;
     }
   }
