@@ -15,6 +15,7 @@ import { EditorLayout } from '../ui/EditorLayout';
 import { BottomSheet } from '../ui/BottomSheet';
 import { PillButton } from '../ui/PillButton';
 import { Toggle } from '../ui/Toggle';
+import { SegmentedControl } from '../ui/SegmentedControl';
 import { beadById, CATALOG } from '../../lib/catalog';
 import { renderGrid } from '../../lib/renderGrid';
 import { beadUsage, compositeGrid, gridStats, type GridData } from '../../lib/grid';
@@ -129,13 +130,13 @@ export function ManualEdit() {
   const isTablet = useIsTablet();
   const boardCols = draft?.gridData[0]?.length || draft?.boardConfig.widthPegs || 1;
   const boardRows = draft?.gridData.length || draft?.boardConfig.heightPegs || 1;
-  // iPad: fit both ways into the fixed-height stage. Phone: the stage grows
-  // with its content, so fit to width only (height would feed back on itself).
+  // Fit both ways into the stage. Its height is fixed on iPad and pinned on
+  // phones (EditorLayout pinnedStage), so the canvas can't feed back into it.
   const fitCellSize =
     viewportSize.width > 0
       ? Math.max(
           4,
-          isTablet && viewportSize.height > 0
+          viewportSize.height > 0
             ? Math.min((viewportSize.width - FIT_MARGIN) / boardCols, (viewportSize.height - FIT_MARGIN) / boardRows)
             : (viewportSize.width - FIT_MARGIN) / Math.max(boardCols, boardRows),
         )
@@ -155,6 +156,9 @@ export function ManualEdit() {
   // COLOR FAMILIES: a remap of the active layer shown on the board, not yet applied.
   const [familyPreview, setFamilyPreview] = useState<Map<string, string> | null>(null);
   const photoRef = useRef<HTMLImageElement | null>(null);
+  // The side panel/sheet is split into tabs so no section needs a long scroll
+  // away from the board (on iPhone the board stays pinned above it).
+  const [panelTab, setPanelTab] = useState<'palette' | 'colors' | 'board'>('palette');
 
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const viewportRef = useRef<HTMLDivElement>(null);
@@ -928,137 +932,163 @@ export function ManualEdit() {
 
   const panelContent = (
     <>
-      <div className="edit__drag-row">
-        <div>
-          <div className="type-row-label">PAINT BY DRAGGING</div>
-          <div className="type-meta">
-            {dragPaint ? 'Hold and slide across squares · 2 fingers to zoom/pan' : 'Off — tap squares one at a time'}
-          </div>
-        </div>
-        <Toggle checked={dragPaint} onChange={updateDragPaint} />
-      </div>
+      <SegmentedControl
+        size="compact"
+        options={[
+          { value: 'palette', label: 'PALETTE' },
+          { value: 'colors', label: 'COLORS' },
+          { value: 'board', label: 'BOARD' },
+        ]}
+        value={panelTab}
+        onChange={(tab) => {
+          setPanelTab(tab);
+          setFamilyPreview(null);
+        }}
+      />
 
-      <div className="edit__extend">
-        <div className="edit__palette-header">
-          <span className="type-eyebrow">
-            EXTEND BOARD · {doc.base[0]?.length ?? 0}×{doc.base.length}
-          </span>
-        </div>
-        <div className="edit__extend-grid">
-          {EXTEND_SIDES.map(({ side, label }) => (
-            <div key={side} className="edit__extend-row">
-              <span className="type-row-label edit__extend-label">{label}</span>
-              <button
-                type="button"
-                className="edit__extend-btn"
-                disabled={doc.pad[side] <= 0}
-                onClick={() => extendBoard(side, -1)}
-                aria-label={`Remove a ${side === 'top' || side === 'bottom' ? 'row' : 'column'} from the ${side}`}
-              >
-                −
-              </button>
-              <span className="type-numeric edit__extend-count">{doc.pad[side]}</span>
-              <button
-                type="button"
-                className="edit__extend-btn"
-                onClick={() => extendBoard(side, 1)}
-                aria-label={`Add a ${side === 'top' || side === 'bottom' ? 'row' : 'column'} on the ${side}`}
-              >
-                +
-              </button>
+      {panelTab === 'palette' && (
+        <>
+        <div className="edit__drag-row">
+          <div>
+            <div className="type-row-label">PAINT BY DRAGGING</div>
+            <div className="type-meta">
+              {dragPaint ? 'Hold and slide across squares · 2 fingers to zoom/pan' : 'Off — tap squares one at a time'}
             </div>
-          ))}
+          </div>
+          <Toggle checked={dragPaint} onChange={updateDragPaint} />
         </div>
-        <p className="type-meta edit__extend-note">Adds empty rows or columns — your design and painted beads stay put.</p>
-      </div>
 
-      <div className="edit__layers">
+        <div className="edit__layers">
+          <div className="edit__palette-header">
+            <span className="type-eyebrow">LAYERS · {doc.layers.length + 1}</span>
+            <button type="button" className="adjust__link" onClick={addLayer}>
+              ADD LAYER +
+            </button>
+          </div>
+          {[
+            ...[...doc.layers].reverse().map((l) => ({ id: l.id, name: l.name, visible: l.visible, beads: gridStats(l.grid).beadCount })),
+            { id: BASE_ID, name: 'PHOTO', visible: doc.baseVisible, beads: gridStats(doc.base).beadCount },
+          ].map((row) => {
+            const active = row.id === activeLayerId;
+            return (
+              <div key={row.id} className={`edit__layer-row${active ? ' edit__layer-row--active' : ''}`}>
+                <button
+                  type="button"
+                  className="edit__layer-eye"
+                  aria-label={`${row.visible ? 'Hide' : 'Show'} ${row.name}`}
+                  aria-pressed={row.visible}
+                  onClick={() => toggleLayer(row.id)}
+                >
+                  <EyeIcon open={row.visible} />
+                </button>
+                <button type="button" className="edit__layer-main" onClick={() => selectLayer(row.id)}>
+                  <span className="edit__layer-name">{row.name}</span>
+                  <span className="type-meta">{row.beads} beads</span>
+                </button>
+                {active && row.id !== BASE_ID && (
+                  <>
+                    <button type="button" className="adjust__link" onClick={() => renameLayer(row.id)}>
+                      RENAME
+                    </button>
+                    <button type="button" className="adjust__link" onClick={() => deleteLayer(row.id)}>
+                      DELETE
+                    </button>
+                  </>
+                )}
+              </div>
+            );
+          })}
+          {!activeVisible && (
+            <p className="type-meta edit__layers-note">This layer is hidden — turn it on to paint on it.</p>
+          )}
+        </div>
+
         <div className="edit__palette-header">
-          <span className="type-eyebrow">LAYERS · {doc.layers.length + 1}</span>
-          <button type="button" className="adjust__link" onClick={addLayer}>
-            ADD LAYER +
+          <span className="type-eyebrow">ACTIVE PALETTE · {paletteIds.length}</span>
+          <button type="button" className="adjust__link" onClick={() => setCatalogOpen(true)}>
+            CATALOG +
           </button>
         </div>
-        {[
-          ...[...doc.layers].reverse().map((l) => ({ id: l.id, name: l.name, visible: l.visible, beads: gridStats(l.grid).beadCount })),
-          { id: BASE_ID, name: 'PHOTO', visible: doc.baseVisible, beads: gridStats(doc.base).beadCount },
-        ].map((row) => {
-          const active = row.id === activeLayerId;
-          return (
-            <div key={row.id} className={`edit__layer-row${active ? ' edit__layer-row--active' : ''}`}>
+        <div className="edit__palette-grid">
+          {paletteIds.map((id) => {
+            const bead = beadById(id);
+            if (!bead) return null;
+            return (
               <button
+                key={id}
                 type="button"
-                className="edit__layer-eye"
-                aria-label={`${row.visible ? 'Hide' : 'Show'} ${row.name}`}
-                aria-pressed={row.visible}
-                onClick={() => toggleLayer(row.id)}
+                className={`edit__swatch${id === currentColor ? ' edit__swatch--selected' : ''}`}
+                style={{ background: bead.hex }}
+                onClick={() => handlePaletteSwatchTap(id)}
               >
-                <EyeIcon open={row.visible} />
+                <span>{bead.symbol}</span>
               </button>
-              <button type="button" className="edit__layer-main" onClick={() => selectLayer(row.id)}>
-                <span className="edit__layer-name">{row.name}</span>
-                <span className="type-meta">{row.beads} beads</span>
-              </button>
-              {active && row.id !== BASE_ID && (
-                <>
-                  <button type="button" className="adjust__link" onClick={() => renameLayer(row.id)}>
-                    RENAME
-                  </button>
-                  <button type="button" className="adjust__link" onClick={() => deleteLayer(row.id)}>
-                    DELETE
-                  </button>
-                </>
-              )}
-            </div>
-          );
-        })}
-        {!activeVisible && (
-          <p className="type-meta edit__layers-note">This layer is hidden — turn it on to paint on it.</p>
-        )}
-      </div>
+            );
+          })}
+        </div>
+        <div className="edit__palette-footer">
+          <span className="type-row-label">{currentColorBead?.name ?? '—'}</span>
+          <span className="type-numeric">{currentColorCount} PLACED</span>
+        </div>
+        </>
+      )}
 
-      <div className="edit__palette-header">
-        <span className="type-eyebrow">ACTIVE PALETTE · {paletteIds.length}</span>
-        <button type="button" className="adjust__link" onClick={() => setCatalogOpen(true)}>
-          CATALOG +
-        </button>
-      </div>
-      <div className="edit__palette-grid">
-        {paletteIds.map((id) => {
-          const bead = beadById(id);
-          if (!bead) return null;
-          return (
-            <button
-              key={id}
-              type="button"
-              className={`edit__swatch${id === currentColor ? ' edit__swatch--selected' : ''}`}
-              style={{ background: bead.hex }}
-              onClick={() => handlePaletteSwatchTap(id)}
-            >
-              <span>{bead.symbol}</span>
-            </button>
-          );
-        })}
-      </div>
-      <div className="edit__palette-footer">
-        <span className="type-row-label">{currentColorBead?.name ?? '—'}</span>
-        <span className="type-numeric">{currentColorCount} PLACED</span>
-      </div>
+      {panelTab === 'colors' && (
+        <>
+        <ColorFamiliesPanel
+          families={families}
+          palettePool={palettePool}
+          anyPool={anyPool}
+          paletteName={draft.paletteMode === 'collection' && familyCollection ? familyCollection.name : 'the bead catalog'}
+          onPreview={setFamilyPreview}
+          onApply={applyFamilyMap}
+          onAdd={addFamilyColor}
+        />
+        </>
+      )}
 
-      <ColorFamiliesPanel
-        families={families}
-        palettePool={palettePool}
-        anyPool={anyPool}
-        paletteName={draft.paletteMode === 'collection' && familyCollection ? familyCollection.name : 'the bead catalog'}
-        onPreview={setFamilyPreview}
-        onApply={applyFamilyMap}
-        onAdd={addFamilyColor}
-      />
+      {panelTab === 'board' && (
+        <>
+        <div className="edit__extend">
+          <div className="edit__palette-header">
+            <span className="type-eyebrow">
+              EXTEND BOARD · {doc.base[0]?.length ?? 0}×{doc.base.length}
+            </span>
+          </div>
+          <div className="edit__extend-grid">
+            {EXTEND_SIDES.map(({ side, label }) => (
+              <div key={side} className="edit__extend-row">
+                <span className="type-row-label edit__extend-label">{label}</span>
+                <button
+                  type="button"
+                  className="edit__extend-btn"
+                  disabled={doc.pad[side] <= 0}
+                  onClick={() => extendBoard(side, -1)}
+                  aria-label={`Remove a ${side === 'top' || side === 'bottom' ? 'row' : 'column'} from the ${side}`}
+                >
+                  −
+                </button>
+                <span className="type-numeric edit__extend-count">{doc.pad[side]}</span>
+                <button
+                  type="button"
+                  className="edit__extend-btn"
+                  onClick={() => extendBoard(side, 1)}
+                  aria-label={`Add a ${side === 'top' || side === 'bottom' ? 'row' : 'column'} on the ${side}`}
+                >
+                  +
+                </button>
+              </div>
+            ))}
+          </div>
+          <p className="type-meta edit__extend-note">Adds empty rows or columns — your design and painted beads stay put.</p>
+        </div>
+        </>
+      )}
     </>
   );
 
   return (
-    <div className="screen screen--cream edit__screen">
+    <div className="screen screen--cream edit__screen edit__screen--main">
       <WizardBar
         left={
           <button type="button" disabled={pointer <= 0} onClick={undo}>
@@ -1093,7 +1123,7 @@ export function ManualEdit() {
         }
       />
 
-      <EditorLayout stage={stage} panelContent={panelContent} />
+      <EditorLayout stage={stage} panelContent={panelContent} pinnedStage />
 
       {catalogOpen && (
         <div className="edit__catalog-modal-backdrop" onClick={() => setCatalogOpen(false)}>

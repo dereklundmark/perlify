@@ -539,3 +539,15 @@
     width: 32px;
   }
 }
+
+/* Main edit view: lock to the screen so the board stays put and only the
+   panel scrolls (EditorLayout pinnedStage). A bit more room for the board
+   than Adjust's 48vh, since painting needs it. */
+.edit__screen--main {
+  height: 100dvh;
+}
+
+.edit__screen--main .editor-layout__stage-region-phone--bounded {
+  height: 56vh;
+  max-height: 56vh;
+}
