@@ -100,8 +100,9 @@
   cursor: crosshair;
   margin: auto;
   background: var(--white);
-  border: var(--border-thick) solid var(--ink);
-  box-shadow: var(--shadow-frame);
+  /* Outline, not border: keeps the design at its exact CSS size (ACTUAL SIZE). */
+  outline: var(--border-thick) solid var(--ink);
+  box-shadow: 7px 7px 0 var(--ink);
   border-radius: var(--radius-thumbnail);
 }
 

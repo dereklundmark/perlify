@@ -11,7 +11,8 @@
 .export__canvas {
   border-radius: var(--radius-thumbnail);
   background: var(--white);
-  border: var(--border-thick) solid var(--ink);
+  /* Outline, not border — keeps the drawn design at its exact CSS size (ACTUAL SIZE). */
+  outline: var(--border-thick) solid var(--ink);
 }
 
 .export__sheet {
@@ -90,4 +91,18 @@
 
 .export__note {
   color: var(--muted);
+}
+
+.export__grid-backdrop {
+  /* ACTUAL SIZE can make a big board wider than the screen. */
+  overflow-x: auto;
+}
+
+.export__canvas {
+  flex-shrink: 0;
+  margin: 0 auto;
+}
+
+.export__actual-size {
+  padding: 0 var(--gutter) 8px;
 }

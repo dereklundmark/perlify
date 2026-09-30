@@ -6,7 +6,10 @@ import { Slider } from '../ui/Slider';
 import { Toggle } from '../ui/Toggle';
 import { EditorLayout } from '../ui/EditorLayout';
 import { RulerStage, useRulerLayout } from '../ui/RulerStage';
+import { ActualSizeBar, useActualCellSize } from '../ui/ActualSize';
 import { useLiveMatch } from '../../hooks/useLiveMatch';
+import { useIsTablet } from '../../hooks/useIsTablet';
+import { usesAllCollectionColors } from '../../lib/match';
 import { beadById, HAMA_PRESET_BEADS, PERLER_PRESET_BEADS } from '../../lib/catalog';
 import { HAMA_PRESET_COLLECTION_ID, PERLER_PRESET_COLLECTION_ID } from '../../db/db';
 import { renderGrid } from '../../lib/renderGrid';
@@ -76,9 +79,11 @@ export function ResultAdjust() {
   const [tab, setTab] = useState<'adjust' | 'colors'>('adjust');
   const [openSection, setOpenSection] = useState<AccordionSection>('palette');
   const canvasRef = useRef<HTMLCanvasElement>(null);
-  const rulerLayout = useRulerLayout(draft?.boardConfig.widthPegs ?? 1, draft?.boardConfig.heightPegs ?? 1);
+  const actualCellSize = useActualCellSize(draft?.boardConfig);
+  const rulerLayout = useRulerLayout(draft?.boardConfig.widthPegs ?? 1, draft?.boardConfig.heightPegs ?? 1, actualCellSize);
   const { cellSize, canvasW, canvasH } = rulerLayout;
   useLiveMatch();
+  const isTablet = useIsTablet();
 
   useEffect(() => {
     if (!draft || !canvasRef.current || draft.gridData.length === 0) return;
@@ -99,7 +104,9 @@ export function ResultAdjust() {
       boardsHigh: draft.boardConfig.boardsHigh,
       seamLines: draft.seamLines,
     });
-  }, [draft, cellSize, canvasW, canvasH]);
+    // isTablet: crossing the iPad breakpoint (rotation, split view) swaps
+    // EditorLayout's markup, mounting a fresh blank canvas that needs drawing.
+  }, [draft, cellSize, canvasW, canvasH, isTablet]);
 
   if (!draft) return null;
 
@@ -121,7 +128,10 @@ export function ResultAdjust() {
   const perlerCount = isPerlerSelected
     ? Math.min(draft.colorCount, PERLER_PRESET_BEADS.length)
     : PERLER_PRESET_BEADS.length;
-  const selectedCollectionCount = Math.min(draft.colorCount, collection?.beads.length ?? draft.colorCount);
+  const useAllColors = usesAllCollectionColors(draft);
+  const selectedCollectionCount = useAllColors
+    ? (collection?.beads.length ?? 0)
+    : Math.min(draft.colorCount, collection?.beads.length ?? draft.colorCount);
 
   function updatePreprocess(patch: Partial<Pattern['preprocessSettings']>) {
     if (!draft) return;
@@ -156,7 +166,10 @@ export function ResultAdjust() {
 
   const stage = (
     <div className="adjust__grid-block">
-      <RulerStage layout={rulerLayout} canvasRef={canvasRef} />
+      <div className="stage-with-actual-size">
+        <RulerStage layout={rulerLayout} canvasRef={canvasRef} />
+      </div>
+      <ActualSizeBar board={draft.boardConfig} className="stage-actual-size-bar" />
     </div>
   );
 
@@ -271,7 +284,7 @@ export function ResultAdjust() {
                 {customCollections.map((c, i) => {
                   const selected = isCollectionMode && draft.collectionId === c.id;
                   const size = c.beads.length;
-                  const count = selected ? Math.min(draft.colorCount, size) : size;
+                  const count = selected && !useAllColors ? Math.min(draft.colorCount, size) : size;
                   return (
                     <Fragment key={c.id}>
                       {i > 0 && <div className="adjust__divider" />}
@@ -303,6 +316,29 @@ export function ResultAdjust() {
                         </button>
                       </div>
                       {selected && size > 0 && (
+                        <div className="adjust__all-colors-row">
+                          <div>
+                            <div className="type-row-label">CLOSEST AVAILABLE COLORS</div>
+                            <div className="type-meta">
+                              {useAllColors
+                                ? `Every pixel gets the closest of all ${size} colors`
+                                : 'Off — only the most-used colors below'}
+                            </div>
+                          </div>
+                          <Toggle
+                            label="Use closest available colors"
+                            checked={useAllColors}
+                            onChange={(v) =>
+                              dispatch({
+                                type: 'draft/update',
+                                // Turning it off starts from the whole collection, not a stale count.
+                                patch: v ? { useAllCollectionColors: true } : { useAllCollectionColors: false, colorCount: size },
+                              })
+                            }
+                          />
+                        </div>
+                      )}
+                      {selected && size > 0 && !useAllColors && (
                         <ColorCountBody
                           max={size}
                           value={draft.colorCount}

@@ -7,6 +7,9 @@
 }
 
 .preview__stage {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
   flex: 0 0 auto;
   height: 48vh;
   /* Adjust's stage keeps 12px of bottom padding; matching it keeps the

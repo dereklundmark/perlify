@@ -8,6 +8,9 @@ import {
 } from 'react';
 import { useApp } from '../../state/AppContext';
 import { WizardBar } from '../ui/WizardBar';
+import { useIsTablet } from '../../hooks/useIsTablet';
+import { ActualSizeBar, useActualCellSize } from '../ui/ActualSize';
+import { setActualSize } from '../../lib/screenScale';
 import { EditorLayout } from '../ui/EditorLayout';
 import { BottomSheet } from '../ui/BottomSheet';
 import { PillButton } from '../ui/PillButton';
@@ -98,7 +101,7 @@ export function ManualEdit() {
   const [tool, setTool] = useState<Tool>('paint');
   const [currentColor, setCurrentColor] = useState<string | null>(null);
   const [extraPaletteIds, setExtraPaletteIds] = useState<string[]>([]);
-  const [cellSize, setCellSize] = useState(() => {
+  const [zoomCellSize, setZoomCellSize] = useState(() => {
     const g = draft?.gridData ?? [];
     const cols = g[0]?.length ?? 0;
     const rows = g.length;
@@ -107,6 +110,10 @@ export function ManualEdit() {
     // each would otherwise open zoomed into the middle of the board.
     return cols && rows ? Math.min(BASE_CELL_SIZE, FIT_WIDTH / Math.max(cols, rows)) : BASE_CELL_SIZE;
   });
+  // ACTUAL SIZE overrides the pinch zoom until the user pinches again.
+  const actualCellSize = useActualCellSize(draft?.boardConfig);
+  const cellSize = actualCellSize ?? zoomCellSize;
+  const isTablet = useIsTablet();
   const [lastCell, setLastCell] = useState<{ row: number; col: number } | null>(null);
   const [catalogOpen, setCatalogOpen] = useState(false);
   const [hoverPointer, setHoverPointer] = useState<{ x: number; y: number; row: number; col: number } | null>(null);
@@ -180,6 +187,11 @@ export function ManualEdit() {
     const rows = doc.base.length;
     canvas.width = cols * cellSize;
     canvas.height = rows * cellSize;
+    // Exact (fractional) CSS size — the buffer rounds down, which would
+    // throw ACTUAL SIZE (and tap hit-testing) off by a pixel.
+    // (Swap views share this canvas but size it with CSS, so leave theirs alone.)
+    canvas.style.width = view === 'edit' ? `${cols * cellSize}px` : '';
+    canvas.style.height = view === 'edit' ? `${rows * cellSize}px` : '';
     const ctx = canvas.getContext('2d');
     if (!ctx) return;
 
@@ -215,8 +227,9 @@ export function ManualEdit() {
       ctx.lineWidth = 3;
       ctx.strokeRect(lastCell.col * cellSize + 1.5, lastCell.row * cellSize + 1.5, cellSize - 3, cellSize - 3);
     }
+    // isTablet: crossing the iPad breakpoint remounts the canvas (see EditorLayout).
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [doc, flat, cellSize, lastCell, view, swapSourceId, swapTargetId]);
+  }, [doc, flat, cellSize, lastCell, view, swapSourceId, swapTargetId, isTablet]);
 
   if (!draft) return null;
 
@@ -373,7 +386,9 @@ export function ManualEdit() {
     if (e.touches.length === 2 && pinchState.current) {
       e.preventDefault();
       const ratio = touchDist(e.touches) / pinchState.current.dist;
-      setCellSize(Math.min(52, Math.max(12, pinchState.current.cellSize * ratio)));
+      // Pinching means "zoom", so it leaves actual-size mode (starting from the actual size).
+      if (actualCellSize) setActualSize(false);
+      setZoomCellSize(Math.min(52, Math.max(8, pinchState.current.cellSize * ratio)));
       // With drag-painting on, one finger belongs to the brush, so the
       // browser's own scrolling is off (see the canvas's touch-action) —
       // two fingers pan the zoomed canvas by hand instead.
@@ -726,6 +741,8 @@ export function ManualEdit() {
 
   const panelContent = (
     <>
+      <ActualSizeBar board={draft.boardConfig} />
+
       <div className="edit__drag-row">
         <div>
           <div className="type-row-label">PAINT BY DRAGGING</div>
@@ -824,7 +841,7 @@ export function ManualEdit() {
             <button type="button" className="edit__step-chip" onClick={() => setHistoryOpen(true)}>
               <span className="type-numeric">{history.length}</span> STEPS
             </button>
-            <span className="type-eyebrow">{Math.round((cellSize / BASE_CELL_SIZE) * 100)}%</span>
+            <span className="type-eyebrow">{actualCellSize ? 'ACTUAL SIZE' : `${Math.round((cellSize / BASE_CELL_SIZE) * 100)}%`}</span>
           </span>
         }
         right={

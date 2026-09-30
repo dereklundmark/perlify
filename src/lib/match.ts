@@ -1,4 +1,5 @@
-import type { Bead, CropRect, DitherMode, PreprocessSettings, SamplingMode } from '../db/schema';
+import type { Bead, CropRect, DitherMode, Pattern, PreprocessSettings, SamplingMode } from '../db/schema';
+import { HAMA_PRESET_COLLECTION_ID, PERLER_PRESET_COLLECTION_ID } from '../db/db';
 import type { GridData } from './grid';
 import { CATALOG } from './catalog';
 import { abstractGrid, denoiseGrid, sharpenGrid } from './imageProcess';
@@ -108,6 +109,8 @@ export interface MatchParams {
   paletteMode: 'auto' | 'collection';
   colorCount: number;
   collectionBeads: Bead[];
+  /** Collection mode: use every collection bead (closest match), ignoring colorCount. */
+  useAllCollectionColors: boolean;
   ditherMode: DitherMode;
   samplingMode: SamplingMode;
   /** Manual editor swaps, re-applied after matching so they survive a later slider/palette change. */
@@ -141,7 +144,7 @@ export function matchImageToGrid(params: MatchParams): MatchResult {
     // colorCount caps a collection's palette the same way it caps Auto —
     // below the collection's own size, keep only the N most-used beads
     // rather than always matching against every bead the collection has.
-    if (params.colorCount < params.collectionBeads.length) {
+    if (!params.useAllCollectionColors && params.colorCount < params.collectionBeads.length) {
       const flatLabs = sharpened.flat().map(rgbToLab);
       const collectionEntries: PaletteEntry[] = params.collectionBeads.map((b) => ({
         id: b.id,
@@ -189,4 +192,14 @@ export function matchImageToGrid(params: MatchParams): MatchResult {
 
 function applySwaps(grid: GridData, swaps: { from: string; to: string }[]): GridData {
   return swaps.reduce((g, { from, to }) => swapColor(g, from, to), grid);
+}
+
+/**
+ * Whether a pattern's collection match uses every bead in the collection.
+ * Only the user's own collections offer the switch (default on); the
+ * built-in Hama/Perler presets always honor the color-count slider.
+ */
+export function usesAllCollectionColors(pattern: Pick<Pattern, 'collectionId' | 'useAllCollectionColors'>): boolean {
+  if (pattern.collectionId === HAMA_PRESET_COLLECTION_ID || pattern.collectionId === PERLER_PRESET_COLLECTION_ID) return false;
+  return pattern.useAllCollectionColors ?? true;
 }

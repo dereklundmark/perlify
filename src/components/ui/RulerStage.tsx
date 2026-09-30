@@ -36,7 +36,7 @@ export interface RulerLayout {
  * rather than sizing the canvas to a fixed guess and hoping it happens to
  * match whatever room the current screen has.
  */
-export function useRulerLayout(cols: number, rows: number): RulerLayout {
+export function useRulerLayout(cols: number, rows: number, fixedCellSize?: number | null): RulerLayout {
   const stageBoxRef = useRef<HTMLDivElement>(null);
   const [stageSize, setStageSize] = useState({ width: 0, height: 0 });
 
@@ -53,8 +53,11 @@ export function useRulerLayout(cols: number, rows: number): RulerLayout {
 
   const availableW = stageSize.width - RULER_GUTTER;
   const availableH = stageSize.height - RULER_GUTTER;
-  const cellSize =
-    availableW > 0 && availableH > 0
+  // A fixed size (ACTUAL SIZE mode) wins over fitting the space; the stage
+  // scrolls if the real-world board is bigger than the screen.
+  const cellSize = fixedCellSize
+    ? fixedCellSize
+    : availableW > 0 && availableH > 0
       ? Math.max(2, Math.min(availableW / cols, availableH / rows))
       : FALLBACK_DISPLAY_SIZE / Math.max(cols, rows);
   const step = pickRulerStep(Math.max(cols, rows));

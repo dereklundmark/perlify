@@ -4,6 +4,7 @@ import { WizardBar } from '../ui/WizardBar';
 import { Toggle } from '../ui/Toggle';
 import { PillButton } from '../ui/PillButton';
 import { RulerStage, useRulerLayout } from '../ui/RulerStage';
+import { ActualSizeBar, useActualCellSize } from '../ui/ActualSize';
 import { beadById } from '../../lib/catalog';
 import { renderGrid } from '../../lib/renderGrid';
 import { patternGrid } from '../../lib/grid';
@@ -18,7 +19,8 @@ export function FinalPreview() {
   const [copySaved, setCopySaved] = useState(false);
   // Same sizing + rulers as the Adjust screen, so the pattern doesn't
   // change scale between the two.
-  const rulerLayout = useRulerLayout(draft?.boardConfig.widthPegs ?? 1, draft?.boardConfig.heightPegs ?? 1);
+  const actualCellSize = useActualCellSize(draft?.boardConfig);
+  const rulerLayout = useRulerLayout(draft?.boardConfig.widthPegs ?? 1, draft?.boardConfig.heightPegs ?? 1, actualCellSize);
   const { cellSize, canvasW, canvasH } = rulerLayout;
 
   useEffect(() => {
@@ -94,7 +96,10 @@ export function FinalPreview() {
       />
 
       <div className="preview__stage">
-        <RulerStage layout={rulerLayout} canvasRef={canvasRef} />
+        <div className="stage-with-actual-size">
+          <RulerStage layout={rulerLayout} canvasRef={canvasRef} />
+        </div>
+        <ActualSizeBar board={draft.boardConfig} className="stage-actual-size-bar" />
       </div>
 
       <div className="preview__body">

@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from 'react';
 import { useApp } from '../../state/AppContext';
 import { WizardBar } from '../ui/WizardBar';
+import { ActualSizeBar, useActualCellSize } from '../ui/ActualSize';
 import { PillButton } from '../ui/PillButton';
 import { beadById } from '../../lib/catalog';
 import { renderGrid } from '../../lib/renderGrid';
@@ -15,15 +16,20 @@ export function Export() {
   const draft = state.draft;
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const [busy, setBusy] = useState(false);
+  const actualCellSize = useActualCellSize(draft?.boardConfig);
 
   useEffect(() => {
     if (!draft || !canvasRef.current || draft.gridData.length === 0) return;
     const cols = draft.boardConfig.widthPegs;
     const rows = draft.boardConfig.heightPegs;
-    const cellSize = GRID_DISPLAY_SIZE / Math.max(cols, rows);
+    const cellSize = actualCellSize ?? GRID_DISPLAY_SIZE / Math.max(cols, rows);
     const canvas = canvasRef.current;
     canvas.width = cols * cellSize;
     canvas.height = rows * cellSize;
+    // Pin the CSS size to the exact (fractional) real-world size; the
+    // drawing buffer's own width is rounded down to whole pixels.
+    canvas.style.width = `${cols * cellSize}px`;
+    canvas.style.height = `${rows * cellSize}px`;
     const ctx = canvas.getContext('2d');
     if (!ctx) return;
     renderGrid(ctx, {
@@ -38,7 +44,7 @@ export function Export() {
       boardsHigh: draft.boardConfig.boardsHigh,
       seamLines: draft.seamLines,
     });
-  }, [draft]);
+  }, [draft, actualCellSize]);
 
   if (!draft) return null;
 
@@ -79,6 +85,7 @@ export function Export() {
       <div className="export__grid-backdrop">
         <canvas ref={canvasRef} className="export__canvas" />
       </div>
+      <ActualSizeBar board={draft.boardConfig} className="export__actual-size" />
 
       <div className="export__sheet">
         <div className="bottom-sheet__handle" />

@@ -1,0 +1,133 @@
+.actual-size-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 6px 2px;
+}
+
+.actual-size-bar__text {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+
+.actual-size-bar__calibrate {
+  appearance: none;
+  border: none;
+  background: none;
+  padding: 0;
+  font: inherit;
+  color: var(--red);
+  font-weight: 700;
+  cursor: pointer;
+}
+
+/* Calibrate sheet */
+.bottom-sheet--modal:has(.screen-calibrate) {
+  max-width: 480px;
+  margin: 0 auto;
+  max-height: 96dvh;
+  overflow-y: auto;
+  overflow-x: hidden;
+}
+
+.screen-calibrate {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.screen-calibrate__title,
+.screen-calibrate__note {
+  margin: 0;
+}
+
+.screen-calibrate__card-wrap {
+  display: flex;
+  justify-content: center;
+  padding: 4px 0;
+}
+
+.screen-calibrate__card {
+  flex-shrink: 0;
+  box-sizing: border-box;
+  border: 2px dashed var(--ink);
+  border-radius: 3.2mm; /* shape only — real corner radius of an ID-1 card */
+  background:
+    linear-gradient(var(--ink), var(--ink)) center / 1px 100% no-repeat,
+    linear-gradient(var(--ink), var(--ink)) center / 100% 1px no-repeat,
+    rgba(255, 210, 63, 0.25);
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  padding-bottom: 8px;
+}
+
+.screen-calibrate__controls {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.screen-calibrate__slider {
+  flex: 1;
+}
+
+.screen-calibrate__nudge {
+  appearance: none;
+  width: 44px;
+  height: 44px;
+  flex-shrink: 0;
+  border: var(--border-thick) solid var(--ink);
+  border-radius: 50%;
+  background: var(--white);
+  color: var(--ink);
+  font: 700 20px var(--font-ui);
+  cursor: pointer;
+}
+
+.screen-calibrate__actions {
+  display: flex;
+  gap: 10px;
+}
+
+.screen-calibrate__secondary,
+.screen-calibrate__primary {
+  appearance: none;
+  border: var(--border-thick) solid var(--ink);
+  border-radius: var(--radius-field);
+  padding: 13px 16px;
+  font: 700 13px var(--font-ui);
+  letter-spacing: 0.04em;
+  cursor: pointer;
+}
+
+.screen-calibrate__secondary {
+  background: var(--white);
+  color: var(--ink);
+}
+
+.screen-calibrate__primary {
+  flex: 1;
+  background: var(--ink);
+  color: var(--yellow);
+}
+
+/* Stage wrappers on Adjust / Preview: the ruler stage takes the room left
+   over after the bar, so adding the bar never pushes the design off screen. */
+.stage-with-actual-size {
+  flex: 1;
+  min-height: 0;
+  width: 100%;
+}
+
+.stage-actual-size-bar {
+  flex: 0 0 auto;
+  width: 100%;
+  max-width: 420px;
+  box-sizing: border-box;
+  padding-left: var(--gutter);
+  padding-right: var(--gutter);
+}

@@ -86,6 +86,13 @@ export interface Pattern {
   collectionId: string | null; // null when paletteMode is 'auto'
   paletteMode: PaletteMode;
   colorCount: number; // 2-60, caps whichever palette (auto or collection) is active
+  /**
+   * Own collections only: match every cell to the closest color from the
+   * WHOLE collection, ignoring colorCount (which otherwise keeps just the N
+   * most-used — and can drop e.g. a purple that lost out to a pink).
+   * Absent means on.
+   */
+  useAllCollectionColors?: boolean;
   ditherMode: DitherMode;
   samplingMode: SamplingMode;
   preprocessSettings: PreprocessSettings;
