@@ -1,6 +1,6 @@
 import { useMemo, useState } from 'react';
 import type { Bead } from '../../db/schema';
-import { beadById, registerCustomBeads } from '../../lib/catalog';
+import { beadById, customColorBead } from '../../lib/catalog';
 import { colorFamily } from '../../lib/colorFamily';
 import {
   adjustHex,
@@ -13,6 +13,7 @@ import {
 } from '../../lib/familyEdit';
 import { SegmentedControl } from '../ui/SegmentedControl';
 import { Slider } from '../ui/Slider';
+import { ColorPicker } from '../ui/ColorPicker';
 import './ColorFamiliesPanel.css';
 
 type SliderSource = 'collection' | 'custom';
@@ -36,10 +37,6 @@ interface ColorFamiliesPanelProps {
   onAdd: (family: FamilyGroup, pool: Bead[]) => Promise<string | null>;
 }
 
-/** Custom colors get a stable id per hex, so re-tinting to the same color reuses one bead. */
-function customBead(base: Bead, hex: string): Bead {
-  return { id: `custom-${hex.slice(1).toLowerCase()}`, name: `${base.name} (custom)`, hex };
-}
 
 export function ColorFamiliesPanel({
   families,
@@ -56,6 +53,9 @@ export function ColorFamiliesPanel({
   const [editing, setEditing] = useState<Editing | null>(null);
   const [adjust, setAdjust] = useState<ColorAdjust>({ brightness: 0, saturation: 0 });
   const [contrast, setContrast] = useState(0);
+  // Tuning one color: nudge it with sliders, or pick any color from the hexagon.
+  const [colorMode, setColorMode] = useState<'sliders' | 'picker'>('sliders');
+  const [pickedHex, setPickedHex] = useState<string | null>(null);
   const [message, setMessage] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
 
@@ -66,18 +66,23 @@ export function ColorFamiliesPanel({
   // Where each slider result lands: a real bead from the palette, or a custom tint.
   function resolve(base: Bead, hex: string, source: SliderSource): Bead {
     if (hex.toLowerCase() === base.hex.toLowerCase()) return base;
-    if (source === 'custom') {
-      const bead = customBead(base, hex);
-      registerCustomBeads([bead]);
-      return bead;
-    }
+    if (source === 'custom') return customColorBead(hex, `${base.name} (custom)`);
     return nearestBead(hex, palettePool) ?? base;
   }
 
-  function buildMap(next: { adjust?: ColorAdjust; contrast?: number; source?: SliderSource } = {}): Map<string, string> {
+  function buildMap(
+    next: { adjust?: ColorAdjust; contrast?: number; source?: SliderSource; mode?: 'sliders' | 'picker'; picked?: string | null } = {},
+  ): Map<string, string> {
     const source = next.source ?? sliderSource;
+    const mode = next.mode ?? colorMode;
+    const picked = next.picked !== undefined ? next.picked : pickedHex;
     const map = new Map<string, string>();
-    if (editing?.kind === 'color' && editingColor) {
+    if (editing?.kind === 'color' && editingColor && mode === 'picker') {
+      // The hexagon always makes a custom color — that's what it's for.
+      if (picked && picked.toLowerCase() !== editingColor.hex.toLowerCase()) {
+        map.set(editingColor.id, customColorBead(picked, `${editingColor.name} (custom)`).id);
+      }
+    } else if (editing?.kind === 'color' && editingColor) {
       const target = resolve(editingColor, adjustHex(editingColor.hex, next.adjust ?? adjust), source);
       if (target.id !== editingColor.id) map.set(editingColor.id, target.id);
     } else if (editing?.kind === 'contrast' && editingGroup) {
@@ -93,12 +98,14 @@ export function ColorFamiliesPanel({
     return map;
   }
 
-  const previewMap = useMemo(() => (editing ? buildMap() : new Map<string, string>()), [editing, adjust, contrast, sliderSource, families]); // eslint-disable-line react-hooks/exhaustive-deps
+  const previewMap = useMemo(() => (editing ? buildMap() : new Map<string, string>()), [editing, adjust, contrast, sliderSource, colorMode, pickedHex, families]); // eslint-disable-line react-hooks/exhaustive-deps
 
   function startEditing(next: Editing) {
     setEditing(next);
     setAdjust({ brightness: 0, saturation: 0 });
     setContrast(0);
+    setColorMode('sliders');
+    setPickedHex(null);
     setMessage(null);
     onPreview(null);
   }
@@ -112,6 +119,16 @@ export function ColorFamiliesPanel({
     const next = { ...adjust, ...patch };
     setAdjust(next);
     onPreview(buildMap({ adjust: next }));
+  }
+
+  function changeColorMode(mode: 'sliders' | 'picker') {
+    setColorMode(mode);
+    onPreview(buildMap({ mode }));
+  }
+
+  function updatePicked(hex: string) {
+    setPickedHex(hex);
+    onPreview(buildMap({ picked: hex }));
   }
 
   function updateContrast(v: number) {
@@ -292,20 +309,40 @@ export function ColorFamiliesPanel({
                           <span className="families__arrow">→</span>
                           <ResultSwatch bead={resultBead(editingColor)} />
                         </div>
-                        <Slider
-                          label="DARKER ◂ ▸ LIGHTER"
-                          value={adjust.brightness}
-                          min={-100}
-                          max={100}
-                          onChange={(v) => updateAdjust({ brightness: v })}
+                        <SegmentedControl
+                          size="compact"
+                          options={[
+                            { value: 'sliders', label: 'SLIDERS' },
+                            { value: 'picker', label: 'COLOR PICKER ⬡' },
+                          ]}
+                          value={colorMode}
+                          onChange={changeColorMode}
                         />
-                        <Slider
-                          label="SATURATION"
-                          value={adjust.saturation}
-                          min={-100}
-                          max={100}
-                          onChange={(v) => updateAdjust({ saturation: v })}
-                        />
+                        {colorMode === 'sliders' ? (
+                          <>
+                            <Slider
+                              label="DARKER ◂ ▸ LIGHTER"
+                              value={adjust.brightness}
+                              min={-100}
+                              max={100}
+                              onChange={(v) => updateAdjust({ brightness: v })}
+                            />
+                            <Slider
+                              label="SATURATION"
+                              value={adjust.saturation}
+                              min={-100}
+                              max={100}
+                              onChange={(v) => updateAdjust({ saturation: v })}
+                            />
+                          </>
+                        ) : (
+                          <ColorPicker
+                            key={editingColor.id}
+                            initialHex={pickedHex ?? editingColor.hex}
+                            originalHex={editingColor.hex}
+                            onChange={updatePicked}
+                          />
+                        )}
                       </>
                     )}
                     {editing.kind === 'contrast' && (
@@ -323,7 +360,9 @@ export function ColorFamiliesPanel({
                       </>
                     )}
                     <p className="type-meta families__hint">
-                      {sliderSource === 'collection'
+                      {editing.kind === 'color' && colorMode === 'picker'
+                        ? 'Any color you like — saved as a custom color (it may not exist as a real bead).'
+                        : sliderSource === 'collection'
                         ? `Snaps to the closest bead in ${paletteName}.`
                         : 'Makes a custom color — it may not exist as a real bead.'}
                     </p>

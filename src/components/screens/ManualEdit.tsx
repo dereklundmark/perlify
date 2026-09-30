@@ -14,9 +14,11 @@ import { setActualSize } from '../../lib/screenScale';
 import { EditorLayout } from '../ui/EditorLayout';
 import { BottomSheet } from '../ui/BottomSheet';
 import { PillButton } from '../ui/PillButton';
+import { ConfirmDialog } from '../ui/ConfirmDialog';
 import { Toggle } from '../ui/Toggle';
 import { SegmentedControl } from '../ui/SegmentedControl';
-import { beadById, CATALOG } from '../../lib/catalog';
+import { beadById, CATALOG, customColorBead } from '../../lib/catalog';
+import { ColorPicker } from '../ui/ColorPicker';
 import { renderGrid } from '../../lib/renderGrid';
 import { beadUsage, compositeGrid, gridStats, type GridData } from '../../lib/grid';
 import type { BoardPadding, PatternLayer } from '../../db/schema';
@@ -153,12 +155,15 @@ export function ManualEdit() {
   // Swap and Merge share the find → choose flow. Swap picks the new color
   // from the collection; Merge folds a color into one already in the design.
   const [replaceMode, setReplaceMode] = useState<'swap' | 'merge'>('swap');
+  // Swap step 2: pick the new color from the collection, or any color from the hexagon.
+  const [swapTargetSource, setSwapTargetSource] = useState<'collection' | 'custom'>('collection');
   // COLOR FAMILIES: a remap of the active layer shown on the board, not yet applied.
   const [familyPreview, setFamilyPreview] = useState<Map<string, string> | null>(null);
   const photoRef = useRef<HTMLImageElement | null>(null);
   // The side panel/sheet is split into tabs so no section needs a long scroll
   // away from the board (on iPhone the board stays pinned above it).
   const [panelTab, setPanelTab] = useState<'palette' | 'colors' | 'board'>('palette');
+  const [confirmFlatten, setConfirmFlatten] = useState(false);
 
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const viewportRef = useRef<HTMLDivElement>(null);
@@ -540,6 +545,19 @@ export function ManualEdit() {
     setActiveLayerId(layer.id);
   }
 
+  // Everything visible becomes the Photo layer; hidden layers are dropped.
+  function flattenLayers() {
+    activeBatchRef.current = null;
+    setConfirmFlatten(false);
+    const count = doc.layers.length;
+    pushStep(
+      { ...doc, base: flatten(doc), baseVisible: true, layers: [] },
+      `Flattened ${count} layer${count === 1 ? '' : 's'}`,
+      gridStats(flat).beadCount,
+    );
+    setActiveLayerId(BASE_ID);
+  }
+
   function toggleLayer(id: string) {
     activeBatchRef.current = null;
     if (id === BASE_ID) {
@@ -588,6 +606,7 @@ export function ManualEdit() {
   function openSwapFind(mode: 'swap' | 'merge' = 'swap') {
     activeBatchRef.current = null;
     setReplaceMode(mode);
+    setSwapTargetSource('collection');
     setSwapSourceId(null);
     setSwapTargetId(null);
     setView('swap-find');
@@ -819,30 +838,57 @@ export function ManualEdit() {
             </span>
             <span className="type-numeric">{sourceCount}</span>
           </div>
-          <div className="type-eyebrow">
-            {replaceMode === 'merge'
-              ? 'MERGE INTO — A COLOR ALREADY IN YOUR DESIGN'
-              : `SWAP IN — FROM ${(state.collections.find((c) => c.id === draft.collectionId) ?? state.collections[0])?.name?.toUpperCase() ?? 'MY COLLECTION'}`}
-          </div>
-          <div className="edit__palette-grid">
-            {(replaceMode === 'merge'
-              ? usage.filter((u) => u.beadId !== swapSourceId).flatMap((u) => {
-                  const bead = beadById(u.beadId);
-                  return bead ? [bead] : [];
-                })
-              : (state.collections.find((c) => c.id === draft.collectionId)?.beads ?? state.collections[0]?.beads ?? [])
-            ).map((bead) => (
-              <button
-                key={bead.id}
-                type="button"
-                className={`edit__swatch${bead.id === swapTargetId ? ' edit__swatch--selected' : ''}`}
-                style={{ background: bead.hex }}
-                onClick={() => setSwapTargetId(bead.id)}
-              >
-                <span>{beadById(bead.id)?.symbol ?? ''}</span>
-              </button>
-            ))}
-          </div>
+          {replaceMode === 'swap' && (
+            <SegmentedControl
+              size="compact"
+              options={[
+                { value: 'collection', label: 'FROM COLLECTION' },
+                { value: 'custom', label: 'CUSTOM COLOR ⬡' },
+              ]}
+              value={swapTargetSource}
+              onChange={(source) => {
+                setSwapTargetSource(source);
+                setSwapTargetId(null);
+              }}
+            />
+          )}
+          {replaceMode === 'swap' && swapTargetSource === 'custom' && sourceBead ? (
+            <ColorPicker
+              key={swapSourceId}
+              initialHex={sourceBead.hex}
+              originalHex={sourceBead.hex}
+              onChange={(hex) =>
+                setSwapTargetId(hex.toLowerCase() === sourceBead.hex.toLowerCase() ? null : customColorBead(hex).id)
+              }
+            />
+          ) : (
+            <>
+              <div className="type-eyebrow">
+                {replaceMode === 'merge'
+                  ? 'MERGE INTO — A COLOR ALREADY IN YOUR DESIGN'
+                  : `SWAP IN — FROM ${(state.collections.find((c) => c.id === draft.collectionId) ?? state.collections[0])?.name?.toUpperCase() ?? 'MY COLLECTION'}`}
+              </div>
+              <div className="edit__palette-grid">
+                {(replaceMode === 'merge'
+                  ? usage.filter((u) => u.beadId !== swapSourceId).flatMap((u) => {
+                      const bead = beadById(u.beadId);
+                      return bead ? [bead] : [];
+                    })
+                  : (state.collections.find((c) => c.id === draft.collectionId)?.beads ?? state.collections[0]?.beads ?? [])
+                ).map((bead) => (
+                  <button
+                    key={bead.id}
+                    type="button"
+                    className={`edit__swatch${bead.id === swapTargetId ? ' edit__swatch--selected' : ''}`}
+                    style={{ background: bead.hex }}
+                    onClick={() => setSwapTargetId(bead.id)}
+                  >
+                    <span>{beadById(bead.id)?.symbol ?? ''}</span>
+                  </button>
+                ))}
+              </div>
+            </>
+          )}
           <div className="edit__swap-actions">
             <PillButton variant="secondary" onClick={() => setView('edit')} style={{ width: 112 }}>
               CANCEL
@@ -961,9 +1007,16 @@ export function ManualEdit() {
         <div className="edit__layers">
           <div className="edit__palette-header">
             <span className="type-eyebrow">LAYERS · {doc.layers.length + 1}</span>
-            <button type="button" className="adjust__link" onClick={addLayer}>
-              ADD LAYER +
-            </button>
+            <span className="edit__layer-actions">
+              {doc.layers.length > 0 && (
+                <button type="button" className="adjust__link edit__flatten-link" onClick={() => setConfirmFlatten(true)}>
+                  FLATTEN
+                </button>
+              )}
+              <button type="button" className="adjust__link" onClick={addLayer}>
+                ADD LAYER +
+              </button>
+            </span>
           </div>
           {[
             ...[...doc.layers].reverse().map((l) => ({ id: l.id, name: l.name, visible: l.visible, beads: gridStats(l.grid).beadCount })),
@@ -1124,6 +1177,31 @@ export function ManualEdit() {
       />
 
       <EditorLayout stage={stage} panelContent={panelContent} pinnedStage />
+
+      {confirmFlatten && (
+        <ConfirmDialog
+          title="Flatten all layers?"
+          confirmLabel="FLATTEN"
+          tone="danger"
+          onConfirm={flattenLayers}
+          onCancel={() => setConfirmFlatten(false)}
+        >
+          <p>
+            This merges all colors from every visible layer into the Photo layer, leaving one layer. Where layers overlap, the
+            top one wins.
+          </p>
+          {doc.layers.some((l) => !l.visible) && (
+            <p>
+              Hidden layers ({doc.layers.filter((l) => !l.visible).length}) aren't included — they'll be removed.
+            </p>
+          )}
+          {!doc.baseVisible && <p>The Photo layer is hidden, so only your painted layers will remain.</p>}
+          <p>
+            Afterwards your painted beads are part of the photo: changing a slider on Adjust re-perlifies over them. You can
+            undo with ↶ until you tap DONE.
+          </p>
+        </ConfirmDialog>
+      )}
 
       {catalogOpen && (
         <div className="edit__catalog-modal-backdrop" onClick={() => setCatalogOpen(false)}>

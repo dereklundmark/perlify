@@ -551,3 +551,13 @@
   height: 56vh;
   max-height: 56vh;
 }
+
+.edit__layer-actions {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+
+.edit__flatten-link {
+  color: var(--ink);
+}

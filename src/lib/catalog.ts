@@ -96,3 +96,15 @@ export function beadById(id: string): CatalogBead | undefined {
 export function isCatalogBead(id: string): boolean {
   return CATALOG_BY_ID.has(id);
 }
+
+/**
+ * A picked custom color as a bead, registered so every screen can draw it.
+ * The id is derived from the hex, so picking the same color twice reuses one
+ * bead instead of piling up duplicates.
+ */
+export function customColorBead(hex: string, name?: string): CatalogBead {
+  const clean = hex.toLowerCase();
+  const id = `custom-${clean.slice(1)}`;
+  registerCustomBeads([{ id, name: name ?? `Custom ${clean.toUpperCase()}`, hex: clean }]);
+  return beadById(id)!;
+}
