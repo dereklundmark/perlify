@@ -23,6 +23,11 @@ import { paintCell, clearCell, swapColor, rotate90, flipHorizontal } from '../..
 import { savePattern } from '../../db/db';
 import { flipPadding, NO_PADDING, resizeSide, rotatePadding, type Side } from '../../lib/boardPadding';
 import { markGridCurrent } from '../../hooks/useLiveMatch';
+import { ColorFamiliesPanel } from './ColorFamiliesPanel';
+import { familiesInUsage, pickAddition, remapGrid, type FamilyCell, type FamilyGroup } from '../../lib/familyEdit';
+import { sampleAdjustedGrid } from '../../lib/match';
+import { photoArea } from '../../lib/boardPadding';
+import type { Bead } from '../../db/schema';
 import './ManualEdit.css';
 
 const FIT_WIDTH = 336; // fallback before the viewport has been measured
@@ -72,6 +77,8 @@ interface HistoryStep {
   /** Set only for swap steps — the bead-id rule, so Done can persist it as a colorSwaps entry. */
   swapFromId?: string;
   swapToId?: string;
+  /** Color-family edits on the photo layer: several from→to rules at once, persisted like swaps. */
+  swaps?: { from: string; to: string }[];
 }
 
 function EyeIcon({ open }: { open: boolean }) {
@@ -145,6 +152,9 @@ export function ManualEdit() {
   // Swap and Merge share the find → choose flow. Swap picks the new color
   // from the collection; Merge folds a color into one already in the design.
   const [replaceMode, setReplaceMode] = useState<'swap' | 'merge'>('swap');
+  // COLOR FAMILIES: a remap of the active layer shown on the board, not yet applied.
+  const [familyPreview, setFamilyPreview] = useState<Map<string, string> | null>(null);
+  const photoRef = useRef<HTMLImageElement | null>(null);
 
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const viewportRef = useRef<HTMLDivElement>(null);
@@ -241,7 +251,9 @@ export function ManualEdit() {
     let isolate: { beadId: string; fadeToward: string; fadePct: number } | undefined;
     let displayGrid = flat;
 
-    if (view === 'swap-find' && swapSourceId) {
+    if (view === 'edit' && familyPreview && familyPreview.size > 0) {
+      displayGrid = flatten(withActiveGrid(doc, activeLayerId, remapGrid(grid, familyPreview)));
+    } else if (view === 'swap-find' && swapSourceId) {
       isolate = { beadId: swapSourceId, fadeToward: '#fff8e7', fadePct: 0.88 };
     } else if (view === 'swap-choose' && swapSourceId && swapTargetId) {
       displayGrid = flatten(withActiveGrid(doc, activeLayerId, swapColor(grid, swapSourceId, swapTargetId)));
@@ -271,7 +283,7 @@ export function ManualEdit() {
     }
     // isTablet: crossing the iPad breakpoint remounts the canvas (see EditorLayout).
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [doc, flat, cellSize, lastCell, view, swapSourceId, swapTargetId, isTablet]);
+  }, [doc, flat, cellSize, lastCell, view, swapSourceId, swapTargetId, isTablet, familyPreview]);
 
   if (!draft) return null;
 
@@ -601,6 +613,89 @@ export function ManualEdit() {
     setSwapTargetId(null);
   }
 
+  // ---- Color families ----
+  const families = familiesInUsage(activeUsage, beadById);
+  const familyCollection = state.collections.find((c) => c.id === draft.collectionId);
+  const palettePool: Bead[] =
+    draft.paletteMode === 'collection' && familyCollection
+      ? familyCollection.beads
+      : CATALOG.map(({ id, name, hex }) => ({ id, name, hex }));
+  const anyPool: Bead[] = (() => {
+    const byId = new Map<string, Bead>();
+    for (const b of [...CATALOG, ...state.collections.flatMap((c) => c.beads)]) {
+      if (!byId.has(b.id)) byId.set(b.id, { id: b.id, name: b.name, hex: b.hex });
+    }
+    return [...byId.values()];
+  })();
+
+  function applyFamilyMap(map: Map<string, string>, label: string) {
+    activeBatchRef.current = null;
+    setFamilyPreview(null);
+    const affected = grid.flat().filter((id) => id != null && map.has(id)).length;
+    // On the photo layer these become re-match rules (like Swap) — but only
+    // when no target is also a source, since rules re-apply one after another.
+    const chained = [...map.values()].some((to) => map.has(to));
+    const swaps = activeIsBase && !chained ? [...map].map(([from, to]) => ({ from, to })) : undefined;
+    pushStep(withActiveGrid(doc, activeLayerId, remapGrid(grid, map)), label, affected, swaps ? { swaps } : {});
+  }
+
+  async function addFamilyColor(group: FamilyGroup, pool: Bead[]): Promise<string | null> {
+    if (!activeIsBase) return 'Switch to the PHOTO layer to add colors — they come from the photo.';
+    const transformed = history.slice(0, pointer + 1).some((s) => s.label.startsWith('Rotated') || s.label === 'Flipped');
+    if (transformed) return 'Adding colors needs the photo in its original orientation — undo the rotate/flip first.';
+    if (!draft?.sourceImage) return 'This pattern has no photo to take colors from.';
+    if (!photoRef.current) {
+      // onload, not img.decode(): decode() never settles while the page is
+      // hidden (e.g. the app briefly backgrounded), which froze the buttons.
+      const img = new Image();
+      const loaded = await new Promise<boolean>((resolve) => {
+        img.onload = () => resolve(true);
+        img.onerror = () => resolve(false);
+        img.src = draft.sourceImage;
+      });
+      if (!loaded) return 'Couldn’t load the photo.';
+      photoRef.current = img;
+    }
+    const rows = doc.base.length;
+    const cols = doc.base[0]?.length ?? 0;
+    const area = photoArea({ boardConfig: { ...draft.boardConfig, widthPegs: cols, heightPegs: rows }, boardPadding: doc.pad });
+    const photo = sampleAdjustedGrid({
+      image: photoRef.current,
+      cropRect: draft.cropRect,
+      widthPegs: area.width,
+      heightPegs: area.height,
+      preprocess: draft.preprocessSettings,
+      samplingMode: draft.samplingMode,
+    });
+    const ids = new Set(group.colors.map((c) => c.id));
+    const cells: FamilyCell[] = [];
+    for (let r = 0; r < rows; r++) {
+      for (let c = 0; c < cols; c++) {
+        const id = doc.base[r][c];
+        const pr = r - area.padding.top;
+        const pc = c - area.padding.left;
+        if (id && ids.has(id) && photo[pr]?.[pc]) cells.push({ row: r, col: c, rgb: photo[pr][pc] });
+      }
+    }
+    const result = pickAddition(cells, group.colors, pool);
+    if (!result) return `None of those colors would improve the ${group.label.toLowerCase()} — nothing added.`;
+    let changed = 0;
+    const base = doc.base.map((row, r) =>
+      row.map((id, c) => {
+        const next = result.assignment.get(`${r},${c}`);
+        if (next && next !== id) {
+          changed++;
+          return next;
+        }
+        return id;
+      }),
+    );
+    activeBatchRef.current = null;
+    setFamilyPreview(null);
+    pushStep({ ...doc, base }, `Added ${result.added.name} to ${group.label.toLowerCase()}`, changed);
+    return `Added ${result.added.name} — ${changed} beads re-split.`;
+  }
+
   async function handleDone() {
     if (!draft) return;
     const finalWidth = doc.base[0]?.length ?? draft.boardConfig.widthPegs;
@@ -611,8 +706,7 @@ export function ManualEdit() {
     // change on Adjust re-applies them instead of silently reverting them.
     const sessionSwaps = history
       .slice(0, pointer + 1)
-      .filter((s): s is HistoryStep & { swapFromId: string; swapToId: string } => !!s.swapFromId && !!s.swapToId)
-      .map((s) => ({ from: s.swapFromId, to: s.swapToId }));
+      .flatMap((s) => (s.swapFromId && s.swapToId ? [{ from: s.swapFromId, to: s.swapToId }] : (s.swaps ?? [])));
     const colorSwaps = [...(draft.colorSwaps ?? []), ...sessionSwaps];
     const layered = { gridData: doc.base, layers: doc.layers, baseVisible: doc.baseVisible, boardPadding: doc.pad };
     const updated = { ...draft, ...layered, boardConfig, colorSwaps, updatedAt: Date.now() };
@@ -950,6 +1044,16 @@ export function ManualEdit() {
         <span className="type-row-label">{currentColorBead?.name ?? '—'}</span>
         <span className="type-numeric">{currentColorCount} PLACED</span>
       </div>
+
+      <ColorFamiliesPanel
+        families={families}
+        palettePool={palettePool}
+        anyPool={anyPool}
+        paletteName={draft.paletteMode === 'collection' && familyCollection ? familyCollection.name : 'the bead catalog'}
+        onPreview={setFamilyPreview}
+        onApply={applyFamilyMap}
+        onAdd={addFamilyColor}
+      />
     </>
   );
 

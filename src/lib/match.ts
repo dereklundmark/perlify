@@ -120,7 +120,14 @@ export interface MatchResult {
   candidatePalette: Bead[];
 }
 
-export function matchImageToGrid(params: MatchParams): MatchResult {
+/**
+ * The photo's per-cell colors exactly as matching sees them: sampled to the
+ * grid, then denoised/abstracted, tone-adjusted, and sharpened. Split out so
+ * the editor's color-family tools can read the same colors (see familyEdit).
+ */
+export function sampleAdjustedGrid(
+  params: Pick<MatchParams, 'image' | 'cropRect' | 'widthPegs' | 'heightPegs' | 'preprocess' | 'samplingMode'>,
+): RGB[][] {
   const rawGrid = sampleGridRgb(
     params.image,
     params.cropRect,
@@ -134,7 +141,11 @@ export function matchImageToGrid(params: MatchParams): MatchResult {
   const denoised = denoiseGrid(rawGrid, params.preprocess.denoise);
   const abstracted = abstractGrid(denoised, params.preprocess.abstraction);
   const adjustedGrid = abstracted.map((row) => row.map((c) => applyPreprocess(c, params.preprocess)));
-  const sharpened = sharpenGrid(adjustedGrid, params.preprocess.sharpen);
+  return sharpenGrid(adjustedGrid, params.preprocess.sharpen);
+}
+
+export function matchImageToGrid(params: MatchParams): MatchResult {
+  const sharpened = sampleAdjustedGrid(params);
 
   let candidatePalette: Bead[];
   if (params.paletteMode === 'collection') {
