@@ -88,66 +88,6 @@ export function deltaE76Sq(a: Lab, b: Lab): number {
   return dl * dl + da * da + db * db;
 }
 
-const DEG = 180 / Math.PI;
-const RAD = Math.PI / 180;
-const POW25_7 = 25 ** 7;
-
-/**
- * Delta E 2000 (Sharma, Wu & Dalal 2005 formulation). What nearest-color
- * matching uses: CIE76 over-weights chroma, so a muted photo blue scored
- * closer to Periwinkle (a purple-blue) or even Grey than to a real blue
- * bead — blues and purples "registering as" the wrong family. CIEDE2000's
- * hue/chroma weighting and its blue-region rotation term fix that.
- */
-export function deltaE2000(x: Lab, y: Lab): number {
-  const c1 = Math.hypot(x.a, x.b);
-  const c2 = Math.hypot(y.a, y.b);
-  const cBar7 = ((c1 + c2) / 2) ** 7;
-  const g = 0.5 * (1 - Math.sqrt(cBar7 / (cBar7 + POW25_7)));
-  const a1 = (1 + g) * x.a;
-  const a2 = (1 + g) * y.a;
-  const c1p = Math.hypot(a1, x.b);
-  const c2p = Math.hypot(a2, y.b);
-  const hue = (b: number, a: number) => (a === 0 && b === 0 ? 0 : (Math.atan2(b, a) * DEG + 360) % 360);
-  const h1 = hue(x.b, a1);
-  const h2 = hue(y.b, a2);
-
-  const dL = y.l - x.l;
-  const dC = c2p - c1p;
-  let dh = 0;
-  if (c1p * c2p !== 0) {
-    dh = h2 - h1;
-    if (dh > 180) dh -= 360;
-    else if (dh < -180) dh += 360;
-  }
-  const dH = 2 * Math.sqrt(c1p * c2p) * Math.sin((dh / 2) * RAD);
-
-  const lBar = (x.l + y.l) / 2;
-  const cBarP = (c1p + c2p) / 2;
-  let hBar = h1 + h2;
-  if (c1p * c2p !== 0) {
-    if (Math.abs(h1 - h2) > 180) hBar += hBar < 360 ? 360 : -360;
-    hBar /= 2;
-  }
-  const t =
-    1 -
-    0.17 * Math.cos((hBar - 30) * RAD) +
-    0.24 * Math.cos(2 * hBar * RAD) +
-    0.32 * Math.cos((3 * hBar + 6) * RAD) -
-    0.2 * Math.cos((4 * hBar - 63) * RAD);
-  const dTheta = 30 * Math.exp(-(((hBar - 275) / 25) ** 2));
-  const cBarP7 = cBarP ** 7;
-  const rC = 2 * Math.sqrt(cBarP7 / (cBarP7 + POW25_7));
-  const sL = 1 + (0.015 * (lBar - 50) ** 2) / Math.sqrt(20 + (lBar - 50) ** 2);
-  const sC = 1 + 0.045 * cBarP;
-  const sH = 1 + 0.015 * cBarP * t;
-  const rT = -Math.sin(2 * dTheta * RAD) * rC;
-  const lTerm = dL / sL;
-  const cTerm = dC / sC;
-  const hTerm = dH / sH;
-  return Math.sqrt(lTerm * lTerm + cTerm * cTerm + hTerm * hTerm + rT * cTerm * hTerm);
-}
-
 /** Relative luminance (0-1), used to pick a light/dark symbol glyph against a bead's fill. */
 export function relativeLuminance(rgb: RGB): number {
   return (0.2126 * rgb.r + 0.7152 * rgb.g + 0.0722 * rgb.b) / 255;
@@ -202,34 +142,12 @@ export interface PaletteEntry {
   lab: Lab;
 }
 
-// Delta E 2000 is ~85x the cost of CIE76, and a board re-matches on every
-// slider tick. Cells repeat colors heavily (flat areas, averaging), so
-// remember each palette's answer per color, keyed on whole Lab units — far
-// finer than any two beads are apart. Keyed by the palette array itself, so
-// a fresh match (new array) starts clean and old caches are collected.
-const nearestCache = new WeakMap<PaletteEntry[], Map<number, number>>();
-
-function labKey(lab: Lab): number {
-  return (Math.round(lab.l) * 512 + Math.round(lab.a) + 256) * 512 + Math.round(lab.b) + 256;
-}
-
-/** Index of the nearest palette entry to `lab`, by Delta E 2000. */
+/** Index of the nearest palette entry to `lab`, by squared Delta E. */
 export function nearestIndex(lab: Lab, palette: PaletteEntry[]): number {
-  let cache = nearestCache.get(palette);
-  if (!cache) nearestCache.set(palette, (cache = new Map()));
-  const key = labKey(lab);
-  const hit = cache.get(key);
-  if (hit !== undefined) return hit;
-  const idx = nearestIndexUncached(lab, palette);
-  cache.set(key, idx);
-  return idx;
-}
-
-function nearestIndexUncached(lab: Lab, palette: PaletteEntry[]): number {
   let bestIdx = 0;
   let bestDist = Infinity;
   for (let i = 0; i < palette.length; i++) {
-    const d = deltaE2000(lab, palette[i].lab);
+    const d = deltaE76Sq(lab, palette[i].lab);
     if (d < bestDist) {
       bestDist = d;
       bestIdx = i;
@@ -277,15 +195,16 @@ export function pickClosestPaletteIndices(cellLabs: Lab[], palette: PaletteEntry
 
   // Collapse near-identical cells (photo areas repeat a lot) into weighted
   // samples, then precompute every sample→entry distance once.
-  const weights = new Map<number, { lab: Lab; weight: number }>();
+  const weights = new Map<string, { lab: Lab; weight: number }>();
   for (const lab of cellLabs) {
-    const key = labKey(lab);
+    const key = `${Math.round(lab.l)},${Math.round(lab.a)},${Math.round(lab.b)}`;
     const hit = weights.get(key);
     if (hit) hit.weight++;
     else weights.set(key, { lab, weight: 1 });
   }
   const samples = [...weights.values()];
-  const dist = samples.map(({ lab }) => palette.map((entry) => deltaE2000(lab, entry.lab)));
+  // Same metric the final match uses (CIE76), so the picks are the colors that match will actually reach for.
+  const dist = samples.map(({ lab }) => palette.map((entry) => Math.sqrt(deltaE76Sq(lab, entry.lab))));
 
   const best = new Array<number>(samples.length).fill(Infinity);
   const chosen = new Set<number>();

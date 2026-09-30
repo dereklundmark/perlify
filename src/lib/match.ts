@@ -200,9 +200,10 @@ function applySwaps(grid: GridData, swaps: { from: string; to: string }[]): Grid
  * Whether a pattern's collection trims to its color count by best overall
  * match ("Closest available colors") rather than by most-voted. Only the
  * user's own collections offer the switch (default on); the built-in
- * Hama/Perler presets keep the original most-used behavior.
+ * Hama/Perler presets keep the original most-used behavior. Off unless the
+ * user turns it on, so every collection matches the way it always has.
  */
-export function usesClosestColors(pattern: Pick<Pattern, 'collectionId' | 'closestColors' | 'useAllCollectionColors'>): boolean {
+export function usesClosestColors(pattern: Pick<Pattern, 'collectionId' | 'closestColors'>): boolean {
   if (pattern.collectionId === HAMA_PRESET_COLLECTION_ID || pattern.collectionId === PERLER_PRESET_COLLECTION_ID) return false;
-  return pattern.closestColors ?? pattern.useAllCollectionColors ?? true;
+  return pattern.closestColors ?? false;
 }
