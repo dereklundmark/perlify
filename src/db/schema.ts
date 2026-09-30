@@ -73,6 +73,14 @@ export interface PatternLayer {
   grid: (string | null)[][];
 }
 
+/** Empty board space (in pegs) added around the photo in the editor — see lib/boardPadding.ts. */
+export interface BoardPadding {
+  top: number;
+  right: number;
+  bottom: number;
+  left: number;
+}
+
 export interface Pattern {
   id: string;
   name: string;
@@ -83,6 +91,12 @@ export interface Pattern {
   cropRect: CropRect;
 
   boardConfig: BoardConfig;
+  /**
+   * Rows/columns added around the photo in the editor. boardConfig's size
+   * is the WHOLE board, padding included; the photo is matched into what's
+   * left inside. Absent means none.
+   */
+  boardPadding?: BoardPadding;
   collectionId: string | null; // null when paletteMode is 'auto'
   paletteMode: PaletteMode;
   colorCount: number; // 2-60, caps whichever palette (auto or collection) is active

@@ -8,6 +8,7 @@ import { CalibrateSheet } from './CalibrateSheet';
 import { PegboardCropSheet } from './PegboardCropSheet';
 import { useLiveMatch } from '../../hooks/useLiveMatch';
 import { computeCoverCrop } from '../../lib/crop';
+import { photoArea } from '../../lib/boardPadding';
 import { pegsToUnit, pitchMm, unitToPegs, type BoardUnit } from '../../lib/board';
 import { beadById } from '../../lib/catalog';
 import { renderGrid } from '../../lib/renderGrid';
@@ -73,7 +74,9 @@ export function BoardSetup() {
   useEffect(() => {
     if (!draft || !imgEl) return;
     const imageAspect = imgEl.naturalWidth / imgEl.naturalHeight;
-    const boardAspect = draft.boardConfig.widthPegs / draft.boardConfig.heightPegs;
+    // The photo fills only the area inside any board extension (see boardPadding).
+    const area = photoArea(draft);
+    const boardAspect = area.width / area.height;
     const { width, height } = draft.cropRect;
     const currentVisualAspect = (width / height) * imageAspect;
     // Skip once the crop already matches — computeCoverCrop's own result
@@ -83,7 +86,7 @@ export function BoardSetup() {
     const next = computeCoverCrop(imageAspect, boardAspect);
     dispatch({ type: 'draft/update', patch: { cropRect: next } });
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [draft?.boardConfig.widthPegs, draft?.boardConfig.heightPegs, imgEl, draft?.cropRect]);
+  }, [draft?.boardConfig.widthPegs, draft?.boardConfig.heightPegs, draft?.boardPadding, imgEl, draft?.cropRect]);
 
   if (!draft) return null;
 
@@ -259,7 +262,7 @@ export function BoardSetup() {
         <PegboardCropSheet
           sourceImage={draft.sourceImage}
           cropRect={draft.cropRect}
-          boardAspect={boardConfig.widthPegs / boardConfig.heightPegs}
+          boardAspect={photoArea(draft).width / photoArea(draft).height}
           onApply={applyPegboardCrop}
           onClose={() => setPegboardCropOpen(false)}
         />

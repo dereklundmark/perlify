@@ -1,11 +1,45 @@
 import { useEffect, useRef, useState } from 'react';
 import { useApp } from '../state/AppContext';
 import { matchImageToGrid, usesClosestColors } from '../lib/match';
+import { embedPhotoGrid, photoArea } from '../lib/boardPadding';
+import type { BeadCollection, Pattern } from '../db/schema';
 
 const DEBOUNCE_MS = 80;
 
 /** Per pattern id: the match inputs its gridData was last produced from (or last accepted as-is). */
 const lastMatchSignature = new Map<string, string>();
+
+function collectionBeadsFor(pattern: Pattern, collections: BeadCollection[]) {
+  return pattern.paletteMode === 'collection' ? (collections.find((c) => c.id === pattern.collectionId)?.beads ?? []) : [];
+}
+
+/** Everything the photo match depends on — when this changes, the grid is stale. */
+function matchSignature(pattern: Pattern, collections: BeadCollection[]): string {
+  return JSON.stringify([
+    pattern.cropRect,
+    pattern.boardConfig.widthPegs,
+    pattern.boardConfig.heightPegs,
+    pattern.boardPadding ?? null,
+    pattern.preprocessSettings,
+    pattern.paletteMode,
+    pattern.colorCount,
+    usesClosestColors(pattern),
+    pattern.ditherMode,
+    pattern.samplingMode,
+    pattern.colorSwaps,
+    collectionBeadsFor(pattern, collections).map((b) => `${b.id}:${b.hex}`),
+  ]);
+}
+
+/**
+ * Declares a pattern's current grid up to date, so the next Adjust/Board
+ * visit doesn't re-match over it. The editor calls this on DONE: its
+ * changes (a board extended or rotated, beads painted) alter the board but
+ * must not trigger a fresh photo match that would wipe them.
+ */
+export function markGridCurrent(pattern: Pattern, collections: BeadCollection[]): void {
+  lastMatchSignature.set(pattern.id, matchSignature(pattern, collections));
+}
 
 /**
  * Loads the draft's source image and keeps gridData live-matched against
@@ -30,22 +64,10 @@ export function useLiveMatch(): HTMLImageElement | null {
 
   useEffect(() => {
     if (!draft || !imgEl) return;
-    const collectionBeads =
-      draft.paletteMode === 'collection' ? (state.collections.find((c) => c.id === draft.collectionId)?.beads ?? []) : [];
-    const closestColors = usesClosestColors(draft);
-    const signature = JSON.stringify([
-      draft.cropRect,
-      draft.boardConfig.widthPegs,
-      draft.boardConfig.heightPegs,
-      draft.preprocessSettings,
-      draft.paletteMode,
-      draft.colorCount,
-      closestColors,
-      draft.ditherMode,
-      draft.samplingMode,
-      draft.colorSwaps,
-      collectionBeads.map((b) => `${b.id}:${b.hex}`),
-    ]);
+    const collectionBeads = collectionBeadsFor(draft, state.collections);
+    const signature = matchSignature(draft, state.collections);
+    // The photo fills only the area inside any board extension.
+    const area = photoArea(draft);
     // Don't clobber a hand-edited grid just because this hook remounted —
     // unless the inputs changed while it was unmounted (e.g. a collection
     // was picked or edited on the Collections screens), which it would
@@ -64,18 +86,20 @@ export function useLiveMatch(): HTMLImageElement | null {
       const result = matchImageToGrid({
         image: imgEl,
         cropRect: draft.cropRect,
-        widthPegs: draft.boardConfig.widthPegs,
-        heightPegs: draft.boardConfig.heightPegs,
+        widthPegs: area.width,
+        heightPegs: area.height,
         preprocess: draft.preprocessSettings,
         paletteMode: draft.paletteMode,
         colorCount: draft.colorCount,
         collectionBeads,
-        closestColors,
+        closestColors: usesClosestColors(draft),
         ditherMode: draft.ditherMode,
         samplingMode: draft.samplingMode,
         colorSwaps: draft.colorSwaps ?? [],
       });
-      dispatch({ type: 'draft/update', patch: { gridData: result.gridData } });
+      // Painted padding cells survive: only the photo area is redrawn.
+      const gridData = embedPhotoGrid(result.gridData, area.padding, draft.gridData);
+      dispatch({ type: 'draft/update', patch: { gridData } });
     }, DEBOUNCE_MS);
     return () => window.clearTimeout(debounceRef.current);
     // Re-run whenever anything the algorithm depends on changes.
@@ -85,6 +109,7 @@ export function useLiveMatch(): HTMLImageElement | null {
     draft?.cropRect,
     draft?.boardConfig.widthPegs,
     draft?.boardConfig.heightPegs,
+    draft?.boardPadding,
     draft?.preprocessSettings,
     draft?.paletteMode,
     draft?.colorCount,

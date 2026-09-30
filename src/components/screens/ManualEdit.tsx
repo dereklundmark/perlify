@@ -18,9 +18,11 @@ import { Toggle } from '../ui/Toggle';
 import { beadById, CATALOG } from '../../lib/catalog';
 import { renderGrid } from '../../lib/renderGrid';
 import { beadUsage, compositeGrid, gridStats, type GridData } from '../../lib/grid';
-import type { PatternLayer } from '../../db/schema';
+import type { BoardPadding, PatternLayer } from '../../db/schema';
 import { paintCell, clearCell, swapColor, rotate90, flipHorizontal } from '../../lib/gridTransform';
 import { savePattern } from '../../db/db';
+import { flipPadding, NO_PADDING, resizeSide, rotatePadding, type Side } from '../../lib/boardPadding';
+import { markGridCurrent } from '../../hooks/useLiveMatch';
 import './ManualEdit.css';
 
 const FIT_WIDTH = 336; // fallback before the viewport has been measured
@@ -37,7 +39,16 @@ interface Doc {
   base: GridData;
   baseVisible: boolean;
   layers: PatternLayer[];
+  /** Empty rows/columns added around the photo ("extend board"). */
+  pad: BoardPadding;
 }
+
+const EXTEND_SIDES: { side: Side; label: string }[] = [
+  { side: 'top', label: 'TOP' },
+  { side: 'bottom', label: 'BOTTOM' },
+  { side: 'left', label: 'LEFT' },
+  { side: 'right', label: 'RIGHT' },
+];
 
 const BASE_ID = 'base';
 
@@ -89,6 +100,7 @@ export function ManualEdit() {
     base: draft?.gridData ?? [],
     baseVisible: draft?.baseVisible !== false,
     layers: draft?.layers ?? [],
+    pad: draft?.boardPadding ?? NO_PADDING,
   }));
   const [activeLayerId, setActiveLayerId] = useState(BASE_ID);
   // `grid` is the ACTIVE layer's grid — what the paint/clear/swap tools
@@ -179,7 +191,12 @@ export function ManualEdit() {
       id: 'seed',
       label: `Perlified · ${stats.colorCount} colors`,
       affectedCount: stats.beadCount,
-      doc: { base: draft.gridData, baseVisible: draft.baseVisible !== false, layers: draft.layers ?? [] },
+      doc: {
+        base: draft.gridData,
+        baseVisible: draft.baseVisible !== false,
+        layers: draft.layers ?? [],
+        pad: draft.boardPadding ?? NO_PADDING,
+      },
     };
     setHistory([seed]);
     setPointer(0);
@@ -437,7 +454,12 @@ export function ManualEdit() {
     activeBatchRef.current = null;
     const stats = gridStats(flat);
     pushStep(
-      { ...doc, base: rotate90(doc.base), layers: doc.layers.map((l) => ({ ...l, grid: rotate90(l.grid) })) },
+      {
+        ...doc,
+        base: rotate90(doc.base),
+        layers: doc.layers.map((l) => ({ ...l, grid: rotate90(l.grid) })),
+        pad: rotatePadding(doc.pad),
+      },
       'Rotated 90°',
       stats.beadCount,
     );
@@ -446,9 +468,34 @@ export function ManualEdit() {
     activeBatchRef.current = null;
     const stats = gridStats(flat);
     pushStep(
-      { ...doc, base: flipHorizontal(doc.base), layers: doc.layers.map((l) => ({ ...l, grid: flipHorizontal(l.grid) })) },
+      {
+        ...doc,
+        base: flipHorizontal(doc.base),
+        layers: doc.layers.map((l) => ({ ...l, grid: flipHorizontal(l.grid) })),
+        pad: flipPadding(doc.pad),
+      },
       'Flipped',
       stats.beadCount,
+    );
+  }
+
+  // ---- Extend board ----
+  // Adds/removes empty rows or columns on one side. Nothing is re-matched:
+  // the photo and every painted bead keep their exact cells.
+  function extendBoard(side: Side, delta: 1 | -1) {
+    activeBatchRef.current = null;
+    if (delta < 0 && doc.pad[side] <= 0) return;
+    const vertical = side === 'top' || side === 'bottom';
+    const lineLength = vertical ? (doc.base[0]?.length ?? 0) : doc.base.length;
+    pushStep(
+      {
+        ...doc,
+        base: resizeSide(doc.base, side, delta),
+        layers: doc.layers.map((l) => ({ ...l, grid: resizeSide(l.grid, side, delta) })),
+        pad: { ...doc.pad, [side]: doc.pad[side] + delta },
+      },
+      `${delta > 0 ? 'Added' : 'Removed'} a ${vertical ? 'row' : 'column'} ${delta > 0 ? 'on' : 'from'} ${side}`,
+      lineLength,
     );
   }
 
@@ -561,8 +608,11 @@ export function ManualEdit() {
       .filter((s): s is HistoryStep & { swapFromId: string; swapToId: string } => !!s.swapFromId && !!s.swapToId)
       .map((s) => ({ from: s.swapFromId, to: s.swapToId }));
     const colorSwaps = [...(draft.colorSwaps ?? []), ...sessionSwaps];
-    const layered = { gridData: doc.base, layers: doc.layers, baseVisible: doc.baseVisible };
+    const layered = { gridData: doc.base, layers: doc.layers, baseVisible: doc.baseVisible, boardPadding: doc.pad };
     const updated = { ...draft, ...layered, boardConfig, colorSwaps, updatedAt: Date.now() };
+    // What's on the board now is the truth — don't let Adjust re-match over
+    // it just because the board changed shape (extended, rotated).
+    markGridCurrent(updated, state.collections);
     dispatch({ type: 'draft/update', patch: { ...layered, boardConfig, colorSwaps } });
     await savePattern(updated);
     dispatch({ type: 'library/upsert', pattern: updated });
@@ -773,6 +823,40 @@ export function ManualEdit() {
           </div>
         </div>
         <Toggle checked={dragPaint} onChange={updateDragPaint} />
+      </div>
+
+      <div className="edit__extend">
+        <div className="edit__palette-header">
+          <span className="type-eyebrow">
+            EXTEND BOARD · {doc.base[0]?.length ?? 0}×{doc.base.length}
+          </span>
+        </div>
+        <div className="edit__extend-grid">
+          {EXTEND_SIDES.map(({ side, label }) => (
+            <div key={side} className="edit__extend-row">
+              <span className="type-row-label edit__extend-label">{label}</span>
+              <button
+                type="button"
+                className="edit__extend-btn"
+                disabled={doc.pad[side] <= 0}
+                onClick={() => extendBoard(side, -1)}
+                aria-label={`Remove a ${side === 'top' || side === 'bottom' ? 'row' : 'column'} from the ${side}`}
+              >
+                −
+              </button>
+              <span className="type-numeric edit__extend-count">{doc.pad[side]}</span>
+              <button
+                type="button"
+                className="edit__extend-btn"
+                onClick={() => extendBoard(side, 1)}
+                aria-label={`Add a ${side === 'top' || side === 'bottom' ? 'row' : 'column'} on the ${side}`}
+              >
+                +
+              </button>
+            </div>
+          ))}
+        </div>
+        <p className="type-meta edit__extend-note">Adds empty rows or columns — your design and painted beads stay put.</p>
       </div>
 
       <div className="edit__layers">

@@ -468,3 +468,58 @@
   padding: 4px 8px;
   cursor: pointer;
 }
+
+.edit__extend {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.edit__extend-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 6px;
+}
+
+.edit__extend-row {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  background: var(--cream);
+  border: var(--border-mid) solid var(--ink);
+  border-radius: var(--radius-list);
+  padding: 6px 8px;
+}
+
+.edit__extend-label {
+  flex: 1;
+  font-size: 11px;
+}
+
+.edit__extend-btn {
+  appearance: none;
+  width: 30px;
+  height: 30px;
+  flex-shrink: 0;
+  border: var(--border-mid) solid var(--ink);
+  border-radius: 50%;
+  background: var(--white);
+  color: var(--ink);
+  font: 700 16px var(--font-ui);
+  line-height: 1;
+  cursor: pointer;
+}
+.edit__extend-btn:disabled {
+  border-color: var(--disabled);
+  color: var(--disabled);
+  cursor: default;
+}
+
+.edit__extend-count {
+  min-width: 18px;
+  text-align: center;
+}
+
+.edit__extend-note {
+  margin: 0;
+}
