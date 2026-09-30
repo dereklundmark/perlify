@@ -178,54 +178,6 @@ export function pickAutoPaletteIndices(
     .sort((a, b) => a - b);
 }
 
-/**
- * "Closest available colors" selection: picks the N palette entries that
- * together match the image best, adding one at a time — each round takes
- * whichever entry most lowers the total match error across all cells.
- *
- * Unlike pickAutoPaletteIndices (most-voted wins), near-duplicate colors
- * don't split the vote and knock each other out: a second, almost-identical
- * blue barely lowers the error, so a distinct hue gets the slot instead,
- * while the first blue is never dropped just for having a twin.
- */
-export function pickClosestPaletteIndices(cellLabs: Lab[], palette: PaletteEntry[], n: number): number[] {
-  const count = Math.min(n, palette.length);
-  if (count >= palette.length) return palette.map((_, i) => i);
-  if (count <= 0 || cellLabs.length === 0) return [];
-
-  // Collapse near-identical cells (photo areas repeat a lot) into weighted
-  // samples, then precompute every sample→entry distance once.
-  const weights = new Map<string, { lab: Lab; weight: number }>();
-  for (const lab of cellLabs) {
-    const key = `${Math.round(lab.l)},${Math.round(lab.a)},${Math.round(lab.b)}`;
-    const hit = weights.get(key);
-    if (hit) hit.weight++;
-    else weights.set(key, { lab, weight: 1 });
-  }
-  const samples = [...weights.values()];
-  // Same metric the final match uses (CIE76), so the picks are the colors that match will actually reach for.
-  const dist = samples.map(({ lab }) => palette.map((entry) => Math.sqrt(deltaE76Sq(lab, entry.lab))));
-
-  const best = new Array<number>(samples.length).fill(Infinity);
-  const chosen = new Set<number>();
-  for (let round = 0; round < count; round++) {
-    let pick = -1;
-    let pickError = Infinity;
-    for (let c = 0; c < palette.length; c++) {
-      if (chosen.has(c)) continue;
-      let total = 0;
-      for (let s = 0; s < samples.length; s++) {
-        total += samples[s].weight * Math.min(best[s], dist[s][c]);
-        if (total >= pickError) break; // already worse than the best candidate
-      }
-      if (total < pickError) [pick, pickError] = [c, total];
-    }
-    chosen.add(pick);
-    for (let s = 0; s < samples.length; s++) best[s] = Math.min(best[s], dist[s][pick]);
-  }
-  return [...chosen].sort((a, b) => a - b);
-}
-
 interface DiffusionStep {
   dr: number;
   dc: number;

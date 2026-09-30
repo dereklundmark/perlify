@@ -453,15 +453,3 @@
   color: var(--muted);
   flex-shrink: 0;
 }
-
-.adjust__all-colors-row {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  gap: 12px;
-  margin: 2px 12px 6px;
-  padding: 10px 12px;
-  background: var(--cream);
-  border: var(--border-mid) solid var(--ink);
-  border-radius: var(--radius-list);
-}

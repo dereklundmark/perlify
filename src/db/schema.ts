@@ -100,15 +100,6 @@ export interface Pattern {
   collectionId: string | null; // null when paletteMode is 'auto'
   paletteMode: PaletteMode;
   colorCount: number; // 2-60, caps whichever palette (auto or collection) is active
-  /**
-   * Own collections only ("Closest available colors"): when colorCount
-   * trims the collection, keep the N colors that together match the image
-   * best, instead of the N most-voted — voting let near-duplicate colors
-   * split the vote and knock out whole hues. Absent means off.
-   */
-  closestColors?: boolean;
-  /** @deprecated 1.3.0 only ("ignore colorCount"); no longer read. */
-  useAllCollectionColors?: boolean;
   ditherMode: DitherMode;
   samplingMode: SamplingMode;
   preprocessSettings: PreprocessSettings;

@@ -13,12 +13,7 @@ export function CollectionsList() {
 
   function selectAndEdit(collection: BeadCollection) {
     if (state.draft) {
-      // Start from the whole collection, same as picking it in Adjust's palette
-      // list — keeping the old count (e.g. Auto's 12) silently hid the rest.
-      dispatch({
-        type: 'draft/update',
-        patch: { collectionId: collection.id, paletteMode: 'collection', colorCount: Math.max(2, collection.beads.length) },
-      });
+      dispatch({ type: 'draft/update', patch: { collectionId: collection.id, paletteMode: 'collection' } });
     }
     dispatch({ type: 'collection/edit', id: collection.id });
   }

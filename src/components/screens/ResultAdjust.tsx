@@ -9,7 +9,6 @@ import { RulerStage, useRulerLayout } from '../ui/RulerStage';
 import { ActualSizeBar, useActualCellSize } from '../ui/ActualSize';
 import { useLiveMatch } from '../../hooks/useLiveMatch';
 import { useIsTablet } from '../../hooks/useIsTablet';
-import { usesClosestColors } from '../../lib/match';
 import { beadById, HAMA_PRESET_BEADS, PERLER_PRESET_BEADS } from '../../lib/catalog';
 import { HAMA_PRESET_COLLECTION_ID, PERLER_PRESET_COLLECTION_ID } from '../../db/db';
 import { renderGrid } from '../../lib/renderGrid';
@@ -128,7 +127,6 @@ export function ResultAdjust() {
   const perlerCount = isPerlerSelected
     ? Math.min(draft.colorCount, PERLER_PRESET_BEADS.length)
     : PERLER_PRESET_BEADS.length;
-  const closestColors = usesClosestColors(draft);
   const selectedCollectionCount = Math.min(draft.colorCount, collection?.beads.length ?? draft.colorCount);
 
   function updatePreprocess(patch: Partial<Pattern['preprocessSettings']>) {
@@ -313,23 +311,6 @@ export function ResultAdjust() {
                           {count} ›
                         </button>
                       </div>
-                      {selected && size > 0 && (
-                        <div className="adjust__all-colors-row">
-                          <div>
-                            <div className="type-row-label">CLOSEST AVAILABLE COLORS</div>
-                            <div className="type-meta">
-                              {closestColors
-                                ? 'Keeps the colors that match your image best'
-                                : 'Off — keeps the most-used colors'}
-                            </div>
-                          </div>
-                          <Toggle
-                            label="Use closest available colors"
-                            checked={closestColors}
-                            onChange={(v) => dispatch({ type: 'draft/update', patch: { closestColors: v } })}
-                          />
-                        </div>
-                      )}
                       {selected && size > 0 && (
                         <ColorCountBody
                           max={size}

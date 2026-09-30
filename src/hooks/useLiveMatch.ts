@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
 import { useApp } from '../state/AppContext';
-import { matchImageToGrid, usesClosestColors } from '../lib/match';
+import { matchImageToGrid } from '../lib/match';
 import { embedPhotoGrid, photoArea } from '../lib/boardPadding';
 import type { BeadCollection, Pattern } from '../db/schema';
 
@@ -23,7 +23,6 @@ function matchSignature(pattern: Pattern, collections: BeadCollection[]): string
     pattern.preprocessSettings,
     pattern.paletteMode,
     pattern.colorCount,
-    usesClosestColors(pattern),
     pattern.ditherMode,
     pattern.samplingMode,
     pattern.colorSwaps,
@@ -92,7 +91,6 @@ export function useLiveMatch(): HTMLImageElement | null {
         paletteMode: draft.paletteMode,
         colorCount: draft.colorCount,
         collectionBeads,
-        closestColors: usesClosestColors(draft),
         ditherMode: draft.ditherMode,
         samplingMode: draft.samplingMode,
         colorSwaps: draft.colorSwaps ?? [],
@@ -113,7 +111,6 @@ export function useLiveMatch(): HTMLImageElement | null {
     draft?.preprocessSettings,
     draft?.paletteMode,
     draft?.colorCount,
-    draft?.closestColors,
     draft?.ditherMode,
     draft?.samplingMode,
     draft?.collectionId,

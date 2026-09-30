@@ -6,7 +6,6 @@ import {
   hexToRgb,
   nearestIndex,
   pickAutoPaletteIndices,
-  pickClosestPaletteIndices,
   relativeLuminance,
   rgbToLab,
   type PaletteEntry,
@@ -158,36 +157,5 @@ describe('deltaE76Sq', () => {
     const c = rgbToLab({ r: 10, g: 20, b: 30 });
     expect(deltaE76Sq(a, b)).toBe(0);
     expect(deltaE76Sq(a, c)).toBeGreaterThan(0);
-  });
-});
-
-describe('pickClosestPaletteIndices', () => {
-  const lab = (hex: string) => rgbToLab(hexToRgb(hex));
-  // Two near-identical blues plus a pink. The image is 80% blues (spread
-  // evenly between the two) and 20% pink.
-  const palette: PaletteEntry[] = [
-    { id: 'blue-a', lab: lab('#2b6cc4') },
-    { id: 'blue-b', lab: lab('#2f70c8') },
-    { id: 'pink', lab: lab('#ef86b7') },
-  ];
-  const cells = [
-    ...new Array(40).fill(lab('#2a6bc3')),
-    ...new Array(40).fill(lab('#3071c9')),
-    ...new Array(20).fill(lab('#ef86b7')),
-  ];
-
-  it('reproduces the bug it replaces: most-voted keeps both twin blues and drops the pink', () => {
-    expect(pickAutoPaletteIndices(cells, palette, 2)).toEqual([0, 1]);
-  });
-
-  it('keeps one blue and the pink instead', () => {
-    const picked = pickClosestPaletteIndices(cells, palette, 2);
-    expect(picked).toHaveLength(2);
-    expect(picked).toContain(2);
-  });
-
-  it('returns everything when N covers the palette, nothing for N=0', () => {
-    expect(pickClosestPaletteIndices(cells, palette, 5)).toEqual([0, 1, 2]);
-    expect(pickClosestPaletteIndices(cells, palette, 0)).toEqual([]);
   });
 });

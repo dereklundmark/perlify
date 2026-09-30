@@ -1,5 +1,4 @@
-import type { Bead, CropRect, DitherMode, Pattern, PreprocessSettings, SamplingMode } from '../db/schema';
-import { HAMA_PRESET_COLLECTION_ID, PERLER_PRESET_COLLECTION_ID } from '../db/db';
+import type { Bead, CropRect, DitherMode, PreprocessSettings, SamplingMode } from '../db/schema';
 import type { GridData } from './grid';
 import { CATALOG } from './catalog';
 import { abstractGrid, denoiseGrid, sharpenGrid } from './imageProcess';
@@ -12,7 +11,6 @@ import {
   nearestIndex,
   orderedDitherMatch,
   pickAutoPaletteIndices,
-  pickClosestPaletteIndices,
   rgbToLab,
   type PaletteEntry,
   type RGB,
@@ -110,8 +108,6 @@ export interface MatchParams {
   paletteMode: 'auto' | 'collection';
   colorCount: number;
   collectionBeads: Bead[];
-  /** Collection mode: when trimming to colorCount, keep the colors that match the image best (vs. most-voted). */
-  closestColors: boolean;
   ditherMode: DitherMode;
   samplingMode: SamplingMode;
   /** Manual editor swaps, re-applied after matching so they survive a later slider/palette change. */
@@ -151,8 +147,7 @@ export function matchImageToGrid(params: MatchParams): MatchResult {
         id: b.id,
         lab: rgbToLab(hexToRgb(b.hex)),
       }));
-      const pick = params.closestColors ? pickClosestPaletteIndices : pickAutoPaletteIndices;
-      const indices = pick(flatLabs, collectionEntries, params.colorCount);
+      const indices = pickAutoPaletteIndices(flatLabs, collectionEntries, params.colorCount);
       candidatePalette = indices.map((i) => params.collectionBeads[i]);
     } else {
       candidatePalette = params.collectionBeads;
@@ -194,16 +189,4 @@ export function matchImageToGrid(params: MatchParams): MatchResult {
 
 function applySwaps(grid: GridData, swaps: { from: string; to: string }[]): GridData {
   return swaps.reduce((g, { from, to }) => swapColor(g, from, to), grid);
-}
-
-/**
- * Whether a pattern's collection trims to its color count by best overall
- * match ("Closest available colors") rather than by most-voted. Only the
- * user's own collections offer the switch (default on); the built-in
- * Hama/Perler presets keep the original most-used behavior. Off unless the
- * user turns it on, so every collection matches the way it always has.
- */
-export function usesClosestColors(pattern: Pick<Pattern, 'collectionId' | 'closestColors'>): boolean {
-  if (pattern.collectionId === HAMA_PRESET_COLLECTION_ID || pattern.collectionId === PERLER_PRESET_COLLECTION_ID) return false;
-  return pattern.closestColors ?? false;
 }
