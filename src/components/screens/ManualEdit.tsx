@@ -142,6 +142,9 @@ export function ManualEdit() {
   const [view, setView] = useState<View>('edit');
   const [swapSourceId, setSwapSourceId] = useState<string | null>(null);
   const [swapTargetId, setSwapTargetId] = useState<string | null>(null);
+  // Swap and Merge share the find → choose flow. Swap picks the new color
+  // from the collection; Merge folds a color into one already in the design.
+  const [replaceMode, setReplaceMode] = useState<'swap' | 'merge'>('swap');
 
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const viewportRef = useRef<HTMLDivElement>(null);
@@ -566,8 +569,9 @@ export function ManualEdit() {
     setTool('paint');
   }
 
-  function openSwapFind() {
+  function openSwapFind(mode: 'swap' | 'merge' = 'swap') {
     activeBatchRef.current = null;
+    setReplaceMode(mode);
     setSwapSourceId(null);
     setSwapTargetId(null);
     setView('swap-find');
@@ -580,7 +584,9 @@ export function ManualEdit() {
     const toBead = beadById(swapTargetId);
     pushStep(
       withActiveGrid(doc, activeLayerId, swapColor(grid, swapSourceId, swapTargetId)),
-      `${fromBead?.name ?? 'Color'} → ${toBead?.name ?? 'color'}`,
+      replaceMode === 'merge'
+        ? `Merged ${fromBead?.name ?? 'color'} into ${toBead?.name ?? 'color'}`
+        : `${fromBead?.name ?? 'Color'} → ${toBead?.name ?? 'color'}`,
       affected,
       {
         swatchFrom: fromBead?.hex,
@@ -634,7 +640,7 @@ export function ManualEdit() {
               CANCEL
             </button>
           }
-          center={<span className="type-eyebrow">SWAP · 1 OF 2</span>}
+          center={<span className="type-eyebrow">{replaceMode === 'merge' ? 'MERGE' : 'SWAP'} · 1 OF 2</span>}
           right={
             <button type="button" disabled={!swapSourceId} onClick={() => setView('swap-choose')}>
               NEXT
@@ -646,7 +652,9 @@ export function ManualEdit() {
           <p className="type-body edit__swap-caption">Everything else fades so you can see exactly what moves.</p>
         </div>
         <BottomSheet variant="white">
-          <div className="type-eyebrow">TAP A COLOR TO FIND IT</div>
+          <div className="type-eyebrow">
+            {replaceMode === 'merge' ? 'TAP THE COLOR TO MERGE AWAY' : 'TAP A COLOR TO FIND IT'}
+          </div>
           <div className="edit__palette-grid">
             {activeUsage.map(({ beadId: id }) => {
               const bead = beadById(id);
@@ -691,7 +699,7 @@ export function ManualEdit() {
               BACK
             </button>
           }
-          center={<span className="type-eyebrow">SWAP · 2 OF 2</span>}
+          center={<span className="type-eyebrow">{replaceMode === 'merge' ? 'MERGE' : 'SWAP'} · 2 OF 2</span>}
           right={
             <button type="button" onClick={() => setView('swap-find')}>
               UNDO
@@ -714,10 +722,18 @@ export function ManualEdit() {
             <span className="type-numeric">{sourceCount}</span>
           </div>
           <div className="type-eyebrow">
-            SWAP IN — FROM {(state.collections.find((c) => c.id === draft.collectionId) ?? state.collections[0])?.name?.toUpperCase() ?? 'MY COLLECTION'}
+            {replaceMode === 'merge'
+              ? 'MERGE INTO — A COLOR ALREADY IN YOUR DESIGN'
+              : `SWAP IN — FROM ${(state.collections.find((c) => c.id === draft.collectionId) ?? state.collections[0])?.name?.toUpperCase() ?? 'MY COLLECTION'}`}
           </div>
           <div className="edit__palette-grid">
-            {(state.collections.find((c) => c.id === draft.collectionId)?.beads ?? state.collections[0]?.beads ?? []).map((bead) => (
+            {(replaceMode === 'merge'
+              ? usage.filter((u) => u.beadId !== swapSourceId).flatMap((u) => {
+                  const bead = beadById(u.beadId);
+                  return bead ? [bead] : [];
+                })
+              : (state.collections.find((c) => c.id === draft.collectionId)?.beads ?? state.collections[0]?.beads ?? [])
+            ).map((bead) => (
               <button
                 key={bead.id}
                 type="button"
@@ -734,7 +750,7 @@ export function ManualEdit() {
               CANCEL
             </PillButton>
             <PillButton onClick={applySwap} disabled={!swapTargetId} style={{ flex: 1 }}>
-              APPLY SWAP
+              {replaceMode === 'merge' ? 'APPLY MERGE' : 'APPLY SWAP'}
             </PillButton>
           </div>
         </BottomSheet>
@@ -763,8 +779,11 @@ export function ManualEdit() {
         >
           CLEAR
         </button>
-        <button type="button" className="edit__tool-pill" onClick={openSwapFind}>
+        <button type="button" className="edit__tool-pill" onClick={() => openSwapFind('swap')}>
           SWAP
+        </button>
+        <button type="button" className="edit__tool-pill" onClick={() => openSwapFind('merge')}>
+          MERGE
         </button>
         <button type="button" className="edit__glyph-btn" onClick={handleRotate} aria-label="Rotate">
           ⟳
