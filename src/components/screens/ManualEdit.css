@@ -440,3 +440,31 @@
   color: var(--red);
   white-space: nowrap;
 }
+
+/* iPad: a fixed-height screen so the stage has a definite height to fit the
+   board into (see fitCellSize) — same as the Adjust screen. */
+.app-shell--wide .edit__screen {
+  height: 100dvh;
+}
+
+.edit__actual-size {
+  flex: 0 0 auto;
+  width: 100%;
+  max-width: 420px;
+  align-self: center;
+  box-sizing: border-box;
+  padding-left: var(--gutter);
+  padding-right: var(--gutter);
+}
+
+.edit__zoom-reset {
+  appearance: none;
+  border: var(--border-mid) solid var(--ink);
+  border-radius: var(--radius-chip);
+  background: var(--white);
+  color: var(--ink);
+  font: 700 10px var(--font-ui);
+  letter-spacing: 0.06em;
+  padding: 4px 8px;
+  cursor: pointer;
+}

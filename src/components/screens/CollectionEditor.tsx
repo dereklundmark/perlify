@@ -147,6 +147,11 @@ export function CollectionEditor() {
       return;
     }
     dispatch({ type: 'collection/upsert', collection: updated });
+    // If the open pattern was using all of this collection's colors, keep it
+    // that way — otherwise newly added colors sit outside a stale count.
+    if (state.draft?.collectionId === editing.id && state.draft.colorCount >= editing.beads.length) {
+      dispatch({ type: 'draft/update', patch: { colorCount: Math.max(2, beads.length) } });
+    }
     // Adjust needs an open pattern with a photo to render — only go back
     // there when there really is one; otherwise back to the collections list.
     dispatch({ type: 'nav', screen: state.draft?.sourceImage ? 'adjust' : 'collections' });

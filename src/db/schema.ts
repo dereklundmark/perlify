@@ -87,11 +87,13 @@ export interface Pattern {
   paletteMode: PaletteMode;
   colorCount: number; // 2-60, caps whichever palette (auto or collection) is active
   /**
-   * Own collections only: match every cell to the closest color from the
-   * WHOLE collection, ignoring colorCount (which otherwise keeps just the N
-   * most-used — and can drop e.g. a purple that lost out to a pink).
-   * Absent means on.
+   * Own collections only ("Closest available colors"): when colorCount
+   * trims the collection, keep the N colors that together match the image
+   * best, instead of the N most-voted — voting let near-duplicate colors
+   * split the vote and knock out whole hues. Absent means on.
    */
+  closestColors?: boolean;
+  /** @deprecated 1.3.0's name for closestColors (it then meant "ignore colorCount"); read as a fallback only. */
   useAllCollectionColors?: boolean;
   ditherMode: DitherMode;
   samplingMode: SamplingMode;

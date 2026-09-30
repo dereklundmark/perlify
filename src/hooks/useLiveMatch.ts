@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
 import { useApp } from '../state/AppContext';
-import { matchImageToGrid, usesAllCollectionColors } from '../lib/match';
+import { matchImageToGrid, usesClosestColors } from '../lib/match';
 
 const DEBOUNCE_MS = 80;
 
@@ -32,7 +32,7 @@ export function useLiveMatch(): HTMLImageElement | null {
     if (!draft || !imgEl) return;
     const collectionBeads =
       draft.paletteMode === 'collection' ? (state.collections.find((c) => c.id === draft.collectionId)?.beads ?? []) : [];
-    const useAllCollectionColors = usesAllCollectionColors(draft);
+    const closestColors = usesClosestColors(draft);
     const signature = JSON.stringify([
       draft.cropRect,
       draft.boardConfig.widthPegs,
@@ -40,7 +40,7 @@ export function useLiveMatch(): HTMLImageElement | null {
       draft.preprocessSettings,
       draft.paletteMode,
       draft.colorCount,
-      useAllCollectionColors,
+      closestColors,
       draft.ditherMode,
       draft.samplingMode,
       draft.colorSwaps,
@@ -70,7 +70,7 @@ export function useLiveMatch(): HTMLImageElement | null {
         paletteMode: draft.paletteMode,
         colorCount: draft.colorCount,
         collectionBeads,
-        useAllCollectionColors,
+        closestColors,
         ditherMode: draft.ditherMode,
         samplingMode: draft.samplingMode,
         colorSwaps: draft.colorSwaps ?? [],
@@ -88,7 +88,7 @@ export function useLiveMatch(): HTMLImageElement | null {
     draft?.preprocessSettings,
     draft?.paletteMode,
     draft?.colorCount,
-    draft?.useAllCollectionColors,
+    draft?.closestColors,
     draft?.ditherMode,
     draft?.samplingMode,
     draft?.collectionId,

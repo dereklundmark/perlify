@@ -23,8 +23,11 @@ import { paintCell, clearCell, swapColor, rotate90, flipHorizontal } from '../..
 import { savePattern } from '../../db/db';
 import './ManualEdit.css';
 
-const BASE_CELL_SIZE = 26; // "100%" — actual bead size, the pinch-zoom reference point
-const FIT_WIDTH = 336; // matches the Adjust screen's live-preview width
+const FIT_WIDTH = 336; // fallback before the viewport has been measured
+// Room kept around the canvas in fit mode for its outline + offset shadow.
+const FIT_MARGIN = 24;
+const MIN_ZOOM_CELL = 8;
+const MAX_ZOOM_CELL = 60;
 const MAX_HISTORY = 50;
 type Tool = 'paint' | 'clear' | 'swap';
 type View = 'edit' | 'swap-find' | 'swap-choose';
@@ -101,19 +104,26 @@ export function ManualEdit() {
   const [tool, setTool] = useState<Tool>('paint');
   const [currentColor, setCurrentColor] = useState<string | null>(null);
   const [extraPaletteIds, setExtraPaletteIds] = useState<string[]>([]);
-  const [zoomCellSize, setZoomCellSize] = useState(() => {
-    const g = draft?.gridData ?? [];
-    const cols = g[0]?.length ?? 0;
-    const rows = g.length;
-    // Start fit-to-width like the Adjust screen's preview, not at "actual
-    // size" — a board with more pegs than fit across the screen at 26px
-    // each would otherwise open zoomed into the middle of the board.
-    return cols && rows ? Math.min(BASE_CELL_SIZE, FIT_WIDTH / Math.max(cols, rows)) : BASE_CELL_SIZE;
-  });
-  // ACTUAL SIZE overrides the pinch zoom until the user pinches again.
-  const actualCellSize = useActualCellSize(draft?.boardConfig);
-  const cellSize = actualCellSize ?? zoomCellSize;
+  // null = fit the board to the viewport (like Adjust); a number = pinch zoom.
+  const [zoomCellSize, setZoomCellSize] = useState<number | null>(null);
+  const [viewportSize, setViewportSize] = useState({ width: 0, height: 0 });
   const isTablet = useIsTablet();
+  const boardCols = draft?.gridData[0]?.length || draft?.boardConfig.widthPegs || 1;
+  const boardRows = draft?.gridData.length || draft?.boardConfig.heightPegs || 1;
+  // iPad: fit both ways into the fixed-height stage. Phone: the stage grows
+  // with its content, so fit to width only (height would feed back on itself).
+  const fitCellSize =
+    viewportSize.width > 0
+      ? Math.max(
+          4,
+          isTablet && viewportSize.height > 0
+            ? Math.min((viewportSize.width - FIT_MARGIN) / boardCols, (viewportSize.height - FIT_MARGIN) / boardRows)
+            : (viewportSize.width - FIT_MARGIN) / Math.max(boardCols, boardRows),
+        )
+      : FIT_WIDTH / Math.max(boardCols, boardRows);
+  // ACTUAL SIZE overrides both until the user pinches.
+  const actualCellSize = useActualCellSize(draft?.boardConfig);
+  const cellSize = actualCellSize ?? zoomCellSize ?? fitCellSize;
   const [lastCell, setLastCell] = useState<{ row: number; col: number } | null>(null);
   const [catalogOpen, setCatalogOpen] = useState(false);
   const [hoverPointer, setHoverPointer] = useState<{ x: number; y: number; row: number; col: number } | null>(null);
@@ -175,6 +185,18 @@ export function ManualEdit() {
     setPointer(0);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [draft]);
+
+  // The viewport's own box (it scrolls, so the canvas inside never resizes it).
+  useEffect(() => {
+    const el = viewportRef.current;
+    if (!el) return;
+    const observer = new ResizeObserver(([entry]) => {
+      const { width, height } = entry.contentRect;
+      setViewportSize({ width, height });
+    });
+    observer.observe(el);
+    return () => observer.disconnect();
+  }, [isTablet, view]);
 
   useEffect(() => {
     if (!currentColor && paletteIds.length > 0) setCurrentColor(paletteIds[0]);
@@ -388,7 +410,7 @@ export function ManualEdit() {
       const ratio = touchDist(e.touches) / pinchState.current.dist;
       // Pinching means "zoom", so it leaves actual-size mode (starting from the actual size).
       if (actualCellSize) setActualSize(false);
-      setZoomCellSize(Math.min(52, Math.max(8, pinchState.current.cellSize * ratio)));
+      setZoomCellSize(Math.min(Math.max(MAX_ZOOM_CELL, fitCellSize), Math.max(MIN_ZOOM_CELL, pinchState.current.cellSize * ratio)));
       // With drag-painting on, one finger belongs to the brush, so the
       // browser's own scrolling is off (see the canvas's touch-action) —
       // two fingers pan the zoomed canvas by hand instead.
@@ -726,6 +748,8 @@ export function ManualEdit() {
         />
       </div>
 
+      <ActualSizeBar board={draft.boardConfig} className="edit__actual-size" />
+
       {hoverPointer && (
         <div className="edit__hover-readout" style={{ left: hoverPointer.x + 16, top: hoverPointer.y - 10 }}>
           <span
@@ -741,8 +765,6 @@ export function ManualEdit() {
 
   const panelContent = (
     <>
-      <ActualSizeBar board={draft.boardConfig} />
-
       <div className="edit__drag-row">
         <div>
           <div className="type-row-label">PAINT BY DRAGGING</div>
@@ -841,7 +863,15 @@ export function ManualEdit() {
             <button type="button" className="edit__step-chip" onClick={() => setHistoryOpen(true)}>
               <span className="type-numeric">{history.length}</span> STEPS
             </button>
-            <span className="type-eyebrow">{actualCellSize ? 'ACTUAL SIZE' : `${Math.round((cellSize / BASE_CELL_SIZE) * 100)}%`}</span>
+            {actualCellSize ? (
+              <span className="type-eyebrow">ACTUAL SIZE</span>
+            ) : zoomCellSize === null ? (
+              <span className="type-eyebrow">FIT</span>
+            ) : (
+              <button type="button" className="edit__zoom-reset" onClick={() => setZoomCellSize(null)} aria-label="Fit to screen">
+                {Math.round((cellSize / fitCellSize) * 100)}% · FIT
+              </button>
+            )}
           </span>
         }
         right={

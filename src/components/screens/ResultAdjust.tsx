@@ -9,7 +9,7 @@ import { RulerStage, useRulerLayout } from '../ui/RulerStage';
 import { ActualSizeBar, useActualCellSize } from '../ui/ActualSize';
 import { useLiveMatch } from '../../hooks/useLiveMatch';
 import { useIsTablet } from '../../hooks/useIsTablet';
-import { usesAllCollectionColors } from '../../lib/match';
+import { usesClosestColors } from '../../lib/match';
 import { beadById, HAMA_PRESET_BEADS, PERLER_PRESET_BEADS } from '../../lib/catalog';
 import { HAMA_PRESET_COLLECTION_ID, PERLER_PRESET_COLLECTION_ID } from '../../db/db';
 import { renderGrid } from '../../lib/renderGrid';
@@ -128,10 +128,8 @@ export function ResultAdjust() {
   const perlerCount = isPerlerSelected
     ? Math.min(draft.colorCount, PERLER_PRESET_BEADS.length)
     : PERLER_PRESET_BEADS.length;
-  const useAllColors = usesAllCollectionColors(draft);
-  const selectedCollectionCount = useAllColors
-    ? (collection?.beads.length ?? 0)
-    : Math.min(draft.colorCount, collection?.beads.length ?? draft.colorCount);
+  const closestColors = usesClosestColors(draft);
+  const selectedCollectionCount = Math.min(draft.colorCount, collection?.beads.length ?? draft.colorCount);
 
   function updatePreprocess(patch: Partial<Pattern['preprocessSettings']>) {
     if (!draft) return;
@@ -284,7 +282,7 @@ export function ResultAdjust() {
                 {customCollections.map((c, i) => {
                   const selected = isCollectionMode && draft.collectionId === c.id;
                   const size = c.beads.length;
-                  const count = selected && !useAllColors ? Math.min(draft.colorCount, size) : size;
+                  const count = selected ? Math.min(draft.colorCount, size) : size;
                   return (
                     <Fragment key={c.id}>
                       {i > 0 && <div className="adjust__divider" />}
@@ -320,25 +318,19 @@ export function ResultAdjust() {
                           <div>
                             <div className="type-row-label">CLOSEST AVAILABLE COLORS</div>
                             <div className="type-meta">
-                              {useAllColors
-                                ? `Every pixel gets the closest of all ${size} colors`
-                                : 'Off — only the most-used colors below'}
+                              {closestColors
+                                ? 'Keeps the colors that match your image best'
+                                : 'Off — keeps the most-used colors'}
                             </div>
                           </div>
                           <Toggle
                             label="Use closest available colors"
-                            checked={useAllColors}
-                            onChange={(v) =>
-                              dispatch({
-                                type: 'draft/update',
-                                // Turning it off starts from the whole collection, not a stale count.
-                                patch: v ? { useAllCollectionColors: true } : { useAllCollectionColors: false, colorCount: size },
-                              })
-                            }
+                            checked={closestColors}
+                            onChange={(v) => dispatch({ type: 'draft/update', patch: { closestColors: v } })}
                           />
                         </div>
                       )}
-                      {selected && size > 0 && !useAllColors && (
+                      {selected && size > 0 && (
                         <ColorCountBody
                           max={size}
                           value={draft.colorCount}
