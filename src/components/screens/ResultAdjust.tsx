@@ -383,6 +383,14 @@ export function ResultAdjust() {
                   formatValue={formatSigned}
                   onChange={(v) => updatePreprocess({ brightness: v })}
                 />
+                <button
+                  type="button"
+                  className="adjust__reset-btn"
+                  disabled={contrast === 0 && saturation === 0 && brightness === 0}
+                  onClick={() => updatePreprocess({ contrast: 0, saturation: 0, brightness: 0 })}
+                >
+                  RESET TO 0
+                </button>
 
                 <div className="adjust__divider" />
 

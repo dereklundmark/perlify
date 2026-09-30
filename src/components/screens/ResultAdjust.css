@@ -453,3 +453,21 @@
   color: var(--muted);
   flex-shrink: 0;
 }
+
+.adjust__reset-btn {
+  appearance: none;
+  align-self: flex-end;
+  border: var(--border-mid) solid var(--ink);
+  border-radius: var(--radius-chip);
+  background: var(--white);
+  color: var(--ink);
+  font: 700 11px var(--font-ui);
+  letter-spacing: 0.06em;
+  padding: 6px 12px;
+  cursor: pointer;
+}
+.adjust__reset-btn:disabled {
+  border-color: var(--disabled);
+  color: var(--disabled);
+  cursor: default;
+}
