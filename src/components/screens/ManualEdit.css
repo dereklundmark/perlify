@@ -561,3 +561,28 @@
 .edit__flatten-link {
   color: var(--ink);
 }
+
+/* ▲ / ▼ layer order buttons — Photoshop-style stacking. */
+.edit__layer-order {
+  display: flex;
+  gap: 4px;
+  flex-shrink: 0;
+}
+
+.edit__layer-move {
+  appearance: none;
+  width: 28px;
+  height: 28px;
+  border: var(--border-mid) solid var(--ink);
+  border-radius: 8px;
+  background: var(--white);
+  color: var(--ink);
+  font: 700 10px var(--font-ui);
+  line-height: 1;
+  cursor: pointer;
+}
+.edit__layer-move:disabled {
+  border-color: var(--disabled);
+  color: var(--disabled);
+  cursor: default;
+}

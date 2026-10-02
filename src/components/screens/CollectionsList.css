@@ -176,3 +176,15 @@
   padding: 10px 12px;
   border-top: 1px solid rgba(255, 255, 255, 0.15);
 }
+
+/* Long names: let the card and the name's column shrink, so the name's
+   ellipsis kicks in instead of spilling past the card. (Grid and flex items
+   default to min-width: auto — never narrower than their text.) */
+.collection-card {
+  min-width: 0;
+}
+
+.collection-card__meta-row > div:first-child {
+  flex: 1;
+  min-width: 0;
+}

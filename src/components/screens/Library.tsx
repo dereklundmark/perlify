@@ -216,7 +216,9 @@ export function Library() {
                 </button>
                 <div className="pattern-card__meta-row">
                   <div>
-                    <div className="pattern-card__name">{pattern.name}</div>
+                    <div className="pattern-card__name" title={pattern.name}>
+                      {pattern.name}
+                    </div>
                     <div className="pattern-card__meta">
                       {pattern.boardConfig.widthPegs}×{pattern.boardConfig.heightPegs} · {stats.colorCount} COLORS
                     </div>

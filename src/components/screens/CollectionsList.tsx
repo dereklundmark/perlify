@@ -90,7 +90,9 @@ export function CollectionsList() {
               </button>
               <div className="collection-card__meta-row">
                 <div>
-                  <div className="collection-card__name">{collection.name}</div>
+                  <div className="collection-card__name" title={collection.name}>
+                    {collection.name}
+                  </div>
                   <div className="collection-card__meta">{collection.beads.length} BEADS</div>
                 </div>
                 <button

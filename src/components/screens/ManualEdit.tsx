@@ -558,6 +558,19 @@ export function ManualEdit() {
     setActiveLayerId(BASE_ID);
   }
 
+  // Layer order, Photoshop-style: doc.layers runs bottom → top, and where
+  // layers overlap the top one wins. The Photo layer stays at the bottom
+  // (it fills every peg, so above anything it would hide it entirely).
+  function moveLayer(id: string, direction: 1 | -1) {
+    activeBatchRef.current = null;
+    const from = doc.layers.findIndex((l) => l.id === id);
+    const to = from + direction;
+    if (from < 0 || to < 0 || to >= doc.layers.length) return;
+    const layers = [...doc.layers];
+    [layers[from], layers[to]] = [layers[to], layers[from]];
+    pushStep({ ...doc, layers }, `Moved "${layers[to].name}" ${direction > 0 ? 'up' : 'down'}`, 0);
+  }
+
   function toggleLayer(id: string) {
     activeBatchRef.current = null;
     if (id === BASE_ID) {
@@ -1047,6 +1060,28 @@ export function ManualEdit() {
                       DELETE
                     </button>
                   </>
+                )}
+                {row.id !== BASE_ID && (
+                  <span className="edit__layer-order">
+                    <button
+                      type="button"
+                      className="edit__layer-move"
+                      disabled={doc.layers.findIndex((l) => l.id === row.id) === doc.layers.length - 1}
+                      onClick={() => moveLayer(row.id, 1)}
+                      aria-label={`Move ${row.name} up (toward the front)`}
+                    >
+                      ▲
+                    </button>
+                    <button
+                      type="button"
+                      className="edit__layer-move"
+                      disabled={doc.layers.findIndex((l) => l.id === row.id) === 0}
+                      onClick={() => moveLayer(row.id, -1)}
+                      aria-label={`Move ${row.name} down (toward the back)`}
+                    >
+                      ▼
+                    </button>
+                  </span>
                 )}
               </div>
             );

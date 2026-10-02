@@ -273,3 +273,15 @@
   opacity: 1;
   font-weight: 700;
 }
+
+/* Long names: let the card and the name's column shrink, so the name's
+   ellipsis kicks in instead of spilling past the card. (Grid and flex items
+   default to min-width: auto — never narrower than their text.) */
+.pattern-card {
+  min-width: 0;
+}
+
+.pattern-card__meta-row > div:first-child {
+  flex: 1;
+  min-width: 0;
+}
